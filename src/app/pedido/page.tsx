@@ -53,6 +53,20 @@ export default function PedidoPage() {
     return true;
   };
 
+  // Función para calcular cantidad de unidades y precio
+  const calculateUnits = () => {
+    const cantidad = Number(formData.cantidad);
+    if (!cantidad || cantidad <= 0) return { bigbags: 0, lonas: 0, precioTotal: 0 };
+    
+    const bigbags = Math.ceil(cantidad / 600); // 600kg por BigBag
+    const lonas = Math.ceil(cantidad / 35);    // 35kg por Lona
+    const precioTotal = cantidad * 1190;       // $1.190 COP por kg
+    
+    return { bigbags, lonas, precioTotal };
+  };
+
+  const { bigbags, lonas, precioTotal } = calculateUnits();
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -424,13 +438,31 @@ export default function PedidoPage() {
                       }
                     </p>
                     {formData.cantidad && (
-                      <p className="text-sm text-green-800 font-medium mt-1">
-                        Cantidad solicitada: {formData.cantidad} kg en {
-                          formData.unidadMedida === 'Otro' 
-                            ? formData.unidadPersonalizada 
-                            : formData.unidadMedida
-                        }
-                      </p>
+                      <div className="text-sm text-green-800 font-medium mt-1">
+                        <p>
+                          Cantidad solicitada: {formData.cantidad} kg en {
+                            formData.unidadMedida === 'Otro' 
+                              ? formData.unidadPersonalizada 
+                              : formData.unidadMedida
+                          }
+                        </p>
+                        {formData.unidadMedida === 'BigBag' && bigbags > 0 && (
+                          <p className="text-green-700 mt-1">
+                            ≈ {bigbags} BigBag{bigbags > 1 ? 's' : ''} (600 kg c/u)
+                          </p>
+                        )}
+                        {formData.unidadMedida === 'Lona' && lonas > 0 && (
+                          <p className="text-green-700 mt-1">
+                            ≈ {lonas} Lona{lonas > 1 ? 's' : ''} (35 kg c/u)
+                          </p>
+                        )}
+                        <p className="text-green-800 font-bold mt-2 text-base">
+                          💰 Total: ${precioTotal.toLocaleString('es-CO')} COP
+                        </p>
+                        <p className="text-green-600 text-xs mt-1">
+                          Precio por kg: $1.190 COP
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>

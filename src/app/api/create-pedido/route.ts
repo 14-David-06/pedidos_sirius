@@ -23,6 +23,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Configuración del servidor incompleta' }, { status: 500 });
     }
 
+    // Calcular cantidad según la unidad seleccionada
+    const cantidadKg = parseInt(cantidad);
+    const precioPorKg = 1190; // Precio en COP por kilogramo
+    const precioTotal = cantidadKg * precioPorKg; // Precio total del pedido
+    
+    let cantidadBigBags = 0;
+    let cantidadLonas = 0;
+    
+    if (unidadMedida === 'BigBag') {
+      cantidadBigBags = Math.ceil(cantidadKg / 600); // 600kg por BigBag
+      cantidadLonas = 0;
+    } else if (unidadMedida === 'Lona') {
+      cantidadBigBags = 0;
+      cantidadLonas = Math.ceil(cantidadKg / 35); // 35kg por Lona
+    } else {
+      // Si es "Otro", calculamos ambos para referencia pero no los enviamos como cantidad definitiva
+      cantidadBigBags = 0;
+      cantidadLonas = 0;
+    }
+
     // Primero obtener el ID y nombre del cliente desde la tabla de clientes
     const clientesUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Clientes Pirolisis`;
     const clientesParams = new URLSearchParams({
@@ -64,14 +84,17 @@ export async function POST(request: NextRequest) {
     const pedidoData = {
       fields: {
         'NIT/Cedula Comprador': cedula,
-        'Peso Vendido (kg)': parseInt(cantidad),
-        'Tipo de Uso': unidadFinal,
+        'Peso Vendido (kg)': cantidadKg,
+        'Cantidad BigBag': cantidadBigBags,
+        'Cantidad Lonas': cantidadLonas,
+        'Precio Total': precioTotal, // Precio total del pedido en COP
+        'Tipo Envase': unidadFinal,
         // 'Fecha Venta' se omite porque es un campo calculado en Airtable
         'Comprador': nombreCliente, // Nombre del cliente
         'Cliente Pirolisis': clienteId ? [clienteId] : [], // ID del cliente (relación con la tabla)
         'Destino': destino || '', // Destino del pedido (opcional)
         'Operador Responsable': 'Sistema Web', // Indicar que viene del sistema web
-        'Observaciones': `Pedido realizado desde plataforma web. Cliente: ${nombreCliente} (ID: ${clienteId}). Destino: ${destino || 'No especificado'}. Unidad: ${unidadFinal}, Cantidad: ${cantidad} kg`
+        'Observaciones': `Pedido realizado desde plataforma web. Cliente: ${nombreCliente} (ID: ${clienteId}). Destino: ${destino || 'No especificado'}. Unidad: ${unidadFinal}, Cantidad: ${cantidadKg} kg${unidadMedida === 'BigBag' ? ` (${cantidadBigBags} BigBag${cantidadBigBags > 1 ? 's' : ''})` : unidadMedida === 'Lona' ? ` (${cantidadLonas} Lona${cantidadLonas > 1 ? 's' : ''})` : ''}. Total: $${precioTotal.toLocaleString('es-CO')} COP`
       }
     };
 
