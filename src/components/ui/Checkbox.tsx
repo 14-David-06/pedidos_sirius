@@ -13,7 +13,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         <input
           type="checkbox"
           className={cn(
-            'h-4 w-4 rounded border-medical-300 text-primary-600 focus:ring-primary-500',
+            'h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500',
             error && 'border-red-500',
             className
           )}
@@ -22,7 +22,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         />
         {label && (
           <div className="flex flex-col">
-            <label className="text-sm text-medical-700 leading-relaxed">
+            <label className="text-sm text-gray-700 leading-relaxed">
               {label}
             </label>
             {error && (

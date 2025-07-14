@@ -8,19 +8,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Paleta de colores Sirius Regenerative - basada en el manual de marca
+        // Paleta de colores Sirius Regenerative - Professional Branding
         primary: {
           50: '#eff6ff',
           100: '#dbeafe', 
           200: '#bfdbfe',
           300: '#93c5fd',
           400: '#60a5fa',
-          500: '#2563eb', // Azul Sirius principal
-          600: '#1d4ed8',
-          700: '#1e40af',
-          800: '#1e3a8a',
-          900: '#1e293b',
-          950: '#0f172a',
+          500: '#1e3a8a', // Azul Sirius profesional
+          600: '#1e40af',
+          700: '#1d4ed8',
+          800: '#2563eb',
+          900: '#3b82f6',
+          950: '#60a5fa',
         },
         secondary: {
           50: '#f0fdf4',
@@ -28,44 +28,20 @@ module.exports = {
           200: '#bbf7d0',
           300: '#86efac',
           400: '#4ade80',
-          500: '#059669', // Verde Sirius secundario
-          600: '#047857',
-          700: '#065f46',
-          800: '#064e3b',
-          900: '#022c22',
+          500: '#16a34a', // Verde Sirius profesional
+          600: '#15803d',
+          700: '#166534',
+          800: '#14532d',
+          900: '#052e16',
           950: '#021810',
         },
-        accent: {
-          50: '#fefce8',
-          100: '#fef9c3',
-          200: '#fef08a',
-          300: '#fde047',
-          400: '#facc15',
-          500: '#eab308', // Dorado Sirius
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
-          950: '#422006',
-        },
-        medical: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-        },
         sirius: {
-          blue: '#2563eb',
-          green: '#059669',
-          gold: '#eab308',
-          dark: '#1e293b',
-          light: '#f8fafc',
+          blue: '#1e3a8a',
+          green: '#16a34a', 
+          orange: '#f59e0b',
+          dark: '#1f2937',
+          light: '#f9fafb',
+          gray: '#6b7280',
         }
       },
       fontFamily: {

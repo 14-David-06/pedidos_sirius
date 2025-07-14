@@ -1,73 +1,57 @@
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-sirius-dark to-medical-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
+    <footer className="bg-gray-800 text-white">
+      <div className="max-w-5xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-gradient-to-r from-secondary-500 to-primary-500 rounded-lg p-2">
-                <span className="text-white font-bold text-lg">S</span>
+              <div className="bg-white rounded-lg p-2">
+                <img 
+                  src="https://res.cloudinary.com/dvnuttrox/image/upload/v1747945175/logo_siris-removebg-preview_psxwgc.png" 
+                  alt="Sirius Logo" 
+                  className="h-8 w-auto"
+                />
               </div>
               <div>
-                <h3 className="text-xl font-bold tracking-tight">SIRIUS</h3>
-                <p className="text-sm text-gray-300 uppercase tracking-wider">Regenerative Solutions S.A.S</p>
+                <h3 className="text-lg font-medium">Sirius Regenerative Lab</h3>
+                <p className="text-sm text-gray-300">Productos Biológicos Especializados</p>
               </div>
             </div>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              Empresa especializada en regeneración de suelos y soluciones ambientales sostenibles. 
-              Comprometidos con la restauración de ecosistemas y la agricultura regenerativa.
+            <p className="text-gray-300 leading-relaxed text-sm">
+              Proveedor especializado en cultivos celulares, medios de cultivo y reactivos 
+              para investigación en medicina regenerativa y terapias celulares.
             </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-secondary-600 text-white text-xs rounded-full">Regeneración de Suelos</span>
-              <span className="px-3 py-1 bg-primary-600 text-white text-xs rounded-full">Análisis Ambientales</span>
-              <span className="px-3 py-1 bg-accent-600 text-white text-xs rounded-full">ZOMAC</span>
+          </div>
+          
+          
+          <div>
+            <h3 className="text-lg font-medium mb-4">
+              Productos
+            </h3>
+            <div className="space-y-2 text-gray-300 text-sm">
+              <p>Cultivos Celulares</p>
+              <p>Medios de Cultivo</p>
+              <p>Reactivos Especializados</p>
+              <p>Factores de Crecimiento</p>
+              <p>Enzimas</p>
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-secondary-300">
+            <h3 className="text-lg font-medium mb-4">
               Contacto
             </h3>
-            <div className="space-y-3 text-gray-300">
-              <p className="flex items-center">
-                <span className="mr-2">📞</span> +57 (1) 234-5678
-              </p>
-              <p className="flex items-center">
-                <span className="mr-2">📧</span> info@siriussolutions.co
-              </p>
-              <p className="flex items-center">
-                <span className="mr-2">📍</span> Bogotá, Colombia
-              </p>
-              <p className="flex items-center">
-                <span className="mr-2">🌐</span> Zona ZOMAC
-              </p>
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-primary-300">
-              Servicios
-            </h3>
-            <div className="space-y-2 text-gray-300">
-              <p>Regeneración de Suelos</p>
-              <p>Análisis de Laboratorio</p>
-              <p>Consultoría Ambiental</p>
-              <p>Agricultura Sostenible</p>
+            <div className="space-y-2 text-gray-300 text-sm">
+              <p>📧 pedidos@siriuslab.co</p>
+              <p>📞 +57 (1) 234-5678</p>
+              <p>📍 Bogotá, Colombia</p>
+              <p>🔬 Laboratorio Certificado</p>
             </div>
           </div>
         </div>
         
-        <div className="mt-8 pt-8 border-t border-gray-700">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 SIRIUS Regenerative Solutions S.A.S. Todos los derechos reservados. | ZOMAC
-            </p>
-            <div className="flex space-x-6 text-sm text-gray-400 mt-4 md:mt-0">
-              <a href="/privacy" className="hover:text-secondary-300 transition-colors">Privacidad</a>
-              <a href="/terms" className="hover:text-secondary-300 transition-colors">Términos</a>
-              <a href="/environmental" className="hover:text-secondary-300 transition-colors">Política Ambiental</a>
-            </div>
-          </div>
+        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+          <p>&copy; 2025 Sirius Regenerative Lab. Plataforma de pedidos de productos biológicos.</p>
         </div>
       </div>
     </footer>

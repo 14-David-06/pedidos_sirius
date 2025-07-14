@@ -1,0 +1,129 @@
+/* Sirius Brand Custom Styles */
+
+/* Gradientes personalizados basados en el manual de marca */
+.sirius-gradient-primary {
+  background: linear-gradient(135deg, #1e3a8a 0%, #16a34a 100%);
+}
+
+.sirius-gradient-secondary {
+  background: linear-gradient(135deg, #16a34a 0%, #f59e0b 100%);
+}
+
+.sirius-gradient-accent {
+  background: linear-gradient(135deg, #f59e0b 0%, #1e3a8a 100%);
+}
+
+/* Efectos de glassmorphism para cards */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animaciones suaves */
+.fade-in {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects personalizados */
+.sirius-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(30, 58, 138, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Logo animations */
+.logo-pulse {
+  animation: logoPulse 2s infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Botones personalizados */
+.btn-sirius-primary {
+  background: linear-gradient(135deg, #1e3a8a 0%, #16a34a 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-sirius-primary:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #15803d 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(30, 58, 138, 0.3);
+}
+
+/* Efectos de parallax para backgrounds */
+.parallax-bg {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Responsive logo sizing */
+@media (max-width: 768px) {
+  .logo-responsive {
+    height: 2.5rem;
+    width: auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .logo-responsive {
+    height: 4rem;
+    width: auto;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #1e3a8a, #16a34a);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #1e40af, #15803d);
+}

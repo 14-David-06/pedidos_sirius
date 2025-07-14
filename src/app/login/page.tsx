@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { LoadingSpinner } from '@/components/ui/Loading';
-import { Mail, Lock, Sprout } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import { validateEmail } from '@/lib/utils';
 import type { LoginFormData, FormErrors } from '@/types';
 
@@ -92,8 +92,12 @@ export default function LoginPage() {
         {/* Logo y Header */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-white bg-opacity-95 rounded-full p-3 shadow-lg">
-              <Sprout className="h-12 w-12 text-secondary-600" />
+            <div className="bg-white bg-opacity-95 rounded-2xl p-4 shadow-lg">
+              <img 
+                src="https://res.cloudinary.com/dvnuttrox/image/upload/v1747945175/logo_siris-removebg-preview_psxwgc.png" 
+                alt="Sirius Logo" 
+                className="h-16 w-auto mx-auto"
+              />
             </div>
           </div>
           <h2 className="text-3xl font-bold text-white drop-shadow-lg">
@@ -182,10 +186,10 @@ export default function LoginPage() {
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-medical-300" />
+                  <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-medical-500">
+                  <span className="px-2 bg-white text-gray-500">
                     ¿No tienes cuenta?
                   </span>
                 </div>

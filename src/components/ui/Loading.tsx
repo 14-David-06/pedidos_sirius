@@ -37,7 +37,7 @@ export function Loading({ message = 'Cargando...', fullScreen = false }: Loading
     <div className={containerClasses}>
       <div className="flex flex-col items-center space-y-4">
         <LoadingSpinner size="lg" />
-        <p className="text-medical-600 text-sm">{message}</p>
+        <p className="text-gray-600 text-sm">{message}</p>
       </div>
     </div>
   );
