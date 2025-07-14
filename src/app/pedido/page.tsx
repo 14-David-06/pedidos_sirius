@@ -13,6 +13,7 @@ interface FormData {
   cantidad: string;
   unidadMedida: 'BigBag' | 'Lona' | 'Otro';
   unidadPersonalizada: string;
+  destino: string;
 }
 
 interface FormErrors {
@@ -28,7 +29,8 @@ export default function PedidoPage() {
     cedula: '',
     cantidad: '',
     unidadMedida: 'BigBag',
-    unidadPersonalizada: ''
+    unidadPersonalizada: '',
+    destino: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +78,9 @@ export default function PedidoPage() {
 
   const checkCedulaInAirtable = async (cedula: string): Promise<{isValid: boolean, cliente?: any}> => {
     try {
+      console.log('=== FRONTEND - Validando cédula ===');
+      console.log('Cédula a validar:', cedula);
+      
       const response = await fetch('/api/validate-cedula', {
         method: 'POST',
         headers: {
@@ -84,13 +89,24 @@ export default function PedidoPage() {
         body: JSON.stringify({ cedula }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        return { isValid: false };
+      }
+
       const data = await response.json();
+      console.log('Respuesta completa del servidor:', data);
+      
       return {
         isValid: data.isValid,
         cliente: data.cliente
       };
     } catch (error) {
-      console.error('Error validating cedula:', error);
+      console.error('Error completo en checkCedulaInAirtable:', error);
       return { isValid: false };
     }
   };
@@ -184,7 +200,12 @@ export default function PedidoPage() {
 
   // Función para validar cédula en tiempo real
   const validateCedulaRealTime = async (cedula: string) => {
+    console.log('=== VALIDACIÓN TIEMPO REAL ===');
+    console.log('Cédula a validar:', cedula);
+    console.log('Longitud cédula:', cedula.length);
+
     if (!cedula || cedula.length < 6) {
+      console.log('Cédula muy corta, cancelando validación');
       setCedulaValidated(false);
       setClienteInfo(null);
       setShowValidationMessage(false);
@@ -192,28 +213,35 @@ export default function PedidoPage() {
     }
 
     if (!validateCedula(cedula)) {
+      console.log('Cédula no pasa validación de formato');
       setCedulaValidated(false);
       setClienteInfo(null);
       setShowValidationMessage(false);
       return;
     }
 
+    console.log('Iniciando validación con Airtable...');
     setIsValidating(true);
     setShowValidationMessage(false);
     
     try {
       const result = await checkCedulaInAirtable(cedula);
+      console.log('Resultado de validación:', result);
       
       if (result.isValid) {
+        console.log('✅ Cédula VÁLIDA');
         setCedulaValidated(true);
         setClienteInfo(result.cliente);
+        console.log('Cliente info recibida:', result.cliente); // Debug log
         setErrors(prev => ({ ...prev, cedula: '' }));
       } else {
+        console.log('❌ Cédula NO VÁLIDA');
         setCedulaValidated(false);
         setClienteInfo(null);
       }
       setShowValidationMessage(true);
     } catch (error) {
+      console.error('Error en validación:', error);
       setCedulaValidated(false);
       setClienteInfo(null);
       setShowValidationMessage(true);
@@ -295,10 +323,10 @@ export default function PedidoPage() {
                   {cedulaValidated ? (
                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-sm text-green-800 font-medium">
-                        ¡Hola {clienteInfo?.Nombre || 'Cliente'}! 
+                        ¡Hola {clienteInfo?.['Nombre Solicitante'] || 'Cliente'}! 
                       </p>
                       <p className="text-sm text-green-600 mt-1">
-                        Tu cédula está registrada en nuestro sistema. Pronto te avisaremos sobre tu pedido.
+                        Tu cédula está registrada en nuestro sistema.
                       </p>
                     </div>
                   ) : (
@@ -364,6 +392,17 @@ export default function PedidoPage() {
                 placeholder="Ej: 500 (kilogramos)"
                 disabled={isLoading}
                 min="1"
+              />
+
+              <Input
+                label="Destino (Opcional)"
+                name="destino"
+                type="text"
+                value={formData.destino}
+                onChange={handleChange}
+                icon={<Package className="h-4 w-4" />}
+                placeholder="Ej: Finca La Esperanza, Cultivo de Aguacate, etc."
+                disabled={isLoading}
               />
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">

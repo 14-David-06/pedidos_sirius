@@ -30,10 +30,15 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="flex justify-center">
+          <div className="flex justify-center space-x-4">
             <Link href="/pedido">
               <Button size="lg" className="bg-green-600 bg-opacity-80 backdrop-blur-sm text-white border border-green-400 border-opacity-30 hover:bg-green-500 px-8 py-4 text-lg font-medium">
                 Solicitar Biochar Blend
+              </Button>
+            </Link>
+            <Link href="/mis-pedidos">
+              <Button size="lg" variant="outline" className="bg-white bg-opacity-10 backdrop-blur-sm text-white border border-white border-opacity-30 hover:bg-white hover:bg-opacity-20 px-8 py-4 text-lg font-medium">
+                Ver mis pedidos
               </Button>
             </Link>
           </div>
