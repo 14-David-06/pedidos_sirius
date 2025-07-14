@@ -1,71 +1,42 @@
-// Types for the application
 export interface User {
   id: string;
+  name: string;
   email: string;
-  name: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'technician' | 'client';
   createdAt: string;
-  updatedAt?: string;
 }
 
-export interface Product {
-  id: string;
+export interface LoginFormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+export interface RegisterFormData {
   name: string;
-  type: 'hongo' | 'bacteria';
-  category: string;
-  description?: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  acceptTerms: boolean;
 }
 
-export interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  quantity: number;
+export interface FormErrors {
+  [key: string]: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export interface Order {
   id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  reason: string;
-  estimatedDate: string;
+  patientName: string;
+  testType: string;
   priority: 'alta' | 'media' | 'baja';
-  status: 'pendiente' | 'aprobado' | 'rechazado' | 'en_proceso' | 'completado';
-  observations?: string;
-  items: OrderItem[];
-  totalItems: number;
+  status: 'pending' | 'processing' | 'completed' | 'cancelled';
   createdAt: string;
-  updatedAt?: string;
-  approvedBy?: string;
-  approvedAt?: string;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  name: string;
-}
-
-export interface CreateOrderData {
-  reason: string;
-  estimatedDate: string;
-  priority: 'alta' | 'media' | 'baja';
-  observations?: string;
-  items: {
-    productId: string;
-    quantity: number;
-  }[];
-}
-
-export interface UpdateProfileData {
-  name: string;
-  email: string;
-  currentPassword?: string;
-  newPassword?: string;
+  estimatedCompletion: string;
+  assignedTechnician?: string;
 }

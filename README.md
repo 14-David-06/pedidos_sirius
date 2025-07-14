@@ -1,239 +1,170 @@
-# 🧪 Sirius Lab - Sistema de Gestión de Pedidos
+# Sirius Regenerative Laboratory - Sistema de Pedidos
 
-Sistema de gestión de solicitudes de pedidos de insumos, materiales y reactivos para el laboratorio de Sirius Regenerative Solutions S.A.S ZOMAC.
+Sistema completo de gestión de pedidos para el laboratorio de medicina regenerativa Sirius Lab, desarrollado con Next.js 14, TypeScript y Tailwind CSS.
 
 ## 🚀 Características
 
-- **Autenticación completa** con registro y login
-- **Dashboard interactivo** con estadísticas y filtros
-- **Formulario dinámico** para crear solicitudes
-- **Gestión de roles** (Admin/Usuario)
-- **Integración con Airtable** como base de datos
-- **Diseño responsive** y profesional
-- **Gestión de perfil** de usuario
+- **Autenticación completa**: Login y registro con validación en tiempo real
+- **Diseño médico profesional**: Paleta de colores y UI adaptada al entorno sanitario
+- **Responsive design**: Optimizado para desktop, tablet y móvil
+- **TypeScript**: Tipado fuerte para mayor seguridad y mantenibilidad
+- **Tailwind CSS**: Diseño moderno y consistente
+- **Componentes reutilizables**: Arquitectura modular y escalable
 
 ## 🛠️ Stack Tecnológico
 
-- **Frontend**: Next.js 14 (App Router), React, TypeScript
-- **Styling**: Tailwind CSS
-- **Base de datos**: Airtable
-- **Autenticación**: JWT + bcryptjs
-- **Validaciones**: Zod + React Hook Form
-- **Icons**: Lucide React
+- **Framework**: Next.js 14 (App Router)
+- **Lenguaje**: TypeScript
+- **Estilos**: Tailwind CSS
+- **UI Components**: Componentes custom optimizados
+- **Iconos**: Lucide React
+- **Linting**: ESLint + Prettier
 
-## 📋 Prerrequisitos
+## 📦 Instalación
 
-- Node.js 18+ 
-- NPM o Yarn
-- Cuenta de Airtable
-
-## 🔧 Configuración Inicial
-
-### 1. Clonar e instalar dependencias
-
+1. Instalar dependencias:
 ```bash
-git clone <repository-url>
-cd pedidos_laboratorio
 npm install
 ```
 
-### 2. Configurar Airtable
-
-1. Crear una nueva base en [Airtable](https://airtable.com)
-2. Crear las siguientes tablas con estos campos:
-
-#### Tabla: Users
-- **email** (Single line text)
-- **name** (Single line text) 
-- **password** (Single line text)
-- **role** (Single select: admin, user)
-- **createdAt** (Date)
-- **updatedAt** (Date)
-
-#### Tabla: Products
-- **name** (Single line text)
-- **type** (Single select: hongo, bacteria)
-- **category** (Single line text)
-- **description** (Long text)
-
-#### Tabla: Orders
-- **userId** (Single line text)
-- **userName** (Single line text)
-- **userEmail** (Email)
-- **reason** (Single line text)
-- **estimatedDate** (Date)
-- **priority** (Single select: alta, media, baja)
-- **status** (Single select: pendiente, aprobado, rechazado, en_proceso, completado)
-- **observations** (Long text)
-- **totalItems** (Number)
-- **createdAt** (Date)
-- **updatedAt** (Date)
-- **approvedBy** (Single line text)
-- **approvedAt** (Date)
-
-#### Tabla: OrderItems
-- **orderId** (Single line text)
-- **productId** (Single line text)
-- **productName** (Single line text)
-- **quantity** (Number)
-
-### 3. Configurar variables de entorno
-
-Copiar el archivo `.env.example` a `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-Completar las variables en `.env.local`:
-
-```env
-# Airtable Configuration
-AIRTABLE_API_KEY=tu_api_key_de_airtable
-AIRTABLE_BASE_ID=tu_base_id_de_airtable
-
-# NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=tu_secreto_muy_seguro_aqui
-
-# JWT Secret
-JWT_SECRET=tu_jwt_secret_muy_seguro
-```
-
-#### Obtener credenciales de Airtable:
-1. Ir a [Airtable API](https://airtable.com/api)
-2. Seleccionar tu base
-3. Copiar el **Base ID** de la URL
-4. Ir a [Account Settings](https://airtable.com/account) para obtener el **API Key**
-
-### 4. Inicializar productos por defecto
-
+2. Ejecutar en modo desarrollo:
 ```bash
 npm run dev
 ```
 
-Luego hacer un POST a: `http://localhost:3000/api/seed`
+3. Abrir [http://localhost:3000](http://localhost:3000) en el navegador
 
-O usar curl:
-```bash
-curl -X POST http://localhost:3000/api/seed
-```
-
-## 🚀 Ejecutar la aplicación
-
-### Desarrollo
-```bash
-npm run dev
-```
-
-### Producción
-```bash
-npm run build
-npm start
-```
-
-La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
-
-## 👥 Uso de la Aplicación
-
-### Para Usuarios Regulares:
-1. **Registro/Login**: Crear cuenta o iniciar sesión
-2. **Dashboard**: Ver todas las solicitudes propias
-3. **Nueva Solicitud**: Crear solicitudes con productos dinámicos
-4. **Perfil**: Actualizar información personal
-
-### Para Administradores:
-- Todas las funciones de usuario regular
-- **Dashboard**: Ver todas las solicitudes de todos los usuarios
-- **Gestión de Estados**: Aprobar, rechazar o cambiar estado de solicitudes
-
-## 📁 Estructura del Proyecto
+## 🏗️ Estructura del Proyecto
 
 ```
 src/
-├── app/                    # App Router de Next.js
-│   ├── api/               # API Routes
-│   ├── auth/              # Páginas de autenticación
-│   ├── dashboard/         # Dashboard principal
-│   ├── orders/            # Gestión de pedidos
-│   └── profile/           # Perfil de usuario
-├── components/            # Componentes reutilizables
-│   ├── ui/               # Componentes de UI básicos
+├── app/                    # App Router (Next.js 14)
+│   ├── globals.css        # Estilos globales
+│   ├── layout.tsx         # Layout principal
+│   ├── page.tsx          # Página de inicio
+│   ├── login/            # Página de login
+│   ├── register/         # Página de registro
+│   └── dashboard/        # Dashboard (post-login)
+├── components/
+│   ├── ui/               # Componentes base reutilizables
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   ├── Card.tsx
+│   │   ├── Checkbox.tsx
+│   │   └── Loading.tsx
 │   └── layout/           # Componentes de layout
-├── hooks/                # Custom hooks
-├── lib/                  # Utilidades y configuraciones
-├── services/             # Servicios para Airtable
-└── types/                # Definiciones TypeScript
+│       ├── Header.tsx
+│       └── Footer.tsx
+├── lib/
+│   └── utils.ts          # Utilidades y validaciones
+└── types/
+    └── index.ts          # Definiciones de tipos TypeScript
 ```
 
-## 🔒 Seguridad
+## 🎨 Diseño y UX
 
-- Autenticación JWT con tokens seguros
-- Contraseñas hasheadas con bcrypt
-- Validación de roles en todas las rutas protegidas
-- Sanitización de datos de entrada
+### Paleta de Colores
+- **Primarios**: Azules médicos (#3b82f6 - #1e3a8a)
+- **Secundarios**: Verdes regenerativos (#22c55e - #14532d)
+- **Neutros**: Grises médicos (#f8fafc - #0f172a)
 
-## 🎨 Personalización
+### Componentes Implementados
+- ✅ Botones con variantes (primary, secondary, outline, ghost)
+- ✅ Inputs con validación visual y iconos
+- ✅ Cards con header, content y footer
+- ✅ Checkboxes personalizados
+- ✅ Loading spinners y estados de carga
+- ✅ Layout responsive con header y footer
 
-### Colores de Marca
-El sistema usa los colores institucionales de Sirius:
-- **Azul primario**: `#2563eb` (blue-600)
-- **Grises**: Tonos neutros para texto y fondos
-- **Estados**: Verde (aprobado), Rojo (rechazado), Amarillo (pendiente)
+## 🔐 Autenticación
 
-### Componentes Personalizables
-- Todos los componentes en `/components/ui` son reutilizables
-- Estilos globales en `/app/globals.css`
-- Configuración de Tailwind en `tailwind.config.js`
+### Página de Login (`/login`)
+- Validación de email y contraseña
+- Opción "Recordarme"
+- Enlace a recuperación de contraseña
+- Estados de loading
+- Validación en tiempo real
 
-## 📝 Scripts Disponibles
+### Página de Registro (`/register`)
+- Formulario completo con validaciones
+- Validación de contraseña segura
+- Confirmación de contraseña
+- Aceptación de términos y condiciones
+- Feedback visual de errores
+
+## 📱 Responsive Design
+
+- **Mobile First**: Diseño optimizado para móviles
+- **Breakpoints**: sm, md, lg, xl
+- **Grid System**: CSS Grid y Flexbox
+- **Typography**: Escala tipográfica responsiva
+
+## 🔧 Scripts Disponibles
 
 ```bash
-npm run dev          # Servidor de desarrollo
-npm run build        # Build para producción
-npm run start        # Servidor de producción
-npm run lint         # Linter ESLint
-npm run type-check   # Verificación de tipos TypeScript
+# Desarrollo
+npm run dev
+
+# Construcción
+npm run build
+
+# Producción
+npm start
+
+# Linting
+npm run lint
+npm run lint:fix
+
+# Formateo
+npm run format
 ```
 
-## 🔧 Configuración Adicional
+## 🚦 Validaciones Implementadas
 
-### ESLint y Prettier
-El proyecto incluye configuración para:
-- ESLint para análisis de código
-- Prettier para formateo automático
-- TypeScript strict mode
+### Email
+- Formato válido de email
+- Campo requerido
 
-### Próximas Funcionalidades
-- [ ] Subida de archivos adjuntos
-- [ ] Notificaciones por email
-- [ ] Exportar reportes
-- [ ] Historial de cambios
+### Contraseña
+- Mínimo 8 caracteres
+- Al menos una mayúscula
+- Al menos una minúscula
+- Al menos un número
+
+### Formularios
+- Validación en tiempo real
+- Limpieza de errores al escribir
+- Estados de loading durante submit
+- Feedback visual de errores
+
+## 🎯 Próximas Funcionalidades
+
+- [ ] Dashboard completo con gestión de pedidos
+- [ ] Sistema de roles (admin, técnico, cliente)
+- [ ] Gestión de pacientes y muestras
+- [ ] Reportes y análisis
+- [ ] Notificaciones en tiempo real
 - [ ] API REST completa
-- [ ] Tests automatizados
+- [ ] Base de datos
+- [ ] Autenticación con JWT
+- [ ] Recuperación de contraseña
 
-## 🆘 Solución de Problemas
+## 👨‍💻 Desarrollo
 
-### Error de conexión Airtable
-- Verificar API Key y Base ID
-- Comprobar que las tablas existan con los campos correctos
-- Verificar permisos de la API Key
+El proyecto está configurado con:
+- **Hot reload** para desarrollo rápido
+- **TypeScript strict mode** para máxima seguridad de tipos
+- **ESLint + Prettier** para código consistente
+- **Tailwind CSS** con configuración personalizada
 
-### Error de autenticación
-- Verificar JWT_SECRET en variables de entorno
-- Limpiar localStorage del navegador
-- Verificar que el usuario exista en Airtable
+## 🏥 Contexto Médico
 
-### Error de productos
-- Ejecutar el endpoint de seed: `/api/seed`
-- Verificar la tabla Products en Airtable
-
-## 📞 Soporte
-
-Sistema desarrollado para **Sirius Regenerative Solutions S.A.S ZOMAC**
-
-Para soporte técnico o dudas sobre implementación, contactar al equipo de desarrollo.
+Este sistema está diseñado específicamente para laboratorios de medicina regenerativa, con:
+- Terminología médica apropiada
+- Flujos de trabajo adaptados al entorno sanitario
+- Colores y diseño que inspiran confianza
+- Componentes optimizados para eficiencia operativa
 
 ---
 
-© 2025 Sirius Lab - Gestión de Pedidos de Laboratorio
+**Sirius Regenerative Laboratory** - Innovación en medicina regenerativa 🔬✨

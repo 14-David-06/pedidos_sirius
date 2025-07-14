@@ -22,33 +22,35 @@ export function formatPriority(priority: string) {
   return priorities[priority as keyof typeof priorities] || priority;
 }
 
-export function formatStatus(status: string) {
-  const statuses = {
-    pendiente: 'Pendiente',
-    aprobado: 'Aprobado',
-    rechazado: 'Rechazado',
-    en_proceso: 'En Proceso',
-    completado: 'Completado',
-  };
-  return statuses[status as keyof typeof statuses] || status;
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
-export function getStatusColor(status: string) {
-  const colors = {
-    pendiente: 'bg-yellow-100 text-yellow-800',
-    aprobado: 'bg-green-100 text-green-800',
-    rechazado: 'bg-red-100 text-red-800',
-    en_proceso: 'bg-blue-100 text-blue-800',
-    completado: 'bg-gray-100 text-gray-800',
+export function validatePassword(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push('La contraseña debe tener al menos 8 caracteres');
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    errors.push('La contraseña debe contener al menos una letra mayúscula');
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    errors.push('La contraseña debe contener al menos una letra minúscula');
+  }
+  
+  if (!/\d/.test(password)) {
+    errors.push('La contraseña debe contener al menos un número');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
   };
-  return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-}
-
-export function getPriorityColor(priority: string) {
-  const colors = {
-    alta: 'bg-red-100 text-red-800',
-    media: 'bg-yellow-100 text-yellow-800',
-    baja: 'bg-green-100 text-green-800',
-  };
-  return colors[priority as keyof typeof colors] || 'bg-gray-100 text-gray-800';
 }
