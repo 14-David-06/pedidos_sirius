@@ -9,28 +9,24 @@ export default function Header() {
             <img 
               src="https://res.cloudinary.com/dvnuttrox/image/upload/v1752508146/logo_t6fg4d.png" 
               alt="Sirius Logo" 
-              className="h-12 w-auto"
+              className="h-20 w-auto"
             />
           </Link>
           
           <nav className="hidden md:flex space-x-8">
-            <Link 
-              href="/catalogo" 
-              className="text-white hover:text-gray-300 transition-colors font-medium text-lg backdrop-blur-sm px-3 py-1 rounded"
+            <a 
+              href="https://sirius-landing.vercel.app/contacto" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-white hover:text-green-300 transition-colors font-medium text-lg backdrop-blur-sm px-3 py-1 rounded"
             >
-              Catálogo
-            </Link>
+              Contacto
+            </a>
             <Link 
-              href="/login" 
-              className="text-white hover:text-gray-300 transition-colors font-medium text-lg backdrop-blur-sm px-3 py-1 rounded"
+              href="/pedido"
+              className="bg-green-600 bg-opacity-70 backdrop-blur-sm text-white border border-green-400 border-opacity-30 px-6 py-2 rounded-lg hover:bg-green-500 transition-all duration-200 font-medium text-lg"
             >
-              Iniciar Sesión
-            </Link>
-            <Link 
-              href="/register" 
-              className="bg-white bg-opacity-20 backdrop-blur-sm text-white border border-white border-opacity-30 px-6 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-200 font-medium text-lg"
-            >
-              Crear Cuenta
+              Solicitar Biochar
             </Link>
           </nav>
         </div>
