@@ -1,11 +1,11 @@
-# Sirius Regenerative Laboratory - Sistema de Pedidos
+# SIRIUS Regenerative Solutions - Sistema de Gestión
 
-Sistema completo de gestión de pedidos para el laboratorio de medicina regenerativa Sirius Lab, desarrollado con Next.js 14, TypeScript y Tailwind CSS.
+Sistema completo de gestión para Sirius Regenerative Solutions S.A.S ZOMAC, empresa especializada en regeneración de suelos y soluciones ambientales sostenibles.
 
-## 🚀 Características
+## 🌱 Características
 
 - **Autenticación completa**: Login y registro con validación en tiempo real
-- **Diseño médico profesional**: Paleta de colores y UI adaptada al entorno sanitario
+- **Diseño ambiental profesional**: Paleta de colores y UI adaptada al sector agrícola y ambiental
 - **Responsive design**: Optimizado para desktop, tablet y móvil
 - **TypeScript**: Tipado fuerte para mayor seguridad y mantenibilidad
 - **Tailwind CSS**: Diseño moderno y consistente
@@ -17,7 +17,7 @@ Sistema completo de gestión de pedidos para el laboratorio de medicina regenera
 - **Lenguaje**: TypeScript
 - **Estilos**: Tailwind CSS
 - **UI Components**: Componentes custom optimizados
-- **Iconos**: Lucide React
+- **Iconos**: Lucide React (enfoque en naturaleza y sostenibilidad)
 - **Linting**: ESLint + Prettier
 
 ## 📦 Instalación

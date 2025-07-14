@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { LoadingSpinner } from '@/components/ui/Loading';
-import { Mail, Lock, Microscope } from 'lucide-react';
+import { Mail, Lock, Sprout } from 'lucide-react';
 import { validateEmail } from '@/lib/utils';
 import type { LoginFormData, FormErrors } from '@/types';
 
@@ -93,14 +93,14 @@ export default function LoginPage() {
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-white bg-opacity-95 rounded-full p-3 shadow-lg">
-              <Microscope className="h-12 w-12 text-primary-600" />
+              <Sprout className="h-12 w-12 text-secondary-600" />
             </div>
           </div>
           <h2 className="text-3xl font-bold text-white drop-shadow-lg">
             Iniciar Sesión
           </h2>
           <p className="mt-2 text-white drop-shadow-md">
-            Accede a tu cuenta de Sirius Lab
+            Accede a tu cuenta de Sirius Solutions
           </p>
         </div>
 

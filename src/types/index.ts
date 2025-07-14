@@ -2,7 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'technician' | 'client';
+  role: 'admin' | 'analyst' | 'client' | 'field_technician';
   createdAt: string;
 }
 
@@ -30,13 +30,20 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-export interface Order {
+export interface SoilAnalysisOrder {
   id: string;
-  patientName: string;
-  testType: string;
+  clientName: string;
+  sampleLocation: string;
+  analysisType: 'physical' | 'chemical' | 'biological' | 'complete';
   priority: 'alta' | 'media' | 'baja';
-  status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  status: 'pending' | 'sampling' | 'processing' | 'completed' | 'cancelled';
   createdAt: string;
   estimatedCompletion: string;
-  assignedTechnician?: string;
+  assignedAnalyst?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  sampleDepth?: number;
+  landUse?: string;
 }
