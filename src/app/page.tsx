@@ -1,19 +1,46 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function HomePage() {
   return (
-    <div 
-      className="min-h-screen relative"
-      style={{
-        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167074/20032025-DSC_3427_1_1_zmq71m.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen relative">
+      {/* Video Background Container */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            console.error('Error cargando video:', e);
+            // Si hay error, ocultar el video y mostrar el fallback
+            e.currentTarget.style.display = 'none';
+          }}
+        >
+          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_mp4,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/mp4" />
+          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_webm,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/webm" />
+          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/quicktime" />
+        </video>
+        
+        {/* Fallback background image si el video no carga */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167074/20032025-DSC_3427_1_1_zmq71m.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: -1
+          }}
+        />
+      </div>
+      
+      {/* Overlay para mejorar legibilidad */}
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-24">
         {/* Hero Section - Enfoque en pedidos */}

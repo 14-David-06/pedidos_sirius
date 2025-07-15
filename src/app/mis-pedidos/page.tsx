@@ -75,19 +75,38 @@ export default function MisPedidosPage() {
 
   return (
     <div 
-      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative"
+      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
       style={{
         backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167867/DSC_3797_1_wcrfu9.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
+        backgroundRepeat: 'no-repeat'
       }}
     >
-      {/* Overlay para mejorar legibilidad */}
-      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        onLoadStart={() => console.log('Video loading started')}
+        onCanPlay={() => console.log('Video can play')}
+        onError={(e) => {
+          console.log('Video error, using fallback background image');
+          e.currentTarget.style.display = 'none';
+        }}
+      >
+        <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_mp4,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_webm,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/webm" />
+        <source src="https://res.cloudinary.com/dvnuttrox/video/upload/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/quicktime" />
+        Su navegador no soporta video HTML5.
+      </video>
       
-      <div className="max-w-4xl mx-auto relative z-10">
+      {/* Overlay para mejorar legibilidad */}
+      <div className="absolute inset-0 bg-black bg-opacity-40 z-10"></div>
+      
+      <div className="max-w-4xl mx-auto relative z-20">
         {/* Header */}
         <div className="text-center mb-8">
           <br /><br /><br /><br />

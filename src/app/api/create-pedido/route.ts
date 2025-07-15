@@ -59,14 +59,20 @@ export async function POST(request: NextRequest) {
     });
 
     let nombreCliente = '';
+    let razonSocialCliente = '';
     let clienteId = '';
     if (clienteResponse.ok) {
       const clienteData = await clienteResponse.json();
       if (clienteData.records && clienteData.records.length > 0) {
         const clienteRecord = clienteData.records[0];
         nombreCliente = clienteRecord.fields['Nombre Solicitante'] || '';
+        razonSocialCliente = clienteRecord.fields['Razon Social Cliente'] || '';
         clienteId = clienteRecord.id; // Este es el ID del registro en Airtable
-        console.log('Cliente encontrado:', { id: clienteId, nombre: nombreCliente });
+        console.log('Cliente encontrado:', { 
+          id: clienteId, 
+          nombre: nombreCliente, 
+          razonSocial: razonSocialCliente 
+        });
       } else {
         console.error('Cliente no encontrado con cédula:', cedula);
         return NextResponse.json({ error: 'Cliente no encontrado en el sistema' }, { status: 404 });
@@ -123,6 +129,7 @@ export async function POST(request: NextRequest) {
       await sendTelegramNotification({
         cedula,
         nombreCliente,
+        razonSocialCliente,
         cantidad: cantidadKg,
         unidadMedida: unidadMedida === 'Otro' ? unidadPersonalizada : unidadMedida,
         precioTotal,

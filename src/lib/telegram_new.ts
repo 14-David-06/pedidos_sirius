@@ -35,58 +35,25 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
 
     // Obtener usuarios de Telegram desde Airtable - Notificar a todos los usuarios activos
     const usersUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TELEGRAM_USERS_TABLE_ID}`;
-    
-    // Intentar primero con filtro activo, si falla, obtener todos los usuarios
-    let usersParams = new URLSearchParams({
-      filterByFormula: `{Activo} = 1`, // Notificar a todos los usuarios activos
+    const usersParams = new URLSearchParams({
+      filterByFormula: `{Activo} = TRUE()`, // Notificar a todos los usuarios activos
       maxRecords: '50'
     });
 
-    let usersResponse = await fetch(`${usersUrl}?${usersParams}`, {
+    const usersResponse = await fetch(`${usersUrl}?${usersParams}`, {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
     });
 
-    // Si el filtro falla (posiblemente el campo Activo no existe), intentar sin filtro
-    if (!usersResponse.ok && usersResponse.status === 422) {
-      console.log('Campo "Activo" no encontrado, obteniendo todos los usuarios...');
-      usersParams = new URLSearchParams({
-        maxRecords: '50'
-      });
-      
-      usersResponse = await fetch(`${usersUrl}?${usersParams}`, {
-        headers: {
-          'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
     if (!usersResponse.ok) {
       console.error('Error al obtener usuarios de Telegram:', usersResponse.status);
-      try {
-        const errorData = await usersResponse.text();
-        console.error('Detalles del error:', errorData);
-      } catch (e) {
-        console.error('No se pudo obtener detalles del error');
-      }
       return;
     }
 
     const usersData = await usersResponse.json();
-    let telegramUsers: TelegramUser[] = usersData.records || [];
-
-    // Filtrar usuarios activos si el campo existe
-    telegramUsers = telegramUsers.filter(user => {
-      // Si tiene campo Activo y es false, no incluir
-      if (user.fields.Activo === false) {
-        return false;
-      }
-      // Si no tiene campo Activo o es true, incluir
-      return true;
-    });
+    const telegramUsers: TelegramUser[] = usersData.records || [];
 
     if (telegramUsers.length === 0) {
       console.log('No se encontraron usuarios de Telegram para notificar');

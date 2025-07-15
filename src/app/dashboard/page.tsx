@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dashboard - Sirius Lab',
+  title: 'Dashboard',
   description: 'Panel de control del laboratorio',
 };
 
