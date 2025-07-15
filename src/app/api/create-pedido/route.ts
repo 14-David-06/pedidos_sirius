@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
         'Cliente Pirolisis': clienteId ? [clienteId] : [], // ID del cliente (relación con la tabla)
         'Destino': destino || '', // Destino del pedido (opcional)
         'Operador Responsable': 'Sistema Web', // Indicar que viene del sistema web
+        'Estado Pedido': 'En proceso', // Estado por defecto para pedidos nuevos
         'Observaciones': `Pedido realizado desde plataforma web. Cliente: ${nombreCliente} (ID: ${clienteId}). Destino: ${destino || 'No especificado'}. Unidad: ${unidadFinal}, Cantidad: ${cantidadKg} kg${unidadMedida === 'BigBag' ? ` (${cantidadBigBags} BigBag${cantidadBigBags > 1 ? 's' : ''})` : unidadMedida === 'Lona' ? ` (${cantidadLonas} Lona${cantidadLonas > 1 ? 's' : ''})` : ''}. Total: $${precioTotal.toLocaleString('es-CO')} COP`
       }
     };

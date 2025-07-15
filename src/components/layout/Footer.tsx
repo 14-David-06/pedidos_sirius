@@ -36,7 +36,7 @@ export default function Footer() {
               Contacto Comercial
             </h3>
             <div className="space-y-2 text-gray-300 text-sm">
-              <p>📧 pedidos@siriusregenerative.com</p>
+              <p>📧 adm@siriusregenerative.com</p>
               <p>Barranca de Upía - Meta - Colombia</p>
               <p>🕒 Lun - Vie: 7:00 AM - 5:00 PM</p>
             </div>

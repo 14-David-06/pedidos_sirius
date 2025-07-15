@@ -11,6 +11,7 @@ import Link from 'next/link';
 export default function MisPedidosPage() {
   const [cedula, setCedula] = useState('');
   const [pedidos, setPedidos] = useState<any[]>([]);
+  const [clienteInfo, setClienteInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
@@ -54,6 +55,7 @@ export default function MisPedidosPage() {
 
       const data = await response.json();
       setPedidos(data.pedidos || []);
+      setClienteInfo(data.cliente || null);
       setHasSearched(true);
     } catch (error) {
       setError('Error al buscar pedidos. Intenta de nuevo.');
@@ -75,7 +77,7 @@ export default function MisPedidosPage() {
     <div 
       className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative"
       style={{
-        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167074/20032025-DSC_3427_1_1_zmq71m.jpg)',
+        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167867/DSC_3797_1_wcrfu9.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -155,56 +157,220 @@ export default function MisPedidosPage() {
           <Card className="shadow-2xl bg-white bg-opacity-95 backdrop-blur-sm border-0">
             <CardHeader>
               <CardTitle className="text-xl text-green-800">
-                {pedidos.length > 0 ? `${pedidos.length} pedido(s) encontrado(s)` : 'No se encontraron pedidos'}
+                {pedidos.length > 0 ? (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span>{pedidos.length} pedido(s) encontrado(s)</span>
+                      {clienteInfo && (
+                        <span className="text-sm font-normal text-gray-600">
+                          Cliente: {clienteInfo.nombre}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  'No se encontraron pedidos'
+                )}
               </CardTitle>
             </CardHeader>
             
             <CardContent>
               {pedidos.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {pedidos.map((pedido, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <Package className="h-4 w-4 text-green-600 mr-2" />
-                            <span className="font-medium text-gray-900">
-                              {pedido.fields['Peso Vendido (kg)']} kg en {pedido.fields['Tipo de Uso']}
-                            </span>
-                          </div>
-                          <div className="flex items-center mb-2">
-                            <Calendar className="h-4 w-4 text-gray-600 mr-2" />
-                            <span className="text-gray-700">
-                              {formatDate(pedido.fields['Fecha Venta'] || pedido.createdTime)}
-                            </span>
-                          </div>
-                          {pedido.fields['Destino'] && (
-                            <div className="text-gray-700">
-                              <span className="font-medium">Destino:</span> {pedido.fields['Destino']}
-                            </div>
-                          )}
+                    <div key={index} className="border border-gray-200 rounded-lg overflow-hidden bg-gradient-to-r from-white to-green-50 shadow-sm hover:shadow-md transition-shadow">
+                      {/* Header del pedido con estado */}
+                      <div className="bg-green-600 text-white px-6 py-3 flex justify-between items-center">
+                        <div className="flex items-center">
+                          <Package className="h-5 w-5 mr-2" />
+                          <span className="font-bold text-lg">
+                            Pedido #{index + 1} - {pedido.fields['Peso Vendido (kg)']} kg
+                          </span>
                         </div>
-                        <div>
-                          <div className="text-gray-700 mb-2">
-                            <span className="font-medium">Cliente:</span> {pedido.fields['Comprador']}
-                          </div>
-                          <div className="text-gray-700 mb-2">
-                            <span className="font-medium">Operador:</span> {pedido.fields['Operador Responsable']}
-                          </div>
-                          {pedido.fields['Observaciones'] && (
-                            <div className="text-gray-600 text-sm">
-                              <span className="font-medium">Observaciones:</span> {pedido.fields['Observaciones']}
+                        <div className="flex items-center">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            pedido.fields['Estado Pedido'] === 'En proceso' 
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : pedido.fields['Estado Pedido'] === 'Completado'
+                              ? 'bg-green-100 text-green-800'
+                              : pedido.fields['Estado Pedido'] === 'Cancelado'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {pedido.fields['Estado Pedido'] || 'Pendiente'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="p-6">
+                        <div className="grid md:grid-cols-3 gap-6">
+                          {/* Información del Producto */}
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                              Detalles del Producto
+                            </h4>
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-gray-700">Tipo de Envase:</span>
+                                <span className="text-gray-900 font-medium">{pedido.fields['Tipo Envase']}</span>
+                              </div>
+                              
+                              {pedido.fields['Cantidad BigBag'] > 0 && (
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium text-gray-700">BigBags:</span>
+                                  <span className="text-green-700 font-bold">{pedido.fields['Cantidad BigBag']}</span>
+                                </div>
+                              )}
+                              
+                              {pedido.fields['Cantidad Lonas'] > 0 && (
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium text-gray-700">Lonas:</span>
+                                  <span className="text-green-700 font-bold">{pedido.fields['Cantidad Lonas']}</span>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-gray-700">Peso Total:</span>
+                                <span className="text-gray-900 font-bold">{pedido.fields['Peso Vendido (kg)']} kg</span>
+                              </div>
                             </div>
-                          )}
+                          </div>
+
+                          {/* Información de Entrega */}
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                              Información de Entrega
+                            </h4>
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-center text-sm">
+                                <Calendar className="h-4 w-4 text-gray-600 mr-2" />
+                                <span className="font-medium text-gray-700">Fecha:</span>
+                                <span className="text-gray-900 ml-2">
+                                  {formatDate(pedido.fields['Fecha Venta'] || pedido.createdTime)}
+                                </span>
+                              </div>
+                              
+                              {pedido.fields['Destino'] && (
+                                <div className="text-sm">
+                                  <span className="font-medium text-gray-700">Destino:</span>
+                                  <p className="text-gray-900 mt-1 break-words">{pedido.fields['Destino']}</p>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-gray-700">Operador:</span>
+                                <span className="text-gray-900">{pedido.fields['Operador Responsable']}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Información de Precio */}
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                              Información Financiera
+                            </h4>
+                            
+                            {pedido.fields['Precio Total'] && (
+                              <div className="bg-green-100 border border-green-200 rounded-lg p-4">
+                                <div className="text-center">
+                                  <div className="text-sm text-green-700 font-medium">Total del Pedido</div>
+                                  <div className="text-2xl font-bold text-green-800">
+                                    ${pedido.fields['Precio Total'].toLocaleString('es-CO')} COP
+                                  </div>
+                                  <div className="text-xs text-green-600 mt-1">
+                                    ${Math.round(pedido.fields['Precio Total'] / pedido.fields['Peso Vendido (kg)']).toLocaleString('es-CO')} COP/kg
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Resumen Total */}
+                  {pedidos.length > 1 && (
+                    <div className="space-y-4">
+                      {/* Resumen completo */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h3 className="font-bold text-gray-800 mb-3">Resumen General de Pedidos</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                          <div>
+                            <div className="text-2xl font-bold text-gray-700">
+                              {pedidos.reduce((sum, p) => sum + (p.fields['Peso Vendido (kg)'] || 0), 0)} kg
+                            </div>
+                            <div className="text-sm text-gray-600">Total Kilogramos</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-gray-700">
+                              {pedidos.reduce((sum, p) => sum + (p.fields['Cantidad BigBag'] || 0), 0)}
+                            </div>
+                            <div className="text-sm text-gray-600">Total BigBags</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-gray-700">
+                              {pedidos.reduce((sum, p) => sum + (p.fields['Cantidad Lonas'] || 0), 0)}
+                            </div>
+                            <div className="text-sm text-gray-600">Total Lonas</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-gray-700">
+                              ${pedidos.reduce((sum, p) => sum + (p.fields['Precio Total'] || 0), 0).toLocaleString('es-CO')}
+                            </div>
+                            <div className="text-sm text-gray-600">Total General</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Resumen solo pedidos en proceso */}
+                      {(() => {
+                        const pedidosEnProceso = pedidos.filter(p => p.fields['Estado Pedido'] === 'En proceso');
+                        return pedidosEnProceso.length > 0 && (
+                          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
+                            <h3 className="font-bold text-yellow-800 mb-3 flex items-center">
+                              <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2"></div>
+                              Pedidos En Proceso ({pedidosEnProceso.length})
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                              <div>
+                                <div className="text-2xl font-bold text-yellow-700">
+                                  {pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Peso Vendido (kg)'] || 0), 0)} kg
+                                </div>
+                                <div className="text-sm text-yellow-600">Kilogramos en Proceso</div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-yellow-700">
+                                  {pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Cantidad BigBag'] || 0), 0)}
+                                </div>
+                                <div className="text-sm text-yellow-600">BigBags en Proceso</div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-yellow-700">
+                                  {pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Cantidad Lonas'] || 0), 0)}
+                                </div>
+                                <div className="text-sm text-yellow-600">Lonas en Proceso</div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-yellow-700">
+                                  ${pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Precio Total'] || 0), 0).toLocaleString('es-CO')}
+                                </div>
+                                <div className="text-sm text-yellow-600">Valor en Proceso</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600 mb-4">
-                    No se encontraron pedidos para esta cédula
+                <div className="text-center py-12">
+                  <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-4 text-lg">
+                    {clienteInfo ? `No se encontraron pedidos para ${clienteInfo.nombre}` : 'No se encontraron pedidos para esta cédula'}
                   </p>
                   <Link href="/pedido">
                     <Button className="bg-green-600 hover:bg-green-700">

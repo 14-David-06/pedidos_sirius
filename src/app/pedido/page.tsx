@@ -282,11 +282,7 @@ export default function PedidoPage() {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img 
-              src="https://res.cloudinary.com/dvnuttrox/image/upload/v1752508146/logo_t6fg4d.png" 
-              alt="Sirius Logo" 
-              className="h-16 w-auto"
-            />
+            <br /><br />
           </div>
           <h2 className="text-3xl font-bold text-white drop-shadow-lg">
             Solicitar Biochar Blend

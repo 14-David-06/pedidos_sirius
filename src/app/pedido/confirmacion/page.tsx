@@ -94,8 +94,7 @@ export default function ConfirmacionPage() {
                     ¿Necesitas contactarnos?
                   </h4>
                   <p className="text-sm text-blue-700">
-                    📧 pedidos@siriusregenerative.com<br />
-                    📞 +57 (300) 123-4567
+                    📧 adm@siriusregenerative.com
                   </p>
                 </div>
               </div>
@@ -105,6 +104,12 @@ export default function ConfirmacionPage() {
               <Link href="/">
                 <Button className="w-full bg-green-600 hover:bg-green-700">
                   Volver al Inicio
+                </Button>
+              </Link>
+              
+              <Link href="/mis-pedidos">
+                <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
+                  Ver mis pedidos
                 </Button>
               </Link>
               
