@@ -96,7 +96,7 @@ function crearMensajeNotificacion(pedidoData: PedidoData): string {
 
   const precioPorKg = 1190;
 
-  let mensaje = `🚨 *NUEVO PEDIDO DE BIOCHAR BLEND* 🚨\n\n`;
+  let mensaje = `@PiroliBot_bot Biochar Blend\n\n🚨 *NUEVO PEDIDO DE BIOCHAR BLEND* 🚨\n\n`;
   
   // Información del cliente
   mensaje += `👤 *DATOS DEL CLIENTE*\n`;

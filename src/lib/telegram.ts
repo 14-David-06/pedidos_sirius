@@ -23,13 +23,22 @@ interface PedidoData {
 
 export async function sendTelegramNotification(pedidoData: PedidoData): Promise<void> {
   try {
+    console.log('🔧 DEBUG: Iniciando notificación Telegram...');
+    
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
     const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
     const TELEGRAM_USERS_TABLE_ID = process.env.TELEGRAM_USERS_TABLE_ID;
 
+    console.log('🔧 DEBUG: Variables de entorno:', {
+      hasTelegramToken: !!TELEGRAM_BOT_TOKEN,
+      hasAirtableKey: !!AIRTABLE_API_KEY,
+      hasBaseId: !!AIRTABLE_BASE_ID,
+      hasUsersTableId: !!TELEGRAM_USERS_TABLE_ID
+    });
+
     if (!TELEGRAM_BOT_TOKEN || !AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !TELEGRAM_USERS_TABLE_ID) {
-      // Error interno registrado - no exponer detalles específicos
+      console.log('❌ DEBUG: Faltan variables de entorno');
       return;
     }
 
@@ -65,45 +74,53 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     }
 
     if (!usersResponse.ok) {
-      // Error al obtener usuarios - operación fallida
+      console.log('❌ DEBUG: Error al obtener usuarios:', usersResponse.status);
       return;
     }
 
     const usersData = await usersResponse.json();
     let telegramUsers: TelegramUser[] = usersData.records || [];
 
+    console.log('🔧 DEBUG: Usuarios encontrados:', telegramUsers.length);
+    console.log('🔧 DEBUG: Usuarios raw:', telegramUsers.map(u => ({ nombre: u.fields.Nombre, chatId: u.fields.ID_Chat })));
+
     // Filtrar para que solo notifique a David Hernandez
     telegramUsers = telegramUsers.filter(user => {
       return user.fields.Nombre === "David Hernandez";
     });
 
+    console.log('🔧 DEBUG: Usuarios después del filtro:', telegramUsers.length);
+
     if (telegramUsers.length === 0) {
-      // No se encontraron usuarios para notificar
+      console.log('❌ DEBUG: No se encontró a David Hernandez');
       return;
     }
 
     // Crear el mensaje de notificación
     const mensaje = crearMensajeNotificacion(pedidoData);
+    console.log('🔧 DEBUG: Mensaje creado, longitud:', mensaje.length);
 
     // Enviar mensaje a cada usuario activo
     let usuariosNotificados = 0;
     for (const user of telegramUsers) {
       const chatId = user.fields.ID_Chat;
+      console.log('🔧 DEBUG: Intentando enviar a:', user.fields.Nombre, 'Chat ID:', chatId);
       if (!chatId) {
-        // Usuario sin Chat ID configurado - omitir
+        console.log('❌ DEBUG: Usuario sin Chat ID');
         continue;
       }
 
       const exitoso = await enviarMensajeTelegram(TELEGRAM_BOT_TOKEN, chatId, mensaje);
+      console.log('🔧 DEBUG: Resultado envío:', exitoso ? 'ÉXITO' : 'FALLO');
       if (exitoso) {
         usuariosNotificados++;
       }
     }
 
-    // Notificación completada - resultado interno registrado
+    console.log('🔧 DEBUG: Usuarios notificados:', usuariosNotificados);
 
   } catch (error) {
-    // Error interno en el sistema de notificaciones
+    console.log('❌ DEBUG: Error general:', error);
   }
 }
 
@@ -118,49 +135,49 @@ function crearMensajeNotificacion(pedidoData: PedidoData): string {
 
   const precioPorKg = 1190;
 
-  let mensaje = `🚨 *NUEVO PEDIDO DE BIOCHAR BLEND* 🚨\n\n`;
+  let mensaje = `🚨 <b>NUEVO PEDIDO DE BIOCHAR BLEND</b> 🚨\n\n`;
   
   // Información del cliente
-  mensaje += `👤 *DATOS DEL CLIENTE*\n`;
-  mensaje += `• *Nombre:* ${pedidoData.nombreCliente}\n`;
-  mensaje += `• *Cédula:* ${pedidoData.cedula}\n`;
+  mensaje += `👤 <b>DATOS DEL CLIENTE</b>\n`;
+  mensaje += `• <b>Nombre:</b> ${pedidoData.nombreCliente}\n`;
+  mensaje += `• <b>Cédula:</b> ${pedidoData.cedula}\n`;
   if (pedidoData.razonSocialCliente) {
-    mensaje += `• *Razón Social:* ${pedidoData.razonSocialCliente}\n`;
+    mensaje += `• <b>Razón Social:</b> ${pedidoData.razonSocialCliente}\n`;
   }
   mensaje += `\n`;
   
   // Información del pedido
-  mensaje += `📦 *DETALLES DEL PEDIDO*\n`;
-  mensaje += `• *Cantidad:* ${pedidoData.cantidad} kg\n`;
-  mensaje += `• *Tipo de Envase:* ${pedidoData.unidadMedida}\n`;
+  mensaje += `📦 <b>DETALLES DEL PEDIDO</b>\n`;
+  mensaje += `• <b>Cantidad:</b> ${pedidoData.cantidad} kg\n`;
+  mensaje += `• <b>Tipo de Envase:</b> ${pedidoData.unidadMedida}\n`;
 
   // Mostrar conversión automática según el tipo
   if (pedidoData.cantidadBigBags && pedidoData.cantidadBigBags > 0) {
-    mensaje += `• *BigBags necesarios:* ${pedidoData.cantidadBigBags} unidades (600 kg c/u)\n`;
+    mensaje += `• <b>BigBags necesarios:</b> ${pedidoData.cantidadBigBags} unidades (600 kg c/u)\n`;
   }
 
   if (pedidoData.cantidadLonas && pedidoData.cantidadLonas > 0) {
-    mensaje += `• *Lonas necesarias:* ${pedidoData.cantidadLonas} unidades (35 kg c/u)\n`;
+    mensaje += `• <b>Lonas necesarias:</b> ${pedidoData.cantidadLonas} unidades (35 kg c/u)\n`;
   }
 
   if (pedidoData.destino) {
-    mensaje += `• *Destino:* ${pedidoData.destino}\n`;
+    mensaje += `• <b>Destino:</b> ${pedidoData.destino}\n`;
   }
   
   // Información financiera
-  mensaje += `\n💰 *INFORMACIÓN FINANCIERA*\n`;
-  mensaje += `• *Precio por kg:* $${precioPorKg.toLocaleString('es-CO')} COP\n`;
-  mensaje += `• *Valor Total:* $${pedidoData.precioTotal.toLocaleString('es-CO')} COP\n\n`;
+  mensaje += `\n💰 <b>INFORMACIÓN FINANCIERA</b>\n`;
+  mensaje += `• <b>Precio por kg:</b> $${precioPorKg.toLocaleString('es-CO')} COP\n`;
+  mensaje += `• <b>Valor Total:</b> $${pedidoData.precioTotal.toLocaleString('es-CO')} COP\n\n`;
 
   // Información operativa
-  mensaje += `⚙️ *INFORMACIÓN OPERATIVA*\n`;
-  mensaje += `• *Fecha del Pedido:* ${fecha}\n`;
-  mensaje += `• *Estado:* En proceso\n`;
-  mensaje += `• *Origen:* Plataforma Web\n`;
-  mensaje += `• *Operador Responsable:* Sistema Web\n\n`;
+  mensaje += `⚙️ <b>INFORMACIÓN OPERATIVA</b>\n`;
+  mensaje += `• <b>Fecha del Pedido:</b> ${fecha}\n`;
+  mensaje += `• <b>Estado:</b> En proceso\n`;
+  mensaje += `• <b>Origen:</b> Plataforma Web\n`;
+  mensaje += `• <b>Operador Responsable:</b> Sistema Web\n\n`;
   
-  mensaje += `🔔 *Este pedido requiere tu atención inmediata para ser procesado.*\n\n`;
-  mensaje += `_Sirius Regenerative Solutions S.A.S ZOMAC_`;
+  mensaje += `🔔 Este pedido requiere tu atención inmediata para ser procesado.\n\n`;
+  mensaje += `Sirius Regenerative Solutions S.A.S ZOMAC`;
 
   return mensaje;
 }
@@ -168,6 +185,9 @@ function crearMensajeNotificacion(pedidoData: PedidoData): string {
 async function enviarMensajeTelegram(botToken: string, chatId: string, mensaje: string): Promise<boolean> {
   try {
     const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    
+    console.log('🔧 DEBUG: Enviando a URL:', telegramUrl);
+    console.log('🔧 DEBUG: Chat ID:', chatId);
     
     const response = await fetch(telegramUrl, {
       method: 'POST',
@@ -177,18 +197,31 @@ async function enviarMensajeTelegram(botToken: string, chatId: string, mensaje: 
       body: JSON.stringify({
         chat_id: chatId,
         text: mensaje,
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [[
+            {
+              text: "Activar Preparacion de Biochar Blend",
+              switch_inline_query_current_chat: "Biochar Blend"
+            }
+          ]]
+        }
       }),
     });
 
+    console.log('🔧 DEBUG: Response status:', response.status);
+    console.log('🔧 DEBUG: Response ok:', response.ok);
+
     if (!response.ok) {
-      // Error al enviar mensaje - registro interno
+      const errorData = await response.text();
+      console.log('❌ DEBUG: Error response:', errorData);
       return false;
     } else {
+      console.log('✅ DEBUG: Mensaje enviado exitosamente');
       return true;
     }
   } catch (error) {
-    // Error de conectividad con Telegram API
+    console.log('❌ DEBUG: Error de conectividad:', error);
     return false;
   }
 }
