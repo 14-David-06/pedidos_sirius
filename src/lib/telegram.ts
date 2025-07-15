@@ -33,13 +33,13 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
       return;
     }
 
-    // Obtener usuarios de Telegram desde Airtable - Notificar a todos los usuarios activos
+    // Obtener usuarios de Telegram desde Airtable - Solo notificar a David Hernandez por ahora
     const usersUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TELEGRAM_USERS_TABLE_ID}`;
     
-    // Intentar primero con filtro activo, si falla, obtener todos los usuarios
+    // Filtrar solo para David Hernandez
     let usersParams = new URLSearchParams({
-      filterByFormula: `{Activo} = 1`, // Notificar a todos los usuarios activos
-      maxRecords: '50'
+      filterByFormula: `{Nombre} = "David Hernandez"`,
+      maxRecords: '10'
     });
 
     let usersResponse = await fetch(`${usersUrl}?${usersParams}`, {
@@ -49,9 +49,9 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
       },
     });
 
-    // Si el filtro falla (posiblemente el campo Activo no existe), intentar sin filtro
+    // Si el filtro falla, intentar sin filtro y luego filtrar en código
     if (!usersResponse.ok && usersResponse.status === 422) {
-      console.log('Campo "Activo" no encontrado, obteniendo todos los usuarios...');
+      console.log('Filtro por nombre falló, obteniendo todos los usuarios...');
       usersParams = new URLSearchParams({
         maxRecords: '50'
       });
@@ -78,20 +78,17 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     const usersData = await usersResponse.json();
     let telegramUsers: TelegramUser[] = usersData.records || [];
 
-    // Filtrar usuarios activos si el campo existe
+    // Filtrar para que solo notifique a David Hernandez
     telegramUsers = telegramUsers.filter(user => {
-      // Si tiene campo Activo y es false, no incluir
-      if (user.fields.Activo === false) {
-        return false;
-      }
-      // Si no tiene campo Activo o es true, incluir
-      return true;
+      return user.fields.Nombre === "David Hernandez";
     });
 
     if (telegramUsers.length === 0) {
-      console.log('No se encontraron usuarios de Telegram para notificar');
+      console.log('No se encontró a David Hernandez en la lista de usuarios de Telegram');
       return;
     }
+
+    console.log(`📋 Se notificará solo a: ${telegramUsers.map(u => u.fields.Nombre).join(', ')}`);
 
     // Crear el mensaje de notificación
     const mensaje = crearMensajeNotificacion(pedidoData);
