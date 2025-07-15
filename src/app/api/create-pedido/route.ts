@@ -20,8 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-      console.error('Missing Airtable configuration');
-      return NextResponse.json({ error: 'Configuración del servidor incompleta' }, { status: 500 });
+      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
     }
 
     // Calcular cantidad según la unidad seleccionada
@@ -68,17 +67,10 @@ export async function POST(request: NextRequest) {
         nombreCliente = clienteRecord.fields['Nombre Solicitante'] || '';
         razonSocialCliente = clienteRecord.fields['Razon Social Cliente'] || '';
         clienteId = clienteRecord.id; // Este es el ID del registro en Airtable
-        console.log('Cliente encontrado:', { 
-          id: clienteId, 
-          nombre: nombreCliente, 
-          razonSocial: razonSocialCliente 
-        });
       } else {
-        console.error('Cliente no encontrado con cédula:', cedula);
         return NextResponse.json({ error: 'Cliente no encontrado en el sistema' }, { status: 404 });
       }
     } else {
-      console.error('Error al buscar cliente:', clienteResponse.status);
       return NextResponse.json({ error: 'Error al validar cliente' }, { status: 500 });
     }
 
@@ -116,9 +108,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      console.error('Airtable API error:', response.status, response.statusText);
-      const errorData = await response.json();
-      console.error('Error details:', errorData);
       return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 });
     }
 
@@ -137,10 +126,9 @@ export async function POST(request: NextRequest) {
         cantidadBigBags,
         cantidadLonas
       });
-      console.log('✅ Notificación de Telegram enviada exitosamente');
+      // Notificación enviada - registro interno
     } catch (telegramError) {
-      console.error('❌ Error al enviar notificación de Telegram:', telegramError);
-      // No fallar la creación del pedido si hay error en Telegram
+      // Error en notificación - no afecta la creación del pedido
     }
     
     return NextResponse.json({ 
@@ -150,7 +138,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error creating pedido:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

@@ -29,7 +29,7 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     const TELEGRAM_USERS_TABLE_ID = process.env.TELEGRAM_USERS_TABLE_ID;
 
     if (!TELEGRAM_BOT_TOKEN || !AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !TELEGRAM_USERS_TABLE_ID) {
-      console.error('Faltan configuraciones de Telegram o Airtable');
+      // Error de configuración - registro interno
       return;
     }
 
@@ -48,7 +48,7 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     });
 
     if (!usersResponse.ok) {
-      console.error('Error al obtener usuarios de Telegram:', usersResponse.status);
+      // Error al obtener usuarios
       return;
     }
 
@@ -56,7 +56,7 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     const telegramUsers: TelegramUser[] = usersData.records || [];
 
     if (telegramUsers.length === 0) {
-      console.log('No se encontraron usuarios de Telegram para notificar');
+      // No se encontraron usuarios para notificar
       return;
     }
 
@@ -68,23 +68,20 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     for (const user of telegramUsers) {
       const chatId = user.fields.ID_Chat;
       if (!chatId) {
-        console.log(`❌ Usuario ${user.fields.Nombre} no tiene Chat ID configurado`);
+        // Usuario sin Chat ID - omitir
         continue;
       }
 
       const exitoso = await enviarMensajeTelegram(TELEGRAM_BOT_TOKEN, chatId, mensaje);
       if (exitoso) {
         usuariosNotificados++;
-        console.log(`✅ Notificación enviada a: ${user.fields.Nombre} (Chat ID: ${chatId})`);
-      } else {
-        console.log(`❌ Error al notificar a: ${user.fields.Nombre} (Chat ID: ${chatId})`);
       }
     }
 
-    console.log(`📊 Resumen: ${usuariosNotificados}/${telegramUsers.length} usuarios notificados exitosamente`);
+    // Notificación completada
 
   } catch (error) {
-    console.error('❌ Error general al enviar notificación por Telegram:', error);
+    // Error interno en notificaciones
   }
 }
 
@@ -163,14 +160,13 @@ async function enviarMensajeTelegram(botToken: string, chatId: string, mensaje: 
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error al enviar mensaje de Telegram:', errorData);
+      // Error al enviar mensaje
       return false;
     } else {
       return true;
     }
   } catch (error) {
-    console.error('Error al conectar con Telegram API:', error);
+    // Error de conectividad
     return false;
   }
 }

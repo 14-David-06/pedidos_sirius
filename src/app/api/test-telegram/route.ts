@@ -3,12 +3,11 @@ import { sendTelegramNotification } from '@/lib/telegram';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🧪 Iniciando prueba de notificación Telegram...');
-    
     // Datos de prueba
     const testPedidoData = {
       cedula: '1006774686',
       nombreCliente: 'David Hernandez',
+      razonSocialCliente: 'Empresa de Prueba S.A.S.',
       cantidad: 100,
       unidadMedida: 'BigBag',
       precioTotal: 119000,
@@ -26,10 +25,8 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error en prueba de Telegram:', error);
     return NextResponse.json({ 
-      error: 'Error al enviar notificación de prueba',
-      details: error instanceof Error ? error.message : 'Error desconocido'
+      error: 'Error al enviar notificación de prueba'
     }, { status: 500 });
   }
 }

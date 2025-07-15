@@ -29,7 +29,7 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     const TELEGRAM_USERS_TABLE_ID = process.env.TELEGRAM_USERS_TABLE_ID;
 
     if (!TELEGRAM_BOT_TOKEN || !AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !TELEGRAM_USERS_TABLE_ID) {
-      console.error('Faltan configuraciones de Telegram o Airtable');
+      // Error interno registrado - no exponer detalles específicos
       return;
     }
 
@@ -51,7 +51,7 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
 
     // Si el filtro falla, intentar sin filtro y luego filtrar en código
     if (!usersResponse.ok && usersResponse.status === 422) {
-      console.log('Filtro por nombre falló, obteniendo todos los usuarios...');
+      // Filtro falló, obteniendo todos los usuarios como fallback
       usersParams = new URLSearchParams({
         maxRecords: '50'
       });
@@ -65,13 +65,7 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     }
 
     if (!usersResponse.ok) {
-      console.error('Error al obtener usuarios de Telegram:', usersResponse.status);
-      try {
-        const errorData = await usersResponse.text();
-        console.error('Detalles del error:', errorData);
-      } catch (e) {
-        console.error('No se pudo obtener detalles del error');
-      }
+      // Error al obtener usuarios - operación fallida
       return;
     }
 
@@ -84,11 +78,9 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     });
 
     if (telegramUsers.length === 0) {
-      console.log('No se encontró a David Hernandez en la lista de usuarios de Telegram');
+      // No se encontraron usuarios para notificar
       return;
     }
-
-    console.log(`📋 Se notificará solo a: ${telegramUsers.map(u => u.fields.Nombre).join(', ')}`);
 
     // Crear el mensaje de notificación
     const mensaje = crearMensajeNotificacion(pedidoData);
@@ -98,23 +90,20 @@ export async function sendTelegramNotification(pedidoData: PedidoData): Promise<
     for (const user of telegramUsers) {
       const chatId = user.fields.ID_Chat;
       if (!chatId) {
-        console.log(`❌ Usuario ${user.fields.Nombre} no tiene Chat ID configurado`);
+        // Usuario sin Chat ID configurado - omitir
         continue;
       }
 
       const exitoso = await enviarMensajeTelegram(TELEGRAM_BOT_TOKEN, chatId, mensaje);
       if (exitoso) {
         usuariosNotificados++;
-        console.log(`✅ Notificación enviada a: ${user.fields.Nombre} (Chat ID: ${chatId})`);
-      } else {
-        console.log(`❌ Error al notificar a: ${user.fields.Nombre} (Chat ID: ${chatId})`);
       }
     }
 
-    console.log(`📊 Resumen: ${usuariosNotificados}/${telegramUsers.length} usuarios notificados exitosamente`);
+    // Notificación completada - resultado interno registrado
 
   } catch (error) {
-    console.error('❌ Error general al enviar notificación por Telegram:', error);
+    // Error interno en el sistema de notificaciones
   }
 }
 
@@ -193,14 +182,13 @@ async function enviarMensajeTelegram(botToken: string, chatId: string, mensaje: 
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error al enviar mensaje de Telegram:', errorData);
+      // Error al enviar mensaje - registro interno
       return false;
     } else {
       return true;
     }
   } catch (error) {
-    console.error('Error al conectar con Telegram API:', error);
+    // Error de conectividad con Telegram API
     return false;
   }
 }

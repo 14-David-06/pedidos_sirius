@@ -102,9 +102,6 @@ export default function PedidoPage() {
 
   const checkCedulaInAirtable = async (cedula: string): Promise<{isValid: boolean, cliente?: any}> => {
     try {
-      console.log('=== FRONTEND - Validando cédula ===');
-      console.log('Cédula a validar:', cedula);
-      
       const response = await fetch('/api/validate-cedula', {
         method: 'POST',
         headers: {
@@ -113,24 +110,17 @@ export default function PedidoPage() {
         body: JSON.stringify({ cedula }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
         return { isValid: false };
       }
 
       const data = await response.json();
-      console.log('Respuesta completa del servidor:', data);
       
       return {
         isValid: data.isValid,
         cliente: data.cliente
       };
     } catch (error) {
-      console.error('Error completo en checkCedulaInAirtable:', error);
       return { isValid: false };
     }
   };
