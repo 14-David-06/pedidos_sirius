@@ -8,7 +8,7 @@ export default function ConfirmacionPage() {
     <div 
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
       style={{
-        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167074/20032025-DSC_3427_1_1_zmq71m.jpg)',
+        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167867/DSC_3797_1_wcrfu9.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -19,17 +19,7 @@ export default function ConfirmacionPage() {
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       
       <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Header */}
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="https://res.cloudinary.com/dvnuttrox/image/upload/v1752508146/logo_t6fg4d.png" 
-              alt="Sirius Logo" 
-              className="h-16 w-auto"
-            />
-          </div>
-        </div>
-
+        <br /><br />
         {/* Confirmación */}
         <Card className="shadow-2xl bg-white bg-opacity-95 backdrop-blur-sm border-0">
           <CardHeader className="text-center space-y-4">
