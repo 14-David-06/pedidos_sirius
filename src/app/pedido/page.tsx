@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { LoadingSpinner } from '@/components/ui/Loading';
 import { Package, User, Hash } from 'lucide-react';
 
@@ -20,6 +21,8 @@ interface FormErrors {
   cedula?: string;
   cantidad?: string;
   unidadPersonalizada?: string;
+  usoResponsable?: string;
+  politicasPrivacidad?: string;
   general?: string;
 }
 
@@ -39,6 +42,8 @@ export default function PedidoPage() {
   const [cedulaValidated, setCedulaValidated] = useState(false);
   const [clienteInfo, setClienteInfo] = useState<any>(null);
   const [showValidationMessage, setShowValidationMessage] = useState(false);
+  const [aceptaUsoResponsable, setAceptaUsoResponsable] = useState(false);
+  const [aceptaPoliticasPrivacidad, setAceptaPoliticasPrivacidad] = useState(false);
 
   // Limpiar debounce al desmontar el componente
   useEffect(() => {
@@ -94,6 +99,14 @@ export default function PedidoPage() {
 
     if (formData.unidadMedida === 'Otro' && !formData.unidadPersonalizada.trim()) {
       newErrors.unidadPersonalizada = 'Especifica la unidad de medida personalizada';
+    }
+
+    if (!aceptaUsoResponsable) {
+      newErrors.usoResponsable = 'Debes aceptar el compromiso de uso responsable del biochar';
+    }
+
+    if (!aceptaPoliticasPrivacidad) {
+      newErrors.politicasPrivacidad = 'Debes aceptar las políticas de privacidad';
     }
 
     setErrors(newErrors);
@@ -494,11 +507,82 @@ export default function PedidoPage() {
                 </div>
               </div>
 
+              {/* Checkboxes obligatorios */}
+              <div className="space-y-4 mb-6">
+                {/* Uso Responsable del Biochar */}
+                <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="uso-responsable"
+                      checked={aceptaUsoResponsable}
+                      onChange={(e) => {
+                        setAceptaUsoResponsable(e.target.checked);
+                        if (errors.usoResponsable) {
+                          setErrors({...errors, usoResponsable: undefined});
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <label htmlFor="uso-responsable" className="block text-sm font-medium text-green-800 mb-2 cursor-pointer">
+                        Uso Responsable del Biochar *
+                      </label>
+                      <div className="text-xs text-green-700 space-y-1">
+                        <p>El biochar entregado está destinado exclusivamente a fines agrícolas y regenerativos. Se espera que:</p>
+                        <ul className="list-disc list-inside space-y-0.5 ml-2">
+                          <li>No sea quemado ni utilizado como combustible.</li>
+                          <li>Sea aplicado al suelo para mejorar su fertilidad, retención de agua y salud microbiana.</li>
+                          <li>Contribuya activamente a la remoción de CO₂ de la atmósfera y mitigación del cambio climático.</li>
+                        </ul>
+                        <p className="font-medium">Quemar este producto anula su impacto ambiental positivo y contradice los principios de la agricultura regenerativa. Gracias por hacer parte de la solución.</p>
+                      </div>
+                    </div>
+                  </div>
+                  {errors.usoResponsable && (
+                    <p className="text-red-500 text-xs mt-2 ml-8">{errors.usoResponsable}</p>
+                  )}
+                </div>
+
+                {/* Políticas de Privacidad */}
+                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="politicas-privacidad"
+                      checked={aceptaPoliticasPrivacidad}
+                      onChange={(e) => {
+                        setAceptaPoliticasPrivacidad(e.target.checked);
+                        if (errors.politicasPrivacidad) {
+                          setErrors({...errors, politicasPrivacidad: undefined});
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <label htmlFor="politicas-privacidad" className="block text-sm font-medium text-blue-800 cursor-pointer">
+                        Acepto las{' '}
+                        <a 
+                          href="https://sirius-landing.vercel.app/privacypolicy" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-700 underline"
+                        >
+                          Políticas de Privacidad
+                        </a>
+                        {' '}*
+                      </label>
+                    </div>
+                  </div>
+                  {errors.politicasPrivacidad && (
+                    <p className="text-red-500 text-xs mt-2 ml-8">{errors.politicasPrivacidad}</p>
+                  )}
+                </div>
+              </div>
+
               <Button 
                 type="submit" 
-                className={`w-full ${cedulaValidated ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                className={`w-full ${cedulaValidated && aceptaUsoResponsable && aceptaPoliticasPrivacidad ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
                 size="lg"
-                disabled={isLoading || isValidating || !cedulaValidated}
+                disabled={isLoading || isValidating || !cedulaValidated || !aceptaUsoResponsable || !aceptaPoliticasPrivacidad}
               >
                 {isValidating ? (
                   <>
@@ -512,6 +596,8 @@ export default function PedidoPage() {
                   </>
                 ) : !cedulaValidated ? (
                   'Valida tu cédula primero'
+                ) : !aceptaUsoResponsable || !aceptaPoliticasPrivacidad ? (
+                  'Acepta los términos para continuar'
                 ) : (
                   'Enviar Pedido'
                 )}
