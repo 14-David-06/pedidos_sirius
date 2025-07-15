@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 // Configuración de Airtable
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
@@ -116,6 +117,24 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
+    
+    // Enviar notificación por Telegram de forma asíncrona
+    try {
+      await sendTelegramNotification({
+        cedula,
+        nombreCliente,
+        cantidad: cantidadKg,
+        unidadMedida: unidadMedida === 'Otro' ? unidadPersonalizada : unidadMedida,
+        precioTotal,
+        destino,
+        cantidadBigBags,
+        cantidadLonas
+      });
+      console.log('✅ Notificación de Telegram enviada exitosamente');
+    } catch (telegramError) {
+      console.error('❌ Error al enviar notificación de Telegram:', telegramError);
+      // No fallar la creación del pedido si hay error en Telegram
+    }
     
     return NextResponse.json({ 
       success: true,

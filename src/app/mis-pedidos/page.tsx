@@ -90,13 +90,7 @@ export default function MisPedidosPage() {
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="https://res.cloudinary.com/dvnuttrox/image/upload/v1752508146/logo_t6fg4d.png" 
-              alt="Sirius Logo" 
-              className="h-16 w-auto"
-            />
-          </div>
+          <br /><br /><br /><br />
           <h1 className="text-4xl font-bold text-white drop-shadow-lg mb-2">
             Mis Pedidos de Biochar Blend
           </h1>

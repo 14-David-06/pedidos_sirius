@@ -22,7 +22,7 @@ export default function HomePage() {
             <h1 className="text-5xl font-light text-white mb-6 tracking-wide">
               Sirius Regenerative Solutions S.A.S ZOMAC
             </h1>
-            <h2 className="text-2xl font-light text-green-300 mb-6">
+            <h2 className="text-2xl font-bold text-white mb-6">
               Biochar Blend
             </h2>
             <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -58,7 +58,7 @@ export default function HomePage() {
                 <CardContent>
                   <p className="text-white mb-4">Ideal para proyectos de gran escala, agricultura extensiva y restauración de suelos degradados.</p>
                   <ul className="text-green-200 space-y-2">
-                    <li>• Capacidad: 500-1000 kg</li>
+                    <li>• Capacidad: 600 kg</li>
                     <li>• Fácil manejo con maquinaria</li>
                     <li>• Óptimo para distribución uniforme</li>
                   </ul>
@@ -73,7 +73,7 @@ export default function HomePage() {
                 <CardContent>
                   <p className="text-white mb-4">Perfecto para jardines, huertos urbanos y proyectos de mediana escala.</p>
                   <ul className="text-green-200 space-y-2">
-                    <li>• Capacidad: 25-50 kg</li>
+                    <li>• Capacidad: 35 kg</li>
                     <li>• Manejo manual cómodo</li>
                     <li>• Ideal para aplicaciones específicas</li>
                   </ul>
