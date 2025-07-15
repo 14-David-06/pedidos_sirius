@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -25,6 +25,7 @@ interface FormErrors {
 
 export default function PedidoPage() {
   const router = useRouter();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState<FormData>({
     cedula: '',
     cantidad: '',
@@ -38,6 +39,15 @@ export default function PedidoPage() {
   const [cedulaValidated, setCedulaValidated] = useState(false);
   const [clienteInfo, setClienteInfo] = useState<any>(null);
   const [showValidationMessage, setShowValidationMessage] = useState(false);
+
+  // Limpiar debounce al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   const validateCedula = (cedula: string): boolean => {
     // Validar que solo contenga números
@@ -194,16 +204,35 @@ export default function PedidoPage() {
       }));
     }
     
-    // Validar cédula en tiempo real con debounce
+    // Validar cédula solo cuando termine de escribir
     if (name === 'cedula') {
+      console.log('=== CAMBIO EN CÉDULA ===');
+      console.log('Nuevo valor:', value);
+      console.log('Longitud:', value.length);
+      console.log('Es válida?', validateCedula(value));
+      
+      // Limpiar estado anterior
       setCedulaValidated(false);
       setClienteInfo(null);
       setShowValidationMessage(false);
       
-      // Debounce: validar después de 1.5 segundos de inactividad
-      setTimeout(() => {
-        validateCedulaRealTime(value);
-      }, 1500);
+      // Cancelar validación anterior si existe
+      if (debounceRef.current) {
+        console.log('Cancelando validación anterior');
+        clearTimeout(debounceRef.current);
+      }
+      
+      // Solo validar si la cédula cumple los requisitos mínimos
+      if (value.length >= 6 && validateCedula(value)) {
+        console.log('Configurando debounce para validación en 1.5 segundos...');
+        // Configurar nueva validación con debounce de 1.5 segundos
+        debounceRef.current = setTimeout(() => {
+          console.log('¡Ejecutando validación desde debounce!');
+          validateCedulaRealTime(value);
+        }, 1500);
+      } else {
+        console.log('Cédula no cumple requisitos mínimos, no se validará');
+      }
     }
     
     // Limpiar error del campo cuando el usuario empiece a escribir
@@ -212,44 +241,34 @@ export default function PedidoPage() {
     }
   };
 
-  // Función para validar cédula en tiempo real
+  // Función para validar cédula cuando el usuario termine de escribir
   const validateCedulaRealTime = async (cedula: string) => {
-    console.log('=== VALIDACIÓN TIEMPO REAL ===');
+    console.log('=== INICIANDO VALIDACIÓN DE CÉDULA ===');
     console.log('Cédula a validar:', cedula);
-    console.log('Longitud cédula:', cedula.length);
-
-    if (!cedula || cedula.length < 6) {
-      console.log('Cédula muy corta, cancelando validación');
-      setCedulaValidated(false);
-      setClienteInfo(null);
-      setShowValidationMessage(false);
-      return;
-    }
 
     if (!validateCedula(cedula)) {
-      console.log('Cédula no pasa validación de formato');
+      console.log('Cédula no pasa validación de formato local');
       setCedulaValidated(false);
       setClienteInfo(null);
       setShowValidationMessage(false);
       return;
     }
 
-    console.log('Iniciando validación con Airtable...');
+    console.log('Formato de cédula válido, consultando en Airtable...');
     setIsValidating(true);
     setShowValidationMessage(false);
     
     try {
       const result = await checkCedulaInAirtable(cedula);
-      console.log('Resultado de validación:', result);
+      console.log('Resultado de validación Airtable:', result);
       
       if (result.isValid) {
-        console.log('✅ Cédula VÁLIDA');
+        console.log('✅ Cédula VÁLIDA - Cliente encontrado');
         setCedulaValidated(true);
         setClienteInfo(result.cliente);
-        console.log('Cliente info recibida:', result.cliente); // Debug log
         setErrors(prev => ({ ...prev, cedula: '' }));
       } else {
-        console.log('❌ Cédula NO VÁLIDA');
+        console.log('❌ Cédula NO VÁLIDA - Cliente no encontrado');
         setCedulaValidated(false);
         setClienteInfo(null);
       }
@@ -321,13 +340,15 @@ export default function PedidoPage() {
                 disabled={isLoading}
               />
 
+              {/* Indicador de validación en progreso */}
               {isValidating && formData.cedula && (
                 <div className="flex items-center space-x-2 mt-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                  <p className="text-sm text-gray-600">Validando cédula...</p>
+                  <p className="text-sm text-gray-600">Validando cédula en el sistema...</p>
                 </div>
               )}
 
+              {/* Resultado de la validación */}
               {showValidationMessage && !isValidating && (
                 <div className="mt-2">
                   {cedulaValidated ? (
