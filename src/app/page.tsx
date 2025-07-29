@@ -21,9 +21,7 @@ export default function HomePage() {
             e.currentTarget.style.display = 'none';
           }}
         >
-          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_mp4,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/mp4" />
-          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_webm,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/webm" />
-          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/quicktime" />
+          <source src="https://res.cloudinary.com/dvnuttrox/video/upload/v1753725540/corte_productos_pitch_deck_-_Made_with_Clipchamp_kbfied.mp4" type="video/mp4" />
         </video>
         
         {/* Fallback background image si el video no carga */}
@@ -38,10 +36,10 @@ export default function HomePage() {
           }}
         />
       </div>
-      
+
       {/* Overlay para mejorar legibilidad */}
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-      
+
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-24">
         {/* Hero Section - Enfoque en pedidos */}
         <div className="text-center mb-32">
@@ -77,33 +75,33 @@ export default function HomePage() {
             <h2 className="text-4xl font-light text-white text-center mb-12">Presentaciones Disponibles</h2>
             
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="bg-white bg-opacity-10 backdrop-blur-sm border-green-400 border-opacity-30">
+              <Card className="bg-white bg-opacity-16 backdrop-blur-sm border-green-400 border-opacity-30">
                 <CardHeader>
                   <CardTitle className="text-white text-2xl">BigBag</CardTitle>
-                  <CardDescription className="text-green-300">Presentación industrial para grandes volúmenes</CardDescription>
+                  <CardDescription className="text-gray-200">1000kg (1 tonelada)</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-white mb-4">Ideal para proyectos de gran escala, agricultura extensiva y restauración de suelos degradados.</p>
-                  <ul className="text-green-200 space-y-2">
-                    <li>• Capacidad: 600 kg</li>
-                    <li>• Fácil manejo con maquinaria</li>
+                  <ul className="text-white space-y-2 mb-4">
+                    <li>• Ideal para proyectos grandes</li>
+                    <li>• Excelente relación precio-volumen</li>
                     <li>• Óptimo para distribución uniforme</li>
                   </ul>
+                  <p className="text-green-300 font-medium">Perfecto para extensiones medianas y grandes</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white bg-opacity-10 backdrop-blur-sm border-green-400 border-opacity-30">
+              <Card className="bg-white bg-opacity-16 backdrop-blur-sm border-green-400 border-opacity-30">
                 <CardHeader>
-                  <CardTitle className="text-white text-2xl">Lona</CardTitle>
-                  <CardDescription className="text-green-300">Presentación estándar para proyectos medianos</CardDescription>
+                  <CardTitle className="text-white text-2xl">Bulto</CardTitle>
+                  <CardDescription className="text-gray-200">50kg</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-white mb-4">Perfecto para jardines, huertos urbanos y proyectos de mediana escala.</p>
-                  <ul className="text-green-200 space-y-2">
-                    <li>• Capacidad: 35 kg</li>
-                    <li>• Manejo manual cómodo</li>
-                    <li>• Ideal para aplicaciones específicas</li>
+                  <ul className="text-white space-y-2 mb-4">
+                    <li>• Fácil manejo y aplicación</li>
+                    <li>• Ideal para jardines y cultivos pequeños</li>
+                    <li>• Almacenamiento conveniente</li>
                   </ul>
+                  <p className="text-green-300 font-medium">Ideal para huertos familiares y proyectos menores</p>
                 </CardContent>
               </Card>
             </div>
@@ -113,49 +111,66 @@ export default function HomePage() {
         {/* Sección de Beneficios */}
         <div className="mb-24">
           <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl p-8">
-            <h2 className="text-4xl font-light text-white text-center mb-12">Beneficios del Biochar Blend</h2>
+            <h2 className="text-4xl font-light text-white text-center mb-12">¿Por qué elegir Biochar Blend?</h2>
             
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center">
-                  <span className="text-green-400 text-2xl">🌱</span>
+                <div className="bg-green-600 bg-opacity-20 rounded-full p-6 w-24 h-24 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🌱</span>
                 </div>
-                <h3 className="text-xl font-medium text-white mb-3">Mejora la Fertilidad</h3>
-                <p className="text-green-200">Incrementa la retención de nutrientes y mejora la estructura del suelo de manera sostenible.</p>
+                <h3 className="text-xl font-medium text-white mb-4">Mejora del Suelo</h3>
+                <p className="text-gray-200">Aumenta la retención de agua y nutrientes, mejorando la estructura del suelo de manera permanente.</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center">
-                  <span className="text-green-400 text-2xl">💧</span>
+                <div className="bg-green-600 bg-opacity-20 rounded-full p-6 w-24 h-24 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">♻️</span>
                 </div>
-                <h3 className="text-xl font-medium text-white mb-3">Retención de Agua</h3>
-                <p className="text-green-200">Aumenta significativamente la capacidad de retención hídrica del suelo.</p>
+                <h3 className="text-xl font-medium text-white mb-4">Captura de Carbono</h3>
+                <p className="text-gray-200">Contribuye significativamente a la captura de carbono atmosférico, ayudando a combatir el cambio climático.</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center">
-                  <span className="text-green-400 text-2xl">🌍</span>
+                <div className="bg-green-600 bg-opacity-20 rounded-full p-6 w-24 h-24 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">📈</span>
                 </div>
-                <h3 className="text-xl font-medium text-white mb-3">Captura de Carbono</h3>
-                <p className="text-green-200">Contribuye activamente a la mitigación del cambio climático capturando CO₂ atmosférico.</p>
+                <h3 className="text-xl font-medium text-white mb-4">Mayor Productividad</h3>
+                <p className="text-gray-200">Incrementa el rendimiento de cultivos de manera sostenible y natural.</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Información de la empresa */}
+        <div className="mb-24">
+          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl p-8">
+            <h2 className="text-4xl font-light text-white text-center mb-8">Sobre Sirius</h2>
+            <div className="max-w-3xl mx-auto text-center">
+              <p className="text-lg text-gray-200 mb-6">
+                Somos una empresa especializada en soluciones regenerativas para la agricultura sostenible. 
+                Nuestro Biochar Blend representa la vanguardia en tecnología de carbono biológico.
+              </p>
+              <p className="text-lg text-gray-200">
+                Con más de años de experiencia en investigación y desarrollo, ofrecemos productos 
+                que no solo mejoran la productividad agrícola, sino que también contribuyen 
+                positivamente al medio ambiente.
+              </p>
             </div>
           </div>
         </div>
 
         {/* Call to Action Final */}
         <div className="text-center">
-          <div className="bg-gradient-to-r from-green-600 to-green-800 bg-opacity-80 backdrop-blur-sm rounded-2xl p-8">
-            <h2 className="text-3xl font-light text-white mb-6">¿Listo para regenerar tu suelo?</h2>
-            <p className="text-green-100 mb-8 text-lg">Únete a la revolución regenerativa con Biochar Blend</p>
-            
-            <div className="flex justify-center">
-              <Link href="/pedido">
-                <Button size="lg" className="bg-white text-green-800 hover:bg-green-100 px-8 py-4 text-lg font-medium">
-                  Realizar Pedido
-                </Button>
-              </Link>
-            </div>
+          <div className="bg-green-600 bg-opacity-20 backdrop-blur-sm rounded-2xl p-8">
+            <h2 className="text-3xl font-light text-white mb-6">¿Listo para transformar tu suelo?</h2>
+            <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+              Únete a la revolución regenerativa y experimenta los beneficios del Biochar Blend en tus cultivos.
+            </p>
+            <Link href="/pedido">
+              <Button size="lg" className="bg-green-600 hover:bg-green-500 text-white px-12 py-4 text-lg font-medium">
+                Hacer Pedido Ahora
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
