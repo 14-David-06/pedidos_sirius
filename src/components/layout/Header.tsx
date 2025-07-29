@@ -14,19 +14,11 @@ export default function Header() {
           </Link>
           
           <nav className="hidden md:flex space-x-8">
-            <a 
-              href="https://sirius-landing.vercel.app/contacto" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-white hover:text-green-300 transition-colors font-medium text-lg backdrop-blur-sm px-3 py-1 rounded"
-            >
-              Contacto
-            </a>
             <Link 
-              href="/pedido"
+              href="/login"
               className="bg-green-600 bg-opacity-70 backdrop-blur-sm text-white border border-green-400 border-opacity-30 px-6 py-2 rounded-lg hover:bg-green-500 transition-all duration-200 font-medium text-lg"
             >
-              Solicitar Biochar
+              Acceder
             </Link>
           </nav>
         </div>

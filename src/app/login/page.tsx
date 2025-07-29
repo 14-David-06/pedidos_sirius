@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    cedula: '',
+    usuario: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -32,27 +32,38 @@ export default function LoginPage() {
     setError('');
 
     // Validación básica
-    if (!formData.cedula || !formData.password) {
+    if (!formData.usuario || !formData.password) {
       setError('Por favor completa todos los campos');
       setIsLoading(false);
       return;
     }
 
-    // Validación de documento (solo números)
-    if (!/^\d+$/.test(formData.cedula)) {
-      setError('El número de documento debe contener solo números');
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // Simular autenticación (aquí irías a tu API)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirigir al dashboard
-      router.push('/dashboard');
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          usuario: formData.usuario,
+          password: formData.password
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Login exitoso - guardar datos del usuario y redirigir
+        console.log('Login exitoso:', result.user);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        router.push('/dashboard');
+      } else {
+        // Mostrar error específico del servidor
+        setError(result.error || 'Error al iniciar sesión');
+      }
     } catch (err) {
-      setError('Error al iniciar sesión. Verifica tus credenciales.');
+      console.error('Error en login:', err);
+      setError('Error de conexión. Por favor intenta nuevamente.');
     } finally {
       setIsLoading(false);
     }
@@ -108,26 +119,25 @@ export default function LoginPage() {
           <CardHeader className="text-center bg-gradient-to-br from-gray-50 to-white py-8">
             <CardTitle className="text-3xl font-light text-gray-800 mb-2">Iniciar Sesión</CardTitle>
             <CardDescription className="text-gray-500 text-lg">
-              Ingresa tu número de documento y contraseña para acceder
+              Ingresa tu nombre de usuario y contraseña para acceder
             </CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Campo Cédula */}
+              {/* Campo Usuario */}
               <div>
-                <label htmlFor="cedula" className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                  Cédula de Ciudadanía
+                <label htmlFor="usuario" className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                  Usuario
                 </label>
                 <div className="relative">
                   <Input
-                    id="cedula"
-                    name="cedula"
+                    id="usuario"
+                    name="usuario"
                     type="text"
-                    placeholder="Ej: 12345678"
-                    value={formData.cedula}
+                    placeholder="Ej: tu_usuario"
+                    value={formData.usuario}
                     onChange={handleInputChange}
                     className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500 focus:ring-opacity-20 focus:border-green-500 transition-all duration-300 text-lg bg-gray-50 focus:bg-white"
-                    maxLength={12}
                   />
                   <div className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-green-500 to-blue-500 opacity-0 transition-opacity duration-300 pointer-events-none group-focus-within:opacity-100" style={{margin: '-2px'}}></div>
                 </div>

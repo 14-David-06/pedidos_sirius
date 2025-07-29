@@ -41,67 +41,121 @@ export default function HomePage() {
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-24">
-        {/* Hero Section - Enfoque en pedidos */}
+        {/* Hero Section - Enfoque en productos */}
         <div className="text-center mb-32">
           <div className="bg-black bg-opacity-40 backdrop-blur-sm rounded-2xl p-8 mb-12">
             <h1 className="text-5xl font-light text-white mb-6 tracking-wide">
-              Sirius Regenerative Solutions S.A.S ZOMAC
+              Sirius Regenerative Solutions
             </h1>
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Biochar Blend
+            <h2 className="text-3xl font-bold text-green-300 mb-6">
+              Biochar • Biochar Blend • Microorganismos
             </h2>
-            <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
-              Plataforma especializada para pedidos de Biochar Blend. Solución ecológica y regenerativa que mejora la fertilidad del suelo y captura carbono de manera sostenible.
+            <p className="text-xl text-white mb-8 max-w-4xl mx-auto leading-relaxed">
+              Transformamos la agricultura con soluciones regenerativas de vanguardia. Nuestros productos de biochar y microorganismos especializados mejoran la fertilidad del suelo, incrementan la productividad y capturan carbono de manera sostenible.
             </p>
           </div>
           
           <div className="flex justify-center space-x-4">
-            <Link href="/pedido">
+            <Link href="/login">
               <Button size="lg" className="bg-green-600 bg-opacity-80 backdrop-blur-sm text-white border border-green-400 border-opacity-30 hover:bg-green-500 px-8 py-4 text-lg font-medium">
-                Solicitar Biochar Blend
+                Acceder al Portal
               </Button>
             </Link>
-            <Link href="/mis-pedidos">
+            <Link href="/registro">
               <Button size="lg" variant="outline" className="bg-white bg-opacity-10 backdrop-blur-sm text-white border border-white border-opacity-30 hover:bg-white hover:bg-opacity-20 px-8 py-4 text-lg font-medium">
-                Ver mis pedidos
+                Registrarse
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Sección de Presentaciones */}
+        {/* Sección de Productos */}
         <div className="mb-24">
-          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl p-8 mb-12">
-            <h2 className="text-4xl font-light text-white text-center mb-12">Presentaciones Disponibles</h2>
+          <div className="bg-black bg-opacity-40 backdrop-blur-sm rounded-2xl p-8 mb-12">
+            <h2 className="text-4xl font-light text-white text-center mb-12">Nuestros Productos</h2>
             
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card className="bg-white bg-opacity-16 backdrop-blur-sm border-green-400 border-opacity-30">
-                <CardHeader>
-                  <CardTitle className="text-white text-2xl">BigBag</CardTitle>
-                  <CardDescription className="text-gray-200">1000kg (1 tonelada)</CardDescription>
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card className="bg-black bg-opacity-50 backdrop-blur-sm border-green-400 border-opacity-50 hover:bg-opacity-60 transition-all duration-300">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-white text-2xl mb-2">Biochar</CardTitle>
+                  <CardDescription className="text-green-300 text-lg">Carbón biológico puro</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ul className="text-white space-y-2 mb-4">
-                    <li>• Ideal para proyectos grandes</li>
-                    <li>• Excelente relación precio-volumen</li>
-                    <li>• Óptimo para distribución uniforme</li>
+                <CardContent className="pt-2">
+                  <ul className="text-gray-200 space-y-3 mb-6">
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Alta porosidad y superficie específica
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Secuestro permanente de carbono
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Mejora retención de agua y nutrientes
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Estabilidad a largo plazo en el suelo
+                    </li>
                   </ul>
-                  <p className="text-green-300 font-medium">Perfecto para extensiones medianas y grandes</p>
+                  <p className="text-green-300 font-semibold text-center">Base fundamental para suelos regenerativos</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white bg-opacity-16 backdrop-blur-sm border-green-400 border-opacity-30">
-                <CardHeader>
-                  <CardTitle className="text-white text-2xl">Bulto</CardTitle>
-                  <CardDescription className="text-gray-200">50kg</CardDescription>
+              <Card className="bg-black bg-opacity-50 backdrop-blur-sm border-green-400 border-opacity-50 hover:bg-opacity-60 transition-all duration-300">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-white text-2xl mb-2">Biochar Blend</CardTitle>
+                  <CardDescription className="text-green-300 text-lg">Mezcla especializada</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ul className="text-white space-y-2 mb-4">
-                    <li>• Fácil manejo y aplicación</li>
-                    <li>• Ideal para jardines y cultivos pequeños</li>
-                    <li>• Almacenamiento conveniente</li>
+                <CardContent className="pt-2">
+                  <ul className="text-gray-200 space-y-3 mb-6">
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Biochar + nutrientes orgánicos
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Fórmula balanceada para cultivos
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Liberación gradual de nutrientes
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Mejora inmediata del suelo
+                    </li>
                   </ul>
-                  <p className="text-green-300 font-medium">Ideal para huertos familiares y proyectos menores</p>
+                  <p className="text-green-300 font-semibold text-center">Solución completa lista para usar</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black bg-opacity-50 backdrop-blur-sm border-green-400 border-opacity-50 hover:bg-opacity-60 transition-all duration-300">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-white text-2xl mb-2">Microorganismos</CardTitle>
+                  <CardDescription className="text-green-300 text-lg">Biología del suelo</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <ul className="text-gray-200 space-y-3 mb-6">
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Hongos y bacterias especializados
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Bacterias promotoras de crecimiento
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Mejora absorción de nutrientes
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-400 mr-2">•</span>
+                      Fortalece sistema inmune plantas
+                    </li>
+                  </ul>
+                  <p className="text-green-300 font-semibold text-center">Vida microbiana para suelos sanos</p>
                 </CardContent>
               </Card>
             </div>
@@ -141,36 +195,22 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Información de la empresa */}
-        <div className="mb-24">
-          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl p-8">
-            <h2 className="text-4xl font-light text-white text-center mb-8">Sobre Sirius</h2>
-            <div className="max-w-3xl mx-auto text-center">
-              <p className="text-lg text-gray-200 mb-6">
-                Somos una empresa especializada en soluciones regenerativas para la agricultura sostenible. 
-                Nuestro Biochar Blend representa la vanguardia en tecnología de carbono biológico.
-              </p>
-              <p className="text-lg text-gray-200">
-                Con más de años de experiencia en investigación y desarrollo, ofrecemos productos 
-                que no solo mejoran la productividad agrícola, sino que también contribuyen 
-                positivamente al medio ambiente.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Call to Action Final */}
         <div className="text-center">
-          <div className="bg-green-600 bg-opacity-20 backdrop-blur-sm rounded-2xl p-8">
-            <h2 className="text-3xl font-light text-white mb-6">¿Listo para transformar tu suelo?</h2>
-            <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-              Únete a la revolución regenerativa y experimenta los beneficios del Biochar Blend en tus cultivos.
+          <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl p-8">
+            <h2 className="text-4xl font-light text-white mb-6">¿Listo para la Agricultura del Futuro?</h2>
+            <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
+              Únete a la revolución regenerativa con Biochar, Biochar Blend y Microorganismos. 
+              Transforma tu suelo, aumenta tu productividad y ayuda al planeta.
             </p>
-            <Link href="/pedido">
-              <Button size="lg" className="bg-green-600 hover:bg-green-500 text-white px-12 py-4 text-lg font-medium">
-                Hacer Pedido Ahora
+            <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white px-8 py-4">
+                Acceder al Portal
               </Button>
-            </Link>
+              <Button size="lg" variant="outline" className="border-green-400 text-green-400 hover:bg-green-400 hover:text-black px-8 py-4">
+                Registrarse Ahora
+              </Button>
+            </div>
           </div>
         </div>
       </div>
