@@ -1,417 +1,151 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/ui/Loading';
-import { User, Search, Package, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { 
+  ArrowLeft, 
+  Package, 
+  Calendar, 
+  MapPin, 
+  Clock,
+  CheckCircle,
+  Truck,
+  FileText
+} from 'lucide-react';
 
 export default function MisPedidosPage() {
-  const [cedula, setCedula] = useState('');
-  const [pedidos, setPedidos] = useState<any[]>([]);
-  const [clienteInfo, setClienteInfo] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
+  const { user } = useAuth();
+  const [pedidos, setPedidos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const validateCedula = (cedula: string): boolean => {
-    if (!/^\d+$/.test(cedula)) {
-      return false;
-    }
-    if (cedula.length < 6 || cedula.length > 10) {
-      return false;
-    }
-    return true;
-  };
-
-  const buscarPedidos = async () => {
-    if (!cedula.trim()) {
-      setError('Por favor ingresa tu número de cédula');
-      return;
-    }
-
-    if (!validateCedula(cedula)) {
-      setError('Ingresa una cédula válida (6-10 dígitos)');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch('/api/mis-pedidos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cedula }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al buscar pedidos');
-      }
-
-      const data = await response.json();
-      setPedidos(data.pedidos || []);
-      setClienteInfo(data.cliente || null);
-      setHasSearched(true);
-    } catch (error) {
-      setError('Error al buscar pedidos. Intenta de nuevo.');
-      console.error('Error:', error);
-    } finally {
+  useEffect(() => {
+    setTimeout(() => {
+      setPedidos([]);
       setIsLoading(false);
-    }
-  };
+    }, 1000);
+  }, []);
 
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('es-CO');
-    } catch {
-      return dateString;
-    }
-  };
+  if (isLoading) {
+    return (
+      <ProtectedRoute>
+        <div 
+          className="min-h-screen py-12 relative"
+          style={{
+            backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752096905/DSC_4163_spt7fv.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center pt-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto"></div>
+              <p className="mt-4 text-white">Cargando tus pedidos...</p>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
-    <div 
-      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-      style={{
-        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167867/DSC_3797_1_wcrfu9.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
-      {/* Video Background */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0"
-        onLoadStart={() => console.log('Video loading started')}
-        onCanPlay={() => console.log('Video can play')}
-        onError={(e) => {
-          console.log('Video error, using fallback background image');
-          e.currentTarget.style.display = 'none';
+    <ProtectedRoute>
+      <div 
+        className="min-h-screen py-12 relative"
+        style={{
+          backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752096905/DSC_4163_spt7fv.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
         }}
       >
-        <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_mp4,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/mp4" />
-        <source src="https://res.cloudinary.com/dvnuttrox/video/upload/f_webm,q_auto:good,w_1920/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/webm" />
-        <source src="https://res.cloudinary.com/dvnuttrox/video/upload/v1752585561/Corte_pedidos_biochar_f4fhed.mov" type="video/quicktime" />
-        Su navegador no soporta video HTML5.
-      </video>
-      
-      {/* Overlay para mejorar legibilidad */}
-      <div className="absolute inset-0 bg-black bg-opacity-40 z-10"></div>
-      
-      <div className="max-w-4xl mx-auto relative z-20">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <br /><br /><br /><br />
-          <h1 className="text-4xl font-bold text-white drop-shadow-lg mb-2">
-            Mis Pedidos de Biochar Blend
-          </h1>
-          <p className="text-white drop-shadow-md">
-            Consulta el estado y detalles de tus pedidos
-          </p>
-        </div>
-
-        {/* Formulario de búsqueda */}
-        <Card className="shadow-2xl bg-white bg-opacity-95 backdrop-blur-sm border-0 mb-8">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center text-green-800">Buscar mis pedidos</CardTitle>
-            <CardDescription className="text-center">
-              Ingresa tu número de cédula para ver tus pedidos
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <div className="flex space-x-4">
-              <div className="flex-1">
-                <Input
-                  label="Número de Cédula"
-                  name="cedula"
-                  type="text"
-                  value={cedula}
-                  onChange={(e) => setCedula(e.target.value)}
-                  error={error}
-                  icon={<User className="h-4 w-4" />}
-                  placeholder="Ej: 12345678"
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button 
-                  onClick={buscarPedidos}
-                  disabled={isLoading}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  {isLoading ? (
-                    <>
-                      <LoadingSpinner size="sm" className="mr-2" />
-                      Buscando...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="h-4 w-4 mr-2" />
-                      Buscar
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Resultados */}
-        {hasSearched && (
-          <Card className="shadow-2xl bg-white bg-opacity-95 backdrop-blur-sm border-0">
-            <CardHeader>
-              <CardTitle className="text-xl text-green-800">
-                {pedidos.length > 0 ? (
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span>{pedidos.length} pedido(s) encontrado(s)</span>
-                      {clienteInfo && (
-                        <span className="text-sm font-normal text-gray-600">
-                          Cliente: {clienteInfo.nombre}
-                        </span>
-                      )}
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="pt-20">
+            <div className="mb-8">
+              <Link 
+                href="/dashboard"
+                className="inline-flex items-center text-white hover:text-green-400 mb-6 transition-colors duration-200"
+              >
+                <ArrowLeft size={20} className="mr-2" />
+                Volver al Dashboard
+              </Link>
+              
+              <Card className="bg-black bg-opacity-30 backdrop-blur-md border border-white border-opacity-20">
+                <CardContent className="p-8">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-white bg-opacity-20 p-4 rounded-full backdrop-blur-sm">
+                      <Package className="text-white" size={32} />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold text-white">Mis Pedidos</h1>
+                      <p className="text-white text-opacity-90">Consulta el estado de todos tus pedidos</p>
                     </div>
                   </div>
-                ) : (
-                  'No se encontraron pedidos'
-                )}
-              </CardTitle>
-            </CardHeader>
-            
-            <CardContent>
-              {pedidos.length > 0 ? (
-                <div className="space-y-6">
-                  {pedidos.map((pedido, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg overflow-hidden bg-gradient-to-r from-white to-green-50 shadow-sm hover:shadow-md transition-shadow">
-                      {/* Header del pedido con estado */}
-                      <div className="bg-green-600 text-white px-6 py-3 flex justify-between items-center">
-                        <div className="flex items-center">
-                          <Package className="h-5 w-5 mr-2" />
-                          <span className="font-bold text-lg">
-                            Pedido #{index + 1} - {pedido.fields['Peso Vendido (kg)']} kg
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            pedido.fields['Estado Pedido'] === 'En proceso' 
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : pedido.fields['Estado Pedido'] === 'Completado'
-                              ? 'bg-green-100 text-green-800'
-                              : pedido.fields['Estado Pedido'] === 'Cancelado'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {pedido.fields['Estado Pedido'] || 'Pendiente'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="p-6">
-                        <div className="grid md:grid-cols-3 gap-6">
-                          {/* Información del Producto */}
-                          <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                              Detalles del Producto
-                            </h4>
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-gray-700">Tipo de Envase:</span>
-                                <span className="text-gray-900 font-medium">{pedido.fields['Tipo Envase']}</span>
-                              </div>
-                              
-                              {pedido.fields['Cantidad BigBag'] > 0 && (
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="font-medium text-gray-700">BigBags:</span>
-                                  <span className="text-green-700 font-bold">{pedido.fields['Cantidad BigBag']}</span>
-                                </div>
-                              )}
-                              
-                              {pedido.fields['Cantidad Lonas'] > 0 && (
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="font-medium text-gray-700">Lonas:</span>
-                                  <span className="text-green-700 font-bold">{pedido.fields['Cantidad Lonas']}</span>
-                                </div>
-                              )}
-                              
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-gray-700">Peso Total:</span>
-                                <span className="text-gray-900 font-bold">{pedido.fields['Peso Vendido (kg)']} kg</span>
-                              </div>
-                            </div>
-                          </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                          {/* Información de Entrega */}
-                          <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                              Información de Entrega
-                            </h4>
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center text-sm">
-                                <Calendar className="h-4 w-4 text-gray-600 mr-2" />
-                                <span className="font-medium text-gray-700">Fecha:</span>
-                                <span className="text-gray-900 ml-2">
-                                  {formatDate(pedido.fields['Fecha Venta'] || pedido.createdTime)}
-                                </span>
-                              </div>
-                              
-                              {pedido.fields['Destino'] && (
-                                <div className="text-sm">
-                                  <span className="font-medium text-gray-700">Destino:</span>
-                                  <p className="text-gray-900 mt-1 break-words">{pedido.fields['Destino']}</p>
-                                </div>
-                              )}
-                              
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-gray-700">Operador:</span>
-                                <span className="text-gray-900">{pedido.fields['Operador Responsable']}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Información de Precio */}
-                          <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                              Información Financiera
-                            </h4>
-                            
-                            {pedido.fields['Precio Total'] && (
-                              <div className="bg-green-100 border border-green-200 rounded-lg p-4">
-                                <div className="text-center">
-                                  <div className="text-sm text-green-700 font-medium">Total del Pedido</div>
-                                  <div className="text-2xl font-bold text-green-800">
-                                    ${pedido.fields['Precio Total'].toLocaleString('es-CO')} COP
-                                  </div>
-                                  <div className="text-xs text-green-600 mt-1">
-                                    ${Math.round(pedido.fields['Precio Total'] / pedido.fields['Peso Vendido (kg)']).toLocaleString('es-CO')} COP/kg
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Resumen Total */}
-                  {pedidos.length > 1 && (
-                    <div className="space-y-4">
-                      {/* Resumen completo */}
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <h3 className="font-bold text-gray-800 mb-3">Resumen General de Pedidos</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                          <div>
-                            <div className="text-2xl font-bold text-gray-700">
-                              {pedidos.reduce((sum, p) => sum + (p.fields['Peso Vendido (kg)'] || 0), 0)} kg
-                            </div>
-                            <div className="text-sm text-gray-600">Total Kilogramos</div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-gray-700">
-                              {pedidos.reduce((sum, p) => sum + (p.fields['Cantidad BigBag'] || 0), 0)}
-                            </div>
-                            <div className="text-sm text-gray-600">Total BigBags</div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-gray-700">
-                              {pedidos.reduce((sum, p) => sum + (p.fields['Cantidad Lonas'] || 0), 0)}
-                            </div>
-                            <div className="text-sm text-gray-600">Total Lonas</div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-gray-700">
-                              ${pedidos.reduce((sum, p) => sum + (p.fields['Precio Total'] || 0), 0).toLocaleString('es-CO')}
-                            </div>
-                            <div className="text-sm text-gray-600">Total General</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Resumen solo pedidos en proceso */}
-                      {(() => {
-                        const pedidosEnProceso = pedidos.filter(p => p.fields['Estado Pedido'] === 'En proceso');
-                        return pedidosEnProceso.length > 0 && (
-                          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-                            <h3 className="font-bold text-yellow-800 mb-3 flex items-center">
-                              <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2"></div>
-                              Pedidos En Proceso ({pedidosEnProceso.length})
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                              <div>
-                                <div className="text-2xl font-bold text-yellow-700">
-                                  {pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Peso Vendido (kg)'] || 0), 0)} kg
-                                </div>
-                                <div className="text-sm text-yellow-600">Kilogramos en Proceso</div>
-                              </div>
-                              <div>
-                                <div className="text-2xl font-bold text-yellow-700">
-                                  {pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Cantidad BigBag'] || 0), 0)}
-                                </div>
-                                <div className="text-sm text-yellow-600">BigBags en Proceso</div>
-                              </div>
-                              <div>
-                                <div className="text-2xl font-bold text-yellow-700">
-                                  {pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Cantidad Lonas'] || 0), 0)}
-                                </div>
-                                <div className="text-sm text-yellow-600">Lonas en Proceso</div>
-                              </div>
-                              <div>
-                                <div className="text-2xl font-bold text-yellow-700">
-                                  ${pedidosEnProceso.reduce((sum, p) => sum + (p.fields['Precio Total'] || 0), 0).toLocaleString('es-CO')}
-                                </div>
-                                <div className="text-sm text-yellow-600">Valor en Proceso</div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
+            <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-lg mb-8 border border-white border-opacity-20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Información del Cliente</h3>
+                    <p className="text-white text-opacity-90">{user?.nombre}</p>
+                    <p className="text-sm text-white text-opacity-70">Documento: {user?.documento}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-400">{pedidos.length}</p>
+                    <p className="text-sm text-white text-opacity-70">Total de pedidos</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4 text-lg">
-                    {clienteInfo ? `No se encontraron pedidos para ${clienteInfo.nombre}` : 'No se encontraron pedidos para esta cédula'}
-                  </p>
-                  <Link href="/pedido">
-                    <Button className="bg-green-600 hover:bg-green-700">
-                      Hacer mi primer pedido
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
 
-        {/* Enlaces de navegación */}
-        <div className="mt-8 text-center">
-          <div className="space-x-4">
-            <Link href="/">
-              <Button variant="outline" className="bg-white bg-opacity-10 backdrop-blur-sm text-white border border-white border-opacity-30 hover:bg-white hover:bg-opacity-20">
-                Volver al inicio
-              </Button>
-            </Link>
-            <Link href="/pedido">
-              <Button className="bg-green-600 bg-opacity-80 backdrop-blur-sm hover:bg-green-500">
-                Hacer nuevo pedido
-              </Button>
-            </Link>
+            <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-lg border border-white border-opacity-20">
+              <CardContent className="p-12 text-center">
+                <Package className="text-white text-opacity-60 mb-4 mx-auto" size={48} />
+                <h3 className="text-xl font-semibold text-white mb-2">No tienes pedidos</h3>
+                <p className="text-white text-opacity-80 mb-6">
+                  Aún no has realizado ningún pedido. ¡Comienza ahora!
+                </p>
+                <Link href="/dashboard">
+                  <Button className="bg-green-600 hover:bg-green-700 text-white">
+                    Hacer un Pedido
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <div className="mt-12 text-center">
+              <Card className="bg-black bg-opacity-30 backdrop-blur-md border border-white border-opacity-20">
+                <CardContent className="p-8">
+                  <h3 className="text-xl font-semibold text-white mb-4">
+                    ¿Necesitas hacer otro pedido?
+                  </h3>
+                  <div className="space-x-4">
+                    <Link href="/pedido?tipo=biologicos">
+                      <Button className="bg-green-600 hover:bg-green-700 text-white">
+                        Pedido de Biológicos
+                      </Button>
+                    </Link>
+                    <Link href="/pedido?tipo=biochar">
+                      <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                        Pedido de Biochar
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

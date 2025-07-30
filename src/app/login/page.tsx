@@ -1,20 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, user } = useAuth();
   const [formData, setFormData] = useState({
     usuario: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Redirigir si el usuario ya está logueado
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,10 +61,10 @@ export default function LoginPage() {
 
       const result = await response.json();
 
-      if (response.ok) {
-        // Login exitoso - guardar datos del usuario y redirigir
+      if (response.ok && result.user) {
+        // Login exitoso - usar el contexto de autenticación
         console.log('Login exitoso:', result.user);
-        localStorage.setItem('user', JSON.stringify(result.user));
+        login(result.user);
         router.push('/dashboard');
       } else {
         // Mostrar error específico del servidor

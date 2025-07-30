@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +18,7 @@ import {
   FileText
 } from 'lucide-react';
 
-function PedidoContent() {
+export default function PedidoPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -345,29 +345,5 @@ function PedidoContent() {
         </div>
       </div>
     </ProtectedRoute>
-  );
-}
-
-export default function PedidoPage() {
-  return (
-    <Suspense fallback={
-      <div 
-        className="min-h-screen py-12 relative flex items-center justify-center"
-        style={{
-          backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752096905/DSC_4163_spt7fv.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="relative z-10 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto"></div>
-          <p className="mt-4 text-white">Cargando...</p>
-        </div>
-      </div>
-    }>
-      <PedidoContent />
-    </Suspense>
   );
 }

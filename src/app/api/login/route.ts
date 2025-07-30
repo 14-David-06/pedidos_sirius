@@ -13,6 +13,41 @@ const SALT_FIELD_ID = process.env.SALT_FIELD_ID;
 const NOMBRE_RAZON_SOCIAL_FIELD_ID = process.env.NOMBRE_RAZON_SOCIAL_FIELD_ID;
 const DOCUMENTO_FIELD_ID = process.env.DOCUMENTO_FIELD_ID;
 
+// Modo desarrollo local
+const isDevelopment = process.env.NODE_ENV === 'development';
+const useLocalAuth = isDevelopment && (!AIRTABLE_API_KEY || AIRTABLE_API_KEY.includes('your_'));
+
+// Usuarios de prueba para desarrollo local
+const localUsers = [
+  {
+    id: 'dev-001',
+    usuario: 'admin',
+    password: 'admin123',
+    nombre: 'Administrador Sistema',
+    documento: '12345678',
+    hash: '7c9e6679f0a36b5b3eb8f26e82d27e5c3c9e6679f0a36b5b3eb8f26e82d27e5c',
+    salt: 'dev_salt_123'
+  },
+  {
+    id: 'dev-002', 
+    usuario: 'david',
+    password: 'david123',
+    nombre: 'David Desarrollador',
+    documento: '87654321',
+    hash: '4f8a2b7e1d9c3e5f7a9b2d4e6f8a0c2e4f8a2b7e1d9c3e5f7a9b2d4e6f8a0c2e',
+    salt: 'dev_salt_456'
+  },
+  {
+    id: 'dev-003',
+    usuario: 'sirius',
+    password: 'sirius2025',
+    nombre: 'Sirius Regenerative Solutions',
+    documento: '900123456',
+    hash: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
+    salt: 'dev_salt_789'
+  }
+];
+
 // Función para verificar contraseña
 function verifyPassword(password: string, hash: string, salt: string): boolean {
   try {
@@ -22,6 +57,11 @@ function verifyPassword(password: string, hash: string, salt: string): boolean {
     console.error('Error verificando contraseña:', error);
     return false;
   }
+}
+
+// Función para verificar contraseña en modo desarrollo
+function verifyLocalPassword(password: string, storedPassword: string): boolean {
+  return password === storedPassword;
 }
 
 export async function POST(request: NextRequest) {
@@ -37,6 +77,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuario y contraseña son requeridos' }, { status: 400 });
     }
 
+    // Modo desarrollo local - usar usuarios de prueba
+    if (useLocalAuth) {
+      console.log('🧪 Modo desarrollo local activado');
+      
+      const localUser = localUsers.find(u => u.usuario === usuario);
+      
+      if (!localUser) {
+        console.log('❌ Usuario no encontrado en modo local');
+        return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+      }
+
+      // Verificar contraseña en modo desarrollo
+      const isPasswordValid = verifyLocalPassword(password, localUser.password);
+
+      if (!isPasswordValid) {
+        console.log('❌ Contraseña incorrecta en modo local');
+        return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
+      }
+
+      console.log('✅ Login exitoso en modo desarrollo local');
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Login exitoso (modo desarrollo)',
+        user: {
+          id: localUser.id,
+          usuario: localUser.usuario,
+          nombre: localUser.nombre,
+          documento: localUser.documento
+        },
+        development: true
+      });
+    }
+
+    // Modo producción - usar Airtable
     if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !USUARIOS_TABLE_ID) {
       console.log('❌ Error de configuración del servidor');
       return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
