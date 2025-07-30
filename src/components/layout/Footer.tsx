@@ -5,13 +5,6 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-white rounded-lg p-2">
-                <img 
-                  src="https://res.cloudinary.com/dvnuttrox/image/upload/v1752508146/logo_t6fg4d.png" 
-                  alt="Sirius Logo" 
-                  className="h-8 w-auto"
-                />
-              </div>
               <div>
                 <h3 className="text-lg font-medium">Sirius Regenerative Solutions</h3>
                 <p className="text-sm text-green-300">S.A.S ZOMAC</p>
