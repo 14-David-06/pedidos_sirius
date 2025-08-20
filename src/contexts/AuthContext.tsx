@@ -8,6 +8,9 @@ interface User {
   usuario: string;
   nombre: string;
   documento: string;
+  tipoUsuario?: 'raiz' | 'regular';
+  rol?: 'Admin' | 'Compras' | 'Visualizacion';
+  areaEmpresa?: string;
 }
 
 interface AuthContextType {

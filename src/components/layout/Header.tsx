@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -33,9 +33,35 @@ export default function Header() {
                 >
                   Dashboard
                 </Link>
+                
+                {/* Mostrar Configuración solo para usuarios raíz y admin */}
+                {(user.tipoUsuario === 'raiz' || user.rol === 'Admin') && (
+                  <Link 
+                    href="/configuracion"
+                    className="bg-purple-600 bg-opacity-80 backdrop-blur-sm text-white border border-purple-400 border-opacity-40 px-6 py-3 rounded-lg hover:bg-purple-500 hover:bg-opacity-90 transition-all duration-200 font-medium shadow-lg transform hover:scale-105 min-w-[120px] text-center flex items-center justify-center space-x-2"
+                  >
+                    <Settings size={16} />
+                    <span>Configuración</span>
+                  </Link>
+                )}
+                
                 <div className="flex items-center space-x-2 bg-gray-800 bg-opacity-80 backdrop-blur-sm text-white px-6 py-3 rounded-lg border border-gray-600 border-opacity-40 shadow-lg min-w-[120px] justify-center">
                   <User size={16} />
                   <span className="text-sm font-medium">{user.nombre}</span>
+                  {user.tipoUsuario === 'raiz' && (
+                    <span className="text-xs bg-yellow-500 bg-opacity-80 text-yellow-900 px-2 py-1 rounded-full font-bold ml-2">
+                      RAÍZ
+                    </span>
+                  )}
+                  {user.rol && user.tipoUsuario !== 'raiz' && (
+                    <span className={`text-xs px-2 py-1 rounded-full font-bold ml-2 ${
+                      user.rol === 'Admin' ? 'bg-red-500 bg-opacity-80 text-red-900' :
+                      user.rol === 'Compras' ? 'bg-blue-500 bg-opacity-80 text-blue-900' :
+                      user.rol === 'Visualizacion' ? 'bg-green-500 bg-opacity-80 text-green-900' : ''
+                    }`}>
+                      {user.rol.toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={handleLogout}

@@ -239,21 +239,11 @@ export default function MisPedidosPage() {
                     </div>
                     <div>
                       <h1 className="text-3xl font-bold text-white">
-                        {user?.tipoUsuario === 'raiz' ? 'Órdenes de Compra' : 
-                         user?.rol === 'Visualizacion' ? 'Seguimiento de Pedidos' :
-                         user?.rol === 'Admin' ? 'Panel de Administración' :
-                         user?.rol === 'Compras' ? 'Gestión de Pedidos' :
-                         'Mis Pedidos'}
+                        {user?.tipoUsuario === 'raiz' ? 'Órdenes de Compra' : 'Mis Pedidos'}
                       </h1>
                       <p className="text-white text-opacity-90">
                         {user?.tipoUsuario === 'raiz' 
                           ? 'Consulta todas las órdenes de compra del sistema' 
-                          : user?.rol === 'Visualizacion' 
-                          ? 'Monitorea el estado de todos los pedidos en tiempo real'
-                          : user?.rol === 'Admin'
-                          ? 'Administra y supervisa todos los pedidos del sistema'
-                          : user?.rol === 'Compras'
-                          ? 'Gestiona las órdenes de compra y seguimiento'
                           : 'Consulta el estado de todos tus pedidos'
                         }
                       </p>
@@ -269,38 +259,20 @@ export default function MisPedidosPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-white">
-                      {user?.tipoUsuario === 'raiz' ? 'Información del Administrador' : 
-                       user?.rol === 'Visualizacion' ? 'Panel de Seguimiento' :
-                       user?.rol === 'Admin' ? 'Información del Administrador' :
-                       user?.rol === 'Compras' ? 'Información de Compras' :
-                       'Información del Cliente'}
+                      {user?.tipoUsuario === 'raiz' ? 'Información del Administrador' : 'Información del Cliente'}
                     </h3>
                     <p className="text-white text-opacity-90">{user?.nombre}</p>
                     <p className="text-sm text-white text-opacity-70">Documento: {user?.documento}</p>
-                    {user?.areaEmpresa && (
-                      <p className="text-sm text-white text-opacity-70">Área: {user.areaEmpresa}</p>
-                    )}
                     {user?.tipoUsuario === 'raiz' && (
                       <div className="mt-2 inline-flex items-center space-x-2 bg-yellow-500 bg-opacity-20 backdrop-blur-sm text-yellow-200 border border-yellow-400 border-opacity-50 px-3 py-1 rounded-full">
                         <span className="text-xs font-bold">USUARIO RAÍZ</span>
-                      </div>
-                    )}
-                    {user?.rol && user?.tipoUsuario !== 'raiz' && (
-                      <div className={`mt-2 inline-flex items-center space-x-2 backdrop-blur-sm px-3 py-1 rounded-full ${
-                        user.rol === 'Admin' ? 'bg-red-500 bg-opacity-20 text-red-200 border border-red-400 border-opacity-50' :
-                        user.rol === 'Compras' ? 'bg-blue-500 bg-opacity-20 text-blue-200 border border-blue-400 border-opacity-50' :
-                        user.rol === 'Visualizacion' ? 'bg-green-500 bg-opacity-20 text-green-200 border border-green-400 border-opacity-50' : ''
-                      }`}>
-                        <span className="text-xs font-bold">ROL: {user.rol.toUpperCase()}</span>
                       </div>
                     )}
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-green-400">{pedidos.length}</p>
                     <p className="text-sm text-white text-opacity-70">
-                      {user?.tipoUsuario === 'raiz' ? 'Total de órdenes' :
-                       user?.rol === 'Visualizacion' ? 'Total en seguimiento' :
-                       'Total de pedidos'}
+                      {user?.tipoUsuario === 'raiz' ? 'Total de órdenes' : 'Total de pedidos'}
                     </p>
                   </div>
                 </div>

@@ -96,13 +96,6 @@ export default function RegistroPage() {
         [name]: value,
         tipoCultivoOtro: ''
       }));
-    } else if (name === 'tipoDocumento') {
-      // Si cambia el tipo de documento, limpiar el número de documento
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-        documento: ''
-      }));
     } else {
       setFormData(prev => ({
         ...prev,
@@ -195,8 +188,8 @@ export default function RegistroPage() {
       }
       });
 
-      // Enviar a la API
-      const response = await fetch('/api/registro', {
+      // Enviar a la API de usuarios raíz
+      const response = await fetch('/api/registro-usuario-raiz', {
         method: 'POST',
         body: submitFormData,
       });
