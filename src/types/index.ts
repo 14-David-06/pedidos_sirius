@@ -47,3 +47,13 @@ export interface SoilAnalysisOrder {
   sampleDepth?: number;
   landUse?: string;
 }
+
+// NUEVO TIPO - Interface para Microorganismo
+export interface Microorganismo {
+  id: string;
+  nombre: string;
+  abreviatura: string;
+  tipo: 'Hongo' | 'Bacteria' | 'Experimento';
+  bolsasLote: number;
+  diasIncubacion: number;
+}

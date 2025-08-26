@@ -25,17 +25,40 @@ export async function POST(request: NextRequest) {
 
     // Buscar usuario por documento usando la API de Airtable
     const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}`;
-    const filterFormula = `{${USUARIOS_NUMERO_DOCUMENTO_FIELD_ID}} = "${documento}"`;
     
-    const response = await fetch(`${url}?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1`, {
+    // Intentar primero con field ID, luego con nombre de campo como respaldo
+    let filterFormula = `{${USUARIOS_NUMERO_DOCUMENTO_FIELD_ID}} = "${documento}"`;
+    let finalUrl = `${url}?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1`;
+    
+    console.log('🔧 [API] Primera consulta con field ID:', filterFormula);
+    
+    let response = await fetch(finalUrl, {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
 
+    // Si falla con field ID, intentar con nombre de campo
+    if (!response.ok) {
+      console.log('⚠️  [API] Error con field ID, intentando con nombre de campo...');
+      filterFormula = `{Numero Documento} = "${documento}"`;
+      finalUrl = `${url}?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1`;
+      
+      console.log('🔧 [API] Segunda consulta con nombre de campo:', filterFormula);
+      
+      response = await fetch(finalUrl, {
+        headers: {
+          'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+
     if (!response.ok) {
       console.error('❌ [API] Error consultando Airtable:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('❌ [API] Error details:', errorText);
       throw new Error(`Error consultando base de datos: ${response.status}`);
     }
 

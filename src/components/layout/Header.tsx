@@ -72,12 +72,21 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              <Link 
-                href="/login"
-                className="bg-green-600 bg-opacity-80 backdrop-blur-sm text-white border border-green-400 border-opacity-40 px-6 py-3 rounded-lg hover:bg-green-500 hover:bg-opacity-90 transition-all duration-200 font-medium shadow-lg transform hover:scale-105 min-w-[120px] text-center"
-              >
-                Acceder
-              </Link>
+              <div className="relative group">
+                <button className="bg-green-600 bg-opacity-80 backdrop-blur-sm text-white border border-green-400 border-opacity-40 px-6 py-3 rounded-lg hover:bg-green-500 hover:bg-opacity-90 transition-all duration-200 font-medium shadow-lg transform hover:scale-105 min-w-[120px] text-center flex items-center justify-center" type="button">
+                  Opciones <span className="ml-2">▼</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-2xl z-50 border border-green-200 bg-gradient-to-br from-white via-green-50 to-green-100 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200">
+                  <Link href="/login" className="block px-6 py-4 text-green-900 font-semibold hover:bg-green-200 hover:text-green-800 rounded-t-xl transition-colors duration-150 flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                    Soy cliente
+                  </Link>
+                  <Link href="/cotizacion" className="block px-6 py-4 text-blue-900 font-semibold hover:bg-blue-200 hover:text-blue-800 rounded-b-xl transition-colors duration-150 flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                    No soy cliente
+                  </Link>
+                </div>
+              </div>
             )}
           </nav>
         </div>

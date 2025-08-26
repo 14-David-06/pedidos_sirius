@@ -12,7 +12,7 @@ const USUARIOS_AREA_EMPRESA_FIELD_ID = process.env.USUARIOS_AREA_EMPRESA_FIELD_I
 const USUARIOS_ROL_USUARIO_FIELD_ID = process.env.USUARIOS_ROL_USUARIO_FIELD_ID;
 
 // Field ID para trazabilidad - quién modificó por última vez
-const USUARIOS_ULTIMA_ACTUALIZACION_POR_FIELD_ID = 'fldBtligfch6Y1u6j';
+const USUARIOS_ULTIMA_ACTUALIZACION_POR_FIELD_ID = process.env.USUARIOS_ULTIMA_ACTUALIZACION_POR_FIELD_ID;
 
 // Función para verificar contraseña usando hash y salt
 function verifyPassword(password: string, hash: string, salt: string): boolean {
@@ -27,6 +27,17 @@ function verifyPassword(password: string, hash: string, salt: string): boolean {
 
 export async function PUT(request: NextRequest) {
   console.log('✏️ Iniciando edición de usuario regular...');
+  
+  // Validar que todas las variables de entorno requeridas estén configuradas
+  if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !USUARIOS_TABLE_ID ||
+      !USUARIOS_NOMBRE_COMPLETO_FIELD_ID || !USUARIOS_NUMERO_DOCUMENTO_FIELD_ID ||
+      !USUARIOS_AREA_EMPRESA_FIELD_ID || !USUARIOS_ROL_USUARIO_FIELD_ID ||
+      !USUARIOS_ULTIMA_ACTUALIZACION_POR_FIELD_ID) {
+    console.error('❌ Error de configuración: faltan variables de entorno requeridas');
+    return NextResponse.json({ 
+      error: 'Error de configuración del servidor' 
+    }, { status: 500 });
+  }
   
   try {
     const userRootId = request.headers.get('X-User-Root-Id');

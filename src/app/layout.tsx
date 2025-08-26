@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: 'Sirius Regenerative Solutions - Regeneración de Suelos',
   description: 'Empresa especializada en regeneración de suelos y soluciones ambientales sostenibles. ZOMAC Colombia.',
   keywords: ['regeneración de suelos', 'agricultura sostenible', 'análisis de suelos', 'Sirius', 'ZOMAC', 'Colombia'],
+  icons: [
+    { rel: 'icon', url: '/favicon.ico' },
+    { rel: 'shortcut icon', url: '/favicon.ico' }
+  ],
 };
 
 export default function RootLayout({

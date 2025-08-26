@@ -58,12 +58,17 @@ export default function HomePage() {
           <div className="flex justify-center space-x-4">
             <Link href="/login">
               <Button size="lg" className="bg-green-600 bg-opacity-80 backdrop-blur-sm text-white border border-green-400 border-opacity-30 hover:bg-green-500 px-8 py-4 text-lg font-medium">
-                Acceder al Portal
+                Soy cliente
+              </Button>
+            </Link>
+            <Link href="/cotizacion">
+              <Button size="lg" variant="outline" className="bg-white bg-opacity-10 backdrop-blur-sm text-white border border-white border-opacity-30 hover:bg-white hover:bg-opacity-20 px-8 py-4 text-lg font-medium">
+                No soy cliente
               </Button>
             </Link>
             <Link href="/registro">
               <Button size="lg" variant="outline" className="bg-white bg-opacity-10 backdrop-blur-sm text-white border border-white border-opacity-30 hover:bg-white hover:bg-opacity-20 px-8 py-4 text-lg font-medium">
-                Registrarse
+                Registrar nuevo cliente
               </Button>
             </Link>
           </div>
