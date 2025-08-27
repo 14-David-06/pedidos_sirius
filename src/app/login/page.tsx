@@ -77,7 +77,11 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    console.log('🔍 [LOGIN] Verificando si es primer login para documento:', formData.usuario.trim());
+    console.log('🔍 [FRONTEND] Verificando si es primer login para documento:', formData.usuario.trim());
+    console.log('📝 [FRONTEND] Enviando datos:', {
+      documento: formData.usuario.trim(),
+      endpoint: '/api/check-first-login'
+    });
 
     try {
       const response = await fetch('/api/check-first-login', {
@@ -90,13 +94,22 @@ export default function LoginPage() {
         })
       });
 
+      console.log('📡 [FRONTEND] Respuesta HTTP check-first-login:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        url: response.url
+      });
+
       const result = await response.json();
+      console.log('📋 [FRONTEND] Respuesta completa del servidor:', result);
 
       if (response.ok) {
-        console.log('✅ [LOGIN] Resultado verificación:', {
+        console.log('✅ [FRONTEND] Resultado verificación exitoso:', {
           isFirstLogin: result.isFirstLogin,
           userFound: !!result.userData,
-          userName: result.userData?.nombre
+          userName: result.userData?.nombre,
+          userData: result.userData
         });
 
         // Guardar el nombre del usuario encontrado
@@ -109,19 +122,30 @@ export default function LoginPage() {
           setIsFirstLogin(true);
           setShowPasswordSetup(true);
           setHasCheckedFirstLogin(true);
-          console.log('🆕 [LOGIN] Primer login detectado - solicitando creación de contraseña');
+          console.log('🆕 [FRONTEND] Primer login detectado - solicitando creación de contraseña');
         } else {
           // Usuario ya tiene contraseña - mostrar campo de contraseña normal
           setIsFirstLogin(false);
           setShowPasswordSetup(false);
           setHasCheckedFirstLogin(true);
-          console.log('🔐 [LOGIN] Usuario existente - solicitando contraseña actual');
+          console.log('🔐 [FRONTEND] Usuario existente - solicitando contraseña actual');
         }
       } else {
+        console.log('❌ [FRONTEND] Error en verificación:', {
+          responseOk: response.ok,
+          status: response.status,
+          errorMessage: result.error,
+          fullResult: result
+        });
         setError(result.error || 'Usuario no encontrado');
       }
     } catch (err) {
-      console.error('Error verificando primer login:', err);
+      console.error('💥 [FRONTEND] Error de conexión en check-first-login:', err);
+      console.error('💥 [FRONTEND] Detalles del error:', {
+        name: err instanceof Error ? err.name : 'Unknown',
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : 'No stack trace'
+      });
       setError('Error de conexión. Por favor intenta nuevamente.');
     } finally {
       setIsLoading(false);
@@ -275,18 +299,20 @@ export default function LoginPage() {
       console.log('📥 [FRONTEND] Respuesta recibida:', {
         status: response.status,
         statusText: response.statusText,
-        ok: response.ok
+        ok: response.ok,
+        url: response.url
       });
 
       const result = await response.json();
-      
+
       console.log('📋 [FRONTEND] Datos de respuesta:', {
         success: result.success,
         hasUser: !!result.user,
         error: result.error,
         development: result.development,
         userId: result.user?.id,
-        tipoUsuario: result.user?.tipoUsuario
+        tipoUsuario: result.user?.tipoUsuario,
+        fullResult: result
       });
 
       if (response.ok && result.user) {

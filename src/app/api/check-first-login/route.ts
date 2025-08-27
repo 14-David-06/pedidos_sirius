@@ -22,6 +22,13 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔍 [API] Verificando primer login para documento:', documento);
+    console.log('🔧 [API] Variables de entorno:', {
+      AIRTABLE_API_KEY: !!process.env.AIRTABLE_API_KEY,
+      AIRTABLE_BASE_ID: !!process.env.AIRTABLE_BASE_ID,
+      USUARIOS_TABLE_ID: !!process.env.USUARIOS_TABLE_ID,
+      USUARIOS_HASH_FIELD_ID: !!process.env.USUARIOS_HASH_FIELD_ID,
+      USUARIOS_NUMERO_DOCUMENTO_FIELD_ID: !!process.env.USUARIOS_NUMERO_DOCUMENTO_FIELD_ID
+    });
 
     // Buscar usuario por documento usando la API de Airtable
     const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}`;
@@ -31,6 +38,7 @@ export async function POST(request: NextRequest) {
     let finalUrl = `${url}?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1`;
     
     console.log('🔧 [API] Primera consulta con field ID:', filterFormula);
+    console.log('🔗 [API] URL completa:', finalUrl);
     
     let response = await fetch(finalUrl, {
       headers: {
@@ -59,10 +67,16 @@ export async function POST(request: NextRequest) {
       console.error('❌ [API] Error consultando Airtable:', response.status, response.statusText);
       const errorText = await response.text();
       console.error('❌ [API] Error details:', errorText);
+      console.error('🔍 [API] URL que falló:', finalUrl);
       throw new Error(`Error consultando base de datos: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('📋 [API] Respuesta de Airtable:', {
+      totalRecords: data.records?.length || 0,
+      hasRecords: !!data.records,
+      recordIds: data.records?.map((r: any) => r.id) || []
+    });
 
     if (!data.records || data.records.length === 0) {
       console.log('❌ [API] Usuario no encontrado:', documento);
@@ -73,6 +87,11 @@ export async function POST(request: NextRequest) {
     }
 
     const user = data.records[0];
+    console.log('✅ [API] Usuario encontrado:', {
+      id: user.id,
+      allFields: Object.keys(user.fields),
+      documentoField: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID] || user.fields['Numero Documento']
+    });
     // Intentar obtener el hash usando field ID primero, luego el nombre del campo
     const password = user.fields[USUARIOS_HASH_FIELD_ID] || user.fields['Hash'];
     const isFirstLogin = !password || password === '' || password === null;

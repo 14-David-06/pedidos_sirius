@@ -205,23 +205,38 @@ export async function POST(request: NextRequest) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log(`📋 [${requestId}] Registros encontrados en Usuarios Regulares: ${data.records.length}`);
+          console.log(`📋 [${requestId}] Registros encontrados en Usuarios Regulares: ${data.records?.length || 0}`);
 
-          if (data.records.length > 0) {
+          if (data.records && data.records.length > 0) {
             userFound = data.records[0];
             tipoUsuario = 'regular';
             console.log(`✅ [${requestId}] Usuario REGULAR encontrado exitosamente`);
             console.log(`👤 [${requestId}] ID del usuario regular: ${userFound.id}`);
             console.log(`📊 [${requestId}] Campos disponibles: ${Object.keys(userFound.fields).join(', ')}`);
+            console.log(`📊 [${requestId}] Datos del usuario:`, {
+              documento: userFound.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID || 'Numero Documento'],
+              nombre: userFound.fields[USUARIOS_AREA_EMPRESA_FIELD_ID || 'Nombre Completo'],
+              area: userFound.fields[USUARIOS_AREA_EMPRESA_FIELD_ID || 'Area Empresa'],
+              hasHash: !!userFound.fields[USUARIOS_HASH_FIELD_ID || 'Hash'],
+              hasSalt: !!userFound.fields[USUARIOS_SALT_FIELD_ID || 'Salt']
+            });
           } else {
             console.log(`❌ [${requestId}] Usuario "${usuario}" NO encontrado en Usuarios Regulares`);
+            console.log(`🔍 [${requestId}] Tabla consultada: ${USUARIOS_TABLE_ID}`);
+            console.log(`🔍 [${requestId}] Field ID usado: ${USUARIOS_NUMERO_DOCUMENTO_FIELD_ID}`);
           }
         } else {
           const errorText = await response.text();
           console.log(`⚠️ [${requestId}] Error HTTP en búsqueda Usuarios Regulares: ${response.status} - ${errorText}`);
+          console.log(`🔍 [${requestId}] URL consultada: ${airtableUrl}?${searchParams}`);
         }
       } catch (error) {
         console.log(`💥 [${requestId}] Error de conexión al buscar en Usuarios Regulares:`, error);
+        console.log(`🔍 [${requestId}] Detalles de conexión:`, {
+          url: airtableUrl,
+          params: searchParams.toString(),
+          hasApiKey: !!AIRTABLE_API_KEY
+        });
       }
     }
 
