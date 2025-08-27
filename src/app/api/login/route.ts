@@ -27,255 +27,357 @@ const USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID = process.env.USUARIOS_RAIZ_NUMERO
 // Función para verificar contraseña
 function verifyPassword(password: string, hash: string, salt: string): boolean {
   try {
+    console.log(`🔐 [VERIFY] Iniciando verificación de contraseña`);
+    console.log(`🔐 [VERIFY] Parámetros:`);
+    console.log(`   - Longitud contraseña: ${password.length} caracteres`);
+    console.log(`   - Longitud hash: ${hash.length} caracteres`);
+    console.log(`   - Longitud salt: ${salt.length} caracteres`);
+
     const derivedHash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-    return derivedHash === hash;
+
+    console.log(`🔐 [VERIFY] Hash derivado generado`);
+    console.log(`   - Algoritmo: PBKDF2-SHA512`);
+    console.log(`   - Iteraciones: 10000`);
+    console.log(`   - Longitud salida: 64 bytes (${derivedHash.length} caracteres hex)`);
+
+    const isValid = derivedHash === hash;
+
+    console.log(`🔐 [VERIFY] Comparación de hashes:`);
+    console.log(`   - Hash esperado: ${hash.substring(0, 20)}...`);
+    console.log(`   - Hash calculado: ${derivedHash.substring(0, 20)}...`);
+    console.log(`   - Coinciden: ${isValid ? '✅ SÍ' : '❌ NO'}`);
+
+    return isValid;
   } catch (error) {
-    console.error('Error verificando contraseña:', error);
+    console.error(`💥 [VERIFY] Error crítico en verificación de contraseña:`, error);
     return false;
   }
 }
 
 // Función para verificar contraseña en modo desarrollo
 function verifyLocalPassword(password: string, storedPassword: string): boolean {
-  return password === storedPassword;
+  console.log(`🔐 [LOCAL_VERIFY] Verificación de contraseña en modo local`);
+  console.log(`🔐 [LOCAL_VERIFY] Comparando:`);
+  console.log(`   - Contraseña proporcionada: "${password}"`);
+  console.log(`   - Contraseña almacenada: "${storedPassword}"`);
+
+  const isValid = password === storedPassword;
+
+  console.log(`🔐 [LOCAL_VERIFY] Resultado: ${isValid ? '✅ Contraseñas coinciden' : '❌ Contraseñas diferentes'}`);
+
+  return isValid;
 }
 
 export async function POST(request: NextRequest) {
-  console.log('🔐 Iniciando proceso de login...');
-  
+  const requestId = Date.now().toString();
+  console.log(`🔐 [${requestId}] ===== INICIANDO PROCESO DE LOGIN =====`);
+
   try {
     const { usuario, password, tipoUsuarioPreferido } = await request.json();
-    
-    console.log('📝 Datos recibidos:', { 
-      usuario: usuario || 'undefined', 
+
+    console.log(`📝 [${requestId}] Datos recibidos:`, {
+      usuario: usuario || 'undefined',
       hasPassword: !!password,
+      passwordLength: password?.length || 0,
       tipoUsuarioPreferido: tipoUsuarioPreferido || 'no especificado'
     });
 
     if (!usuario || !password) {
-      console.log('❌ Faltan datos requeridos');
+      console.log(`❌ [${requestId}] Faltan datos requeridos - usuario o password`);
       return NextResponse.json({ error: 'Usuario y contraseña son requeridos' }, { status: 400 });
     }
 
-    // Validar que todas las variables de entorno requeridas estén configuradas
-    if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !USUARIOS_TABLE_ID || !USUARIOS_RAIZ_TABLE_ID ||
-        !USUARIOS_USUARIO_FIELD_ID || !USUARIOS_HASH_FIELD_ID || !USUARIOS_SALT_FIELD_ID ||
-        !USUARIOS_NUMERO_DOCUMENTO_FIELD_ID || !USUARIOS_AREA_EMPRESA_FIELD_ID || !USUARIOS_ROL_USUARIO_FIELD_ID ||
-        !USUARIOS_RAIZ_USUARIO_FIELD_ID || !USUARIOS_RAIZ_HASH_FIELD_ID || !USUARIOS_RAIZ_SALT_FIELD_ID ||
-        !USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID || !USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID) {
-      console.error('❌ Error de configuración: faltan variables de entorno requeridas para login');
+    // ===== VALIDACIÓN DE CONFIGURACIÓN =====
+    console.log(`⚙️ [${requestId}] ===== VALIDANDO CONFIGURACIÓN =====`);
+
+    const requiredEnvVars = {
+      AIRTABLE_API_KEY: !!AIRTABLE_API_KEY,
+      AIRTABLE_BASE_ID: !!AIRTABLE_BASE_ID,
+      USUARIOS_TABLE_ID: !!USUARIOS_TABLE_ID,
+      USUARIOS_RAIZ_TABLE_ID: !!USUARIOS_RAIZ_TABLE_ID,
+      USUARIOS_USUARIO_FIELD_ID: !!USUARIOS_USUARIO_FIELD_ID,
+      USUARIOS_HASH_FIELD_ID: !!USUARIOS_HASH_FIELD_ID,
+      USUARIOS_SALT_FIELD_ID: !!USUARIOS_SALT_FIELD_ID,
+      USUARIOS_NUMERO_DOCUMENTO_FIELD_ID: !!USUARIOS_NUMERO_DOCUMENTO_FIELD_ID,
+      USUARIOS_AREA_EMPRESA_FIELD_ID: !!USUARIOS_AREA_EMPRESA_FIELD_ID,
+      USUARIOS_ROL_USUARIO_FIELD_ID: !!USUARIOS_ROL_USUARIO_FIELD_ID,
+      USUARIOS_RAIZ_USUARIO_FIELD_ID: !!USUARIOS_RAIZ_USUARIO_FIELD_ID,
+      USUARIOS_RAIZ_HASH_FIELD_ID: !!USUARIOS_RAIZ_HASH_FIELD_ID,
+      USUARIOS_RAIZ_SALT_FIELD_ID: !!USUARIOS_RAIZ_SALT_FIELD_ID,
+      USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID: !!USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID,
+      USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID: !!USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID
+    };
+
+    const missingVars = Object.entries(requiredEnvVars)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      console.error(`❌ [${requestId}] Variables de entorno faltantes:`, missingVars);
       return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
     }
 
-    // Modo producción - usar Airtable
-    if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-      console.log('❌ Error de configuración del servidor');
-      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
-    }
+    console.log(`✅ [${requestId}] Todas las variables de entorno están configuradas`);
+
+    // ===== ESTRATEGIA DE BÚSQUEDA =====
+    console.log(`🎯 [${requestId}] ===== DETERMINANDO ESTRATEGIA DE BÚSQUEDA =====`);
+
+    const tipoUsuarioFinal = tipoUsuarioPreferido || 'raiz';
+    console.log(`🎯 [${requestId}] Tipo de usuario final a buscar: ${tipoUsuarioFinal}`);
+    console.log(`🎯 [${requestId}] Usuario a buscar: "${usuario}"`);
 
     let userFound = null;
     let tipoUsuario = null;
 
-    console.log('🎯 [LOGIN] Estrategia de búsqueda basada en selección del usuario:', tipoUsuarioPreferido);
-
-    // Si no se especifica tipo o es undefined, intentar primero en usuarios raíz por defecto
-    const tipoUsuarioFinal = tipoUsuarioPreferido || 'raiz';
-    console.log('🎯 [LOGIN] Tipo de usuario final a buscar:', tipoUsuarioFinal);
-
-    // Buscar SOLO en la tabla seleccionada por el usuario
     if (tipoUsuarioFinal === 'raiz') {
-      // Buscar únicamente en Usuarios Raíz
-      console.log('🔍 [LOGIN] Buscando en tabla Usuarios Raíz...');
-      if (USUARIOS_RAIZ_TABLE_ID && USUARIOS_RAIZ_USUARIO_FIELD_ID) {
-        const airtableUrlRaiz = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_RAIZ_TABLE_ID}`;
-        
-        const searchParamsRaiz = new URLSearchParams({
-          filterByFormula: `{${USUARIOS_RAIZ_USUARIO_FIELD_ID}} = "${usuario}"`
+      // ===== BÚSQUEDA EN USUARIOS RAÍZ =====
+      console.log(`🔍 [${requestId}] ===== BUSCANDO EN USUARIOS RAÍZ =====`);
+
+      if (!USUARIOS_RAIZ_TABLE_ID || !USUARIOS_RAIZ_USUARIO_FIELD_ID) {
+        console.log(`❌ [${requestId}] Configuración incompleta para Usuarios Raíz`);
+        return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
+      }
+
+      const airtableUrlRaiz = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_RAIZ_TABLE_ID}`;
+      const searchParamsRaiz = new URLSearchParams({
+        filterByFormula: `{${USUARIOS_RAIZ_USUARIO_FIELD_ID}} = "${usuario}"`
+      });
+
+      console.log(`🔍 [${requestId}] URL de búsqueda: ${airtableUrlRaiz}?${searchParamsRaiz}`);
+      console.log(`🔍 [${requestId}] Field ID usuario: ${USUARIOS_RAIZ_USUARIO_FIELD_ID}`);
+
+      try {
+        const responseRaiz = await fetch(`${airtableUrlRaiz}?${searchParamsRaiz}`, {
+          headers: {
+            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          }
         });
 
-        console.log('🔍 [LOGIN] URL de búsqueda Usuarios Raíz:', `${airtableUrlRaiz}?${searchParamsRaiz}`);
+        console.log(`📡 [${requestId}] Respuesta HTTP Usuarios Raíz: ${responseRaiz.status} ${responseRaiz.statusText}`);
 
-        try {
-          const responseRaiz = await fetch(`${airtableUrlRaiz}?${searchParamsRaiz}`, {
-            headers: {
-              'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-              'Content-Type': 'application/json',
-            }
-          });
+        if (responseRaiz.ok) {
+          const dataRaiz = await responseRaiz.json();
+          console.log(`📋 [${requestId}] Registros encontrados en Usuarios Raíz: ${dataRaiz.records.length}`);
 
-          if (responseRaiz.ok) {
-            const dataRaiz = await responseRaiz.json();
-            console.log('📋 [LOGIN] Usuarios Raíz encontrados:', dataRaiz.records.length);
-            
-            if (dataRaiz.records.length > 0) {
-              userFound = dataRaiz.records[0];
-              tipoUsuario = 'raiz';
-              console.log('✅ [LOGIN] Usuario encontrado en tabla Usuarios Raíz');
-            } else {
-              console.log('❌ [LOGIN] Usuario no encontrado en tabla Usuarios Raíz');
-            }
+          if (dataRaiz.records.length > 0) {
+            userFound = dataRaiz.records[0];
+            tipoUsuario = 'raiz';
+            console.log(`✅ [${requestId}] Usuario RAÍZ encontrado exitosamente`);
+            console.log(`👤 [${requestId}] ID del usuario raíz: ${userFound.id}`);
+            console.log(`📊 [${requestId}] Campos disponibles: ${Object.keys(userFound.fields).join(', ')}`);
           } else {
-            console.log('⚠️ [LOGIN] Error HTTP al buscar en Usuarios Raíz:', responseRaiz.status);
+            console.log(`❌ [${requestId}] Usuario "${usuario}" NO encontrado en Usuarios Raíz`);
           }
-        } catch (error) {
-          console.log('⚠️ [LOGIN] Error al buscar en Usuarios Raíz:', error);
+        } else {
+          const errorText = await responseRaiz.text();
+          console.log(`⚠️ [${requestId}] Error HTTP en búsqueda Usuarios Raíz: ${responseRaiz.status} - ${errorText}`);
         }
-      } else {
-        console.log('❌ [LOGIN] Configuración incompleta para Usuarios Raíz');
+      } catch (error) {
+        console.log(`💥 [${requestId}] Error de conexión al buscar en Usuarios Raíz:`, error);
       }
     } else {
-      // Buscar únicamente en Usuarios regulares por DOCUMENTO (ya no tienen campo usuario)
-      console.log('🔍 [LOGIN] Buscando en tabla Usuarios regulares por número de documento...');
-      if (USUARIOS_TABLE_ID && USUARIOS_NUMERO_DOCUMENTO_FIELD_ID) {
-        const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}`;
-        
-        const searchParams = new URLSearchParams({
-          filterByFormula: `{${USUARIOS_NUMERO_DOCUMENTO_FIELD_ID}} = "${usuario}"`
+      // ===== BÚSQUEDA EN USUARIOS REGULARES =====
+      console.log(`🔍 [${requestId}] ===== BUSCANDO EN USUARIOS REGULARES =====`);
+
+      if (!USUARIOS_TABLE_ID || !USUARIOS_NUMERO_DOCUMENTO_FIELD_ID) {
+        console.log(`❌ [${requestId}] Configuración incompleta para Usuarios Regulares`);
+        return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
+      }
+
+      const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}`;
+      const searchParams = new URLSearchParams({
+        filterByFormula: `{${USUARIOS_NUMERO_DOCUMENTO_FIELD_ID}} = "${usuario}"`
+      });
+
+      console.log(`🔍 [${requestId}] URL de búsqueda: ${airtableUrl}?${searchParams}`);
+      console.log(`🔍 [${requestId}] Field ID documento: ${USUARIOS_NUMERO_DOCUMENTO_FIELD_ID}`);
+
+      try {
+        const response = await fetch(`${airtableUrl}?${searchParams}`, {
+          headers: {
+            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          }
         });
 
-        console.log('🔍 [LOGIN] URL de búsqueda Usuarios regulares:', `${airtableUrl}?${searchParams}`);
+        console.log(`📡 [${requestId}] Respuesta HTTP Usuarios Regulares: ${response.status} ${response.statusText}`);
 
-        try {
-          const response = await fetch(`${airtableUrl}?${searchParams}`, {
-            headers: {
-              'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-              'Content-Type': 'application/json',
-            }
-          });
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`📋 [${requestId}] Registros encontrados en Usuarios Regulares: ${data.records.length}`);
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log('📋 [LOGIN] Usuarios regulares encontrados:', data.records.length);
-            
-            if (data.records.length > 0) {
-              userFound = data.records[0];
-              tipoUsuario = 'regular';
-              console.log('✅ [LOGIN] Usuario encontrado en tabla Usuarios regulares');
-            } else {
-              console.log('❌ [LOGIN] Usuario no encontrado en tabla Usuarios regulares');
-            }
+          if (data.records.length > 0) {
+            userFound = data.records[0];
+            tipoUsuario = 'regular';
+            console.log(`✅ [${requestId}] Usuario REGULAR encontrado exitosamente`);
+            console.log(`👤 [${requestId}] ID del usuario regular: ${userFound.id}`);
+            console.log(`📊 [${requestId}] Campos disponibles: ${Object.keys(userFound.fields).join(', ')}`);
           } else {
-            console.log('⚠️ [LOGIN] Error HTTP al buscar en Usuarios regulares:', response.status);
+            console.log(`❌ [${requestId}] Usuario "${usuario}" NO encontrado en Usuarios Regulares`);
           }
-        } catch (error) {
-          console.log('⚠️ [LOGIN] Error al buscar en Usuarios regulares:', error);
-        }
         } else {
-        console.log('❌ [LOGIN] Configuración incompleta para Usuarios regulares');
+          const errorText = await response.text();
+          console.log(`⚠️ [${requestId}] Error HTTP en búsqueda Usuarios Regulares: ${response.status} - ${errorText}`);
+        }
+      } catch (error) {
+        console.log(`💥 [${requestId}] Error de conexión al buscar en Usuarios Regulares:`, error);
       }
     }
 
+    // ===== VALIDACIÓN DE USUARIO ENCONTRADO =====
     if (!userFound) {
       const tablaSeleccionada = tipoUsuarioPreferido === 'raiz' ? 'Usuarios Raíz' : 'Usuarios Regulares';
       const criterioBusqueda = tipoUsuarioPreferido === 'raiz' ? 'nombre de usuario' : 'número de documento';
-      console.log(`❌ [LOGIN] Usuario "${usuario}" no encontrado en la tabla ${tablaSeleccionada}`);
-      return NextResponse.json({ 
-        error: `${criterioBusqueda === 'nombre de usuario' ? 'Usuario' : 'Documento'} no encontrado en la tabla de ${tablaSeleccionada}. Verifica el ${criterioBusqueda} o selecciona el tipo correcto.` 
-      }, { status: 404 });
-    }    const userFields = userFound.fields;
-    
-    console.log('👤 [LOGIN] Usuario encontrado:', {
-      id: userFound.id,
-      tipoUsuario: tipoUsuario,
-      tipoSeleccionado: tipoUsuarioPreferido,
-      coincide: tipoUsuario === tipoUsuarioPreferido
-    });
 
-    // Obtener los field IDs correctos según el tipo de usuario
+      console.log(`❌ [${requestId}] Usuario "${usuario}" no encontrado en ${tablaSeleccionada}`);
+      console.log(`💡 [${requestId}] Sugerencia: Verificar ${criterioBusqueda} o seleccionar tipo correcto`);
+
+      return NextResponse.json({
+        error: `${criterioBusqueda === 'nombre de usuario' ? 'Usuario' : 'Documento'} no encontrado en la tabla de ${tablaSeleccionada}. Verifica el ${criterioBusqueda} o selecciona el tipo correcto.`
+      }, { status: 404 });
+    }
+
+    const userFields = userFound.fields;
+    console.log(`👤 [${requestId}] ===== PROCESANDO USUARIO ENCONTRADO =====`);
+    console.log(`👤 [${requestId}] Tipo de usuario encontrado: ${tipoUsuario}`);
+    console.log(`👤 [${requestId}] Tipo de usuario solicitado: ${tipoUsuarioPreferido}`);
+    console.log(`👤 [${requestId}] Coincide la selección: ${tipoUsuario === tipoUsuarioPreferido}`);
+
+    // ===== CONFIGURACIÓN DE CAMPOS SEGÚN TIPO =====
+    console.log(`⚙️ [${requestId}] ===== CONFIGURANDO CAMPOS SEGÚN TIPO DE USUARIO =====`);
+
     const hashFieldId = tipoUsuario === 'raiz' ? USUARIOS_RAIZ_HASH_FIELD_ID : USUARIOS_HASH_FIELD_ID;
     const saltFieldId = tipoUsuario === 'raiz' ? USUARIOS_RAIZ_SALT_FIELD_ID : USUARIOS_SALT_FIELD_ID;
     const nombreFieldId = tipoUsuario === 'raiz' ? USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID : null;
     const documentoFieldId = tipoUsuario === 'raiz' ? USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID : USUARIOS_NUMERO_DOCUMENTO_FIELD_ID;
 
-    // Primero intentar con Field IDs, luego con nombres de campo como fallback
+    console.log(`📋 [${requestId}] Field IDs configurados:`);
+    console.log(`   - Hash Field ID: ${hashFieldId}`);
+    console.log(`   - Salt Field ID: ${saltFieldId}`);
+    console.log(`   - Nombre Field ID: ${nombreFieldId || 'N/A'}`);
+    console.log(`   - Documento Field ID: ${documentoFieldId}`);
+
+    // ===== EXTRACCIÓN DE CREDENCIALES =====
+    console.log(`🔑 [${requestId}] ===== EXTRAYENDO CREDENCIALES =====`);
+
     let storedHash = userFields[hashFieldId!] || userFields['Hash'];
     let storedSalt = userFields[saltFieldId!] || userFields['Salt'];
 
-    console.log('🔑 [LOGIN] Credenciales:', {
-      hashFieldId,
-      saltFieldId,
-      hasHash: !!storedHash,
-      hasSalt: !!storedSalt,
-      hashLength: storedHash?.length || 0,
-      saltLength: storedSalt?.length || 0,
-      accessMethod: storedHash ? (userFields[hashFieldId!] ? 'fieldId' : 'fieldName') : 'none'
-    });
+    console.log(`🔑 [${requestId}] Estado de credenciales:`);
+    console.log(`   - Hash encontrado: ${!!storedHash}`);
+    console.log(`   - Salt encontrado: ${!!storedSalt}`);
+    console.log(`   - Método de acceso hash: ${storedHash ? (userFields[hashFieldId!] ? 'Field ID' : 'Nombre de campo') : 'Ninguno'}`);
+    console.log(`   - Método de acceso salt: ${storedSalt ? (userFields[saltFieldId!] ? 'Field ID' : 'Nombre de campo') : 'Ninguno'}`);
+
+    if (storedHash) {
+      console.log(`   - Longitud hash: ${storedHash.length} caracteres`);
+      console.log(`   - Hash preview: ${storedHash.substring(0, 20)}...`);
+    }
+    if (storedSalt) {
+      console.log(`   - Longitud salt: ${storedSalt.length} caracteres`);
+      console.log(`   - Salt preview: ${storedSalt.substring(0, 20)}...`);
+    }
 
     if (!storedHash || !storedSalt) {
-      console.log('❌ [LOGIN] Usuario encontrado pero sin configuración de seguridad:', {
-        hasHash: !!storedHash,
-        hasSalt: !!storedSalt,
-        hashValue: storedHash ? `${storedHash.substring(0, 10)}...` : 'null',
-        saltValue: storedSalt ? `${storedSalt.substring(0, 10)}...` : 'null'
-      });
-      return NextResponse.json({ 
-        error: `El usuario existe pero no tiene configuración de seguridad válida en la tabla de ${tipoUsuario === 'raiz' ? 'Usuarios Raíz' : 'Usuarios Regulares'}` 
+      console.log(`❌ [${requestId}] Usuario encontrado pero sin configuración de seguridad completa`);
+      console.log(`   - Hash presente: ${!!storedHash}`);
+      console.log(`   - Salt presente: ${!!storedSalt}`);
+
+      const tablaNombre = tipoUsuario === 'raiz' ? 'Usuarios Raíz' : 'Usuarios Regulares';
+      return NextResponse.json({
+        error: `El usuario existe pero no tiene configuración de seguridad válida en la tabla de ${tablaNombre}`
       }, { status: 400 });
     }
 
-    // Verificar la contraseña
-    console.log('🔑 [LOGIN] Verificando contraseña...');
+    // ===== VERIFICACIÓN DE CONTRASEÑA =====
+    console.log(`🔐 [${requestId}] ===== VERIFICANDO CONTRASEÑA =====`);
+    console.log(`� [${requestId}] Iniciando verificación de contraseña...`);
+
     const isPasswordValid = verifyPassword(password, storedHash, storedSalt);
 
-    console.log('🔑 [LOGIN] Resultado de verificación:', {
-      passwordValid: isPasswordValid,
-      passwordLength: password.length,
-      storedHashStart: storedHash.substring(0, 10) + '...',
-      storedSaltStart: storedSalt.substring(0, 10) + '...'
-    });
+    console.log(`� [${requestId}] Resultado de verificación:`);
+    console.log(`   - Contraseña válida: ${isPasswordValid}`);
+    console.log(`   - Longitud contraseña proporcionada: ${password.length} caracteres`);
+    console.log(`   - Algoritmo: PBKDF2 con SHA-512`);
+    console.log(`   - Iteraciones: 10000`);
+    console.log(`   - Longitud derivada: 64 bytes`);
 
     if (!isPasswordValid) {
-      console.log('❌ [LOGIN] Contraseña incorrecta');
+      console.log(`❌ [${requestId}] CONTRASEÑA INCORRECTA - Login fallido`);
       return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
     }
 
-    console.log('✅ Login exitoso');
-    
-    // Obtener el nombre correcto según el tipo de usuario
+    console.log(`✅ [${requestId}] CONTRASEÑA CORRECTA - Procediendo con login exitoso`);
+
+    // ===== EXTRACCIÓN DE DATOS DEL USUARIO =====
+    console.log(`👤 [${requestId}] ===== EXTRAYENDO DATOS DEL USUARIO =====`);
+
     let nombreUsuario = '';
     if (tipoUsuario === 'raiz') {
       nombreUsuario = nombreFieldId ? userFields[nombreFieldId] : 'Usuario Raíz';
+      console.log(`👤 [${requestId}] Usuario RAÍZ - Nombre: ${nombreUsuario}`);
     } else {
-      // Para usuarios regulares, usar el campo nombre completo con fallback
       const USUARIOS_NOMBRE_COMPLETO_FIELD_ID = process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID;
-      nombreUsuario = (USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? userFields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) 
-                     || userFields['Nombre Completo'] 
+      nombreUsuario = (USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? userFields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null)
+                     || userFields['Nombre Completo']
                      || 'Usuario Regular';
+      console.log(`👤 [${requestId}] Usuario REGULAR - Nombre: ${nombreUsuario}`);
+      console.log(`👤 [${requestId}] Método de obtención nombre: ${
+        USUARIOS_NOMBRE_COMPLETO_FIELD_ID && userFields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID] ? 'Field ID' :
+        userFields['Nombre Completo'] ? 'Nombre de campo' : 'Default'
+      }`);
     }
-    
+
     const userData = {
       id: userFound.id,
-      usuario: tipoUsuario === 'raiz' ? usuario : userFields[documentoFieldId!], // Para regulares usar documento como "usuario"
+      usuario: tipoUsuario === 'raiz' ? usuario : userFields[documentoFieldId!],
       nombre: nombreUsuario,
       documento: userFields[documentoFieldId!],
       tipoUsuario: tipoUsuario,
-      rol: tipoUsuario === 'regular' 
-           ? (userFields[USUARIOS_ROL_USUARIO_FIELD_ID!] || userFields['Rol Usuario']) 
+      rol: tipoUsuario === 'regular'
+           ? (userFields[USUARIOS_ROL_USUARIO_FIELD_ID!] || userFields['Rol Usuario'])
            : undefined,
-      areaEmpresa: tipoUsuario === 'regular' 
-                   ? (userFields[USUARIOS_AREA_EMPRESA_FIELD_ID!] || userFields['Area Empresa']) 
+      areaEmpresa: tipoUsuario === 'regular'
+                   ? (userFields[USUARIOS_AREA_EMPRESA_FIELD_ID!] || userFields['Area Empresa'])
                    : undefined
     };
 
-    console.log('👤 [LOGIN] Datos del usuario final:', {
-      id: userData.id,
-      nombre: userData.nombre,
-      tipoUsuario: userData.tipoUsuario,
-      rol: userData.rol,
-      areaEmpresa: userData.areaEmpresa,
-      rolFieldId: USUARIOS_ROL_USUARIO_FIELD_ID,
-      rolByFieldId: userFields[USUARIOS_ROL_USUARIO_FIELD_ID!],
-      rolByFieldName: userFields['Rol Usuario']
-    });
+    console.log(`👤 [${requestId}] Datos del usuario final compilados:`);
+    console.log(`   - ID: ${userData.id}`);
+    console.log(`   - Usuario: ${userData.usuario}`);
+    console.log(`   - Nombre: ${userData.nombre}`);
+    console.log(`   - Documento: ${userData.documento}`);
+    console.log(`   - Tipo: ${userData.tipoUsuario}`);
+    if (userData.rol) console.log(`   - Rol: ${userData.rol}`);
+    if (userData.areaEmpresa) console.log(`   - Área/Empresa: ${userData.areaEmpresa}`);
 
-    return NextResponse.json({ 
-      success: true, 
+    // ===== DEBUGGING DE CAMPOS =====
+    if (tipoUsuario === 'regular') {
+      console.log(`🐛 [${requestId}] Debug campos usuario regular:`);
+      console.log(`   - Rol Field ID: ${USUARIOS_ROL_USUARIO_FIELD_ID}`);
+      console.log(`   - Rol por Field ID: ${userFields[USUARIOS_ROL_USUARIO_FIELD_ID!] || 'No encontrado'}`);
+      console.log(`   - Rol por nombre campo: ${userFields['Rol Usuario'] || 'No encontrado'}`);
+      console.log(`   - Área Field ID: ${USUARIOS_AREA_EMPRESA_FIELD_ID}`);
+      console.log(`   - Área por Field ID: ${userFields[USUARIOS_AREA_EMPRESA_FIELD_ID!] || 'No encontrado'}`);
+      console.log(`   - Área por nombre campo: ${userFields['Area Empresa'] || 'No encontrado'}`);
+    }
+
+    // ===== RESPUESTA EXITOSA =====
+    console.log(`🎉 [${requestId}] ===== LOGIN EXITOSO =====`);
+    console.log(`🎉 [${requestId}] Preparando respuesta para usuario: ${userData.nombre} (${userData.tipoUsuario})`);
+
+    return NextResponse.json({
+      success: true,
       message: 'Login exitoso',
       user: userData
     });
 
   } catch (error) {
-    console.error('💥 Error en login:', error);
+    console.error(`💥 [${requestId}] ===== ERROR CRÍTICO EN LOGIN =====`);
+    console.error(`💥 [${requestId}] Error:`, error);
+    console.error(`💥 [${requestId}] Stack trace:`, error instanceof Error ? error.stack : 'No stack trace available');
+
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
