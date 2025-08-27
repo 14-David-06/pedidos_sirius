@@ -75,6 +75,21 @@ export async function POST(request: NextRequest) {
   try {
     const { usuario, password, tipoUsuarioPreferido } = await request.json();
 
+    // ===== DIAGNÓSTICO DE VARIABLES DE ENTORNO =====
+    console.log(`🔧 [${requestId}] ===== DIAGNÓSTICO DE VARIABLES DE ENTORNO =====`);
+    console.log(`🔧 [${requestId}] Todas las variables de entorno disponibles:`, Object.keys(process.env).filter(key => key.includes('USUARIO') || key.includes('AIRTABLE') || key.includes('JWT')).sort());
+
+    console.log(`🔧 [${requestId}] Valores actuales de variables críticas:`, {
+      AIRTABLE_API_KEY: AIRTABLE_API_KEY ? `SET (${AIRTABLE_API_KEY.length} chars)` : 'NOT SET',
+      AIRTABLE_BASE_ID: AIRTABLE_BASE_ID || 'NOT SET',
+      USUARIOS_TABLE_ID: USUARIOS_TABLE_ID || 'NOT SET',
+      USUARIOS_RAIZ_TABLE_ID: USUARIOS_RAIZ_TABLE_ID || 'NOT SET',
+      USUARIOS_USUARIO_FIELD_ID: USUARIOS_USUARIO_FIELD_ID || 'NOT SET',
+      USUARIOS_RAIZ_USUARIO_FIELD_ID: USUARIOS_RAIZ_USUARIO_FIELD_ID || 'NOT SET',
+      NODE_ENV: process.env.NODE_ENV || 'NOT SET',
+      VERCEL_ENV: process.env.VERCEL_ENV || 'NOT SET'
+    });
+
     console.log(`📝 [${requestId}] Datos recibidos:`, {
       usuario: usuario || 'undefined',
       hasPassword: !!password,
@@ -108,13 +123,39 @@ export async function POST(request: NextRequest) {
       USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID: !!USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID
     };
 
+    console.log(`🔧 [${requestId}] Estado de variables de entorno:`, requiredEnvVars);
+
+    // Log adicional para debugging - mostrar todas las variables relacionadas con usuarios
+    console.log(`🔧 [${requestId}] Variables de entorno relacionadas con usuarios:`, {
+      AIRTABLE_API_KEY: AIRTABLE_API_KEY ? `${AIRTABLE_API_KEY.substring(0, 10)}...` : 'NOT SET',
+      AIRTABLE_BASE_ID: AIRTABLE_BASE_ID || 'NOT SET',
+      USUARIOS_TABLE_ID: USUARIOS_TABLE_ID || 'NOT SET',
+      USUARIOS_RAIZ_TABLE_ID: USUARIOS_RAIZ_TABLE_ID || 'NOT SET',
+      USUARIOS_USUARIO_FIELD_ID: USUARIOS_USUARIO_FIELD_ID || 'NOT SET',
+      USUARIOS_HASH_FIELD_ID: USUARIOS_HASH_FIELD_ID || 'NOT SET',
+      USUARIOS_SALT_FIELD_ID: USUARIOS_SALT_FIELD_ID || 'NOT SET',
+      USUARIOS_NUMERO_DOCUMENTO_FIELD_ID: USUARIOS_NUMERO_DOCUMENTO_FIELD_ID || 'NOT SET',
+      USUARIOS_RAIZ_USUARIO_FIELD_ID: USUARIOS_RAIZ_USUARIO_FIELD_ID || 'NOT SET',
+      USUARIOS_RAIZ_HASH_FIELD_ID: USUARIOS_RAIZ_HASH_FIELD_ID || 'NOT SET',
+      USUARIOS_RAIZ_SALT_FIELD_ID: USUARIOS_RAIZ_SALT_FIELD_ID || 'NOT SET'
+    });
+
     const missingVars = Object.entries(requiredEnvVars)
       .filter(([key, value]) => !value)
       .map(([key]) => key);
 
     if (missingVars.length > 0) {
       console.error(`❌ [${requestId}] Variables de entorno faltantes:`, missingVars);
-      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
+      console.error(`❌ [${requestId}] Valores actuales de variables faltantes:`, missingVars.map(key => ({
+        variable: key,
+        value: process.env[key] || 'NOT SET',
+        length: process.env[key]?.length || 0
+      })));
+      return NextResponse.json({
+        error: 'Error de configuración del servidor',
+        details: `Faltan las siguientes variables: ${missingVars.join(', ')}`,
+        missingVars: missingVars
+      }, { status: 500 });
     }
 
     console.log(`✅ [${requestId}] Todas las variables de entorno están configuradas`);

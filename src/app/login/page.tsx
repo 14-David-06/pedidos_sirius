@@ -331,6 +331,15 @@ export default function LoginPage() {
           errorMessage: result.error,
           fullResult: result
         });
+
+        // Si hay detalles de configuración, mostrarlos
+        if (result.details) {
+          console.error('⚙️ [FRONTEND] Detalles de configuración:', result.details);
+        }
+        if (result.missingVars) {
+          console.error('❌ [FRONTEND] Variables faltantes:', result.missingVars);
+        }
+
         setError(result.error || 'Error al iniciar sesión');
       }
     } catch (err) {
