@@ -1,6 +1,18 @@
 "use client";
 import { useState } from "react";
 
+// Configuración simplificada - Ahora todo se hace server-side
+console.log('🔧 CONFIGURACIÓN INICIAL CARGADA');
+console.log('🌐 Variables de entorno públicas (NEXT_PUBLIC_):', {
+  NEXT_PUBLIC_AWS_REGION: process.env.NEXT_PUBLIC_AWS_REGION,
+  NEXT_PUBLIC_AWS_S3_BUCKET_NAME: process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME,
+  NEXT_PUBLIC_AWS_ACCESS_KEY_ID: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID ? `${process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID.substring(0, 8)}...` : 'FALTANTE',
+  NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY ? `${process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY.substring(0, 8)}...` : 'FALTANTE',
+  NEXT_PUBLIC_AIRTABLE_API_KEY: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY ? `${process.env.NEXT_PUBLIC_AIRTABLE_API_KEY.substring(0, 8)}...` : 'FALTANTE',
+  NEXT_PUBLIC_AIRTABLE_BASE_ID: process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID,
+  NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID: process.env.NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID
+});
+
 export default function CotizacionPage() {
   type ProductoSeleccionado = {
     id: string;
@@ -8,10 +20,28 @@ export default function CotizacionPage() {
     productoId: string;
     cantidad: number;
   };
-  
+
   const [productosSeleccionados, setProductosSeleccionados] = useState<ProductoSeleccionado[]>([]);
   const [mostrarCotizacion, setMostrarCotizacion] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [mostrarResumenPrecios, setMostrarResumenPrecios] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  // Función para descargar el PDF
+  const descargarPDF = async () => {
+    if (!pdfUrl) return;
+
+    try {
+      // Usar el endpoint proxy para evitar problemas de CORS
+      const proxyUrl = `/api/download-pdf?url=${encodeURIComponent(pdfUrl)}`;
+      window.open(proxyUrl, '_blank');
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      alert('Error al descargar el archivo. Inténtalo de nuevo.');
+    }
+  };
   const [datosContacto, setDatosContacto] = useState({
     nombre: '',
     telefono: '',
@@ -22,17 +52,42 @@ export default function CotizacionPage() {
 
   const productos = {
     microorganismos: [
-      { id: 'TR', nombre: 'Trichoderma harzianum', tipo: 'Hongo', codigo: 'TR', unidad: 'litros' },
-      { id: 'MT', nombre: 'Metarhizium anisopliae', tipo: 'Hongo', codigo: 'MT', unidad: 'litros' },
-      { id: 'PL', nombre: 'Purpureocillium lilacinum', tipo: 'Hongo', codigo: 'PL', unidad: 'litros' },
-      { id: 'BV', nombre: 'Beauveria bassiana', tipo: 'Hongo', codigo: 'BV', unidad: 'litros' },
-      { id: 'BT', nombre: 'Bacillus thuringiensis', tipo: 'Bacteria', codigo: 'BT', unidad: 'litros' },
-      { id: 'SB', nombre: 'Siriusbacter', tipo: 'Bacteria', codigo: 'SB', unidad: 'litros' }
+      { id: 'TR', nombre: 'Trichoderma harzianum', tipo: 'Hongo', codigo: 'TR', unidad: 'litros', precio: 38000 },
+      { id: 'MT', nombre: 'Metarhizium anisopliae', tipo: 'Hongo', codigo: 'MT', unidad: 'litros', precio: 38000 },
+      { id: 'PL', nombre: 'Purpureocillium lilacinum', tipo: 'Hongo', codigo: 'PL', unidad: 'litros', precio: 38000 },
+      { id: 'BV', nombre: 'Beauveria bassiana', tipo: 'Hongo', codigo: 'BV', unidad: 'litros', precio: 38000 },
+      { id: 'BT', nombre: 'Bacillus thuringiensis', tipo: 'Bacteria', codigo: 'BT', unidad: 'litros', precio: 38000 },
+      { id: 'SB', nombre: 'Siriusbacter', tipo: 'Bacteria', codigo: 'SB', unidad: 'litros', precio: 38000 }
     ],
     biochar: [
-      { id: 'BB', nombre: 'Biochar Blend', tipo: 'Biochar', codigo: 'BB', unidad: 'kg' },
-      { id: 'BC', nombre: 'Biochar', tipo: 'Biochar', codigo: 'BC', unidad: 'kg' }
+      { id: 'BB', nombre: 'Biochar Blend', tipo: 'Biochar', codigo: 'BB', unidad: 'kg', precio: 1190 },
+      { id: 'BC', nombre: 'Biochar', tipo: 'Biochar', codigo: 'BC', unidad: 'kg', precio: 2000 }
     ]
+  };
+
+  // Función para calcular el subtotal de un producto
+  const calcularSubtotal = (producto: any, cantidad: number) => {
+    return producto.precio * cantidad;
+  };
+
+  // Función para calcular el total general
+  const calcularTotal = () => {
+    return productosSeleccionados.reduce((total, item) => {
+      const producto = getProductoInfo(item.categoria, item.productoId);
+      if (producto) {
+        return total + calcularSubtotal(producto, item.cantidad);
+      }
+      return total;
+    }, 0);
+  };
+
+  // Función para formatear precios
+  const formatearPrecio = (precio: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(precio);
   };
 
   const agregarProducto = () => {
@@ -81,14 +136,56 @@ export default function CotizacionPage() {
     setMostrarFormulario(true);
   };
 
-  const handleEnviarCotizacion = () => {
-    if (!datosContacto.nombre || !datosContacto.telefono || !datosContacto.empresa || 
+  const handleEnviarCotizacion = async () => {
+    console.log('🚀 INICIANDO PROCESO DE COTIZACIÓN');
+    console.log('📋 Datos de contacto actuales:', datosContacto);
+
+    if (!datosContacto.nombre || !datosContacto.telefono || !datosContacto.empresa ||
         !datosContacto.correo || !datosContacto.aceptaPolitica) {
+      console.log('❌ VALIDACIÓN FALLIDA: Faltan campos obligatorios');
       alert('Por favor completa todos los campos y acepta la política de privacidad');
       return;
     }
-    setMostrarFormulario(false);
-    setMostrarCotizacion(true);
+
+    console.log('✅ VALIDACIÓN PASADA: Todos los campos completos');
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log('� ENVIANDO DATOS AL SERVIDOR...');
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/cotizacion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productosSeleccionados,
+          datosContacto
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error en el servidor');
+      }
+
+      console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE');
+      console.log('📄 PDF URL:', result.pdfUrl);
+
+      // Guardar la URL del PDF para el botón de descarga
+      setPdfUrl(result.pdfUrl);
+
+      setMostrarFormulario(false);
+      setMostrarResumenPrecios(true);
+    } catch (err) {
+      console.error('💥 ERROR EN PROCESO DE COTIZACIÓN:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido al procesar la cotización');
+    } finally {
+      console.log('🔄 FINALIZANDO PROCESO - Set loading to false');
+      setIsLoading(false);
+    }
   };
 
   if (mostrarCotizacion) {
@@ -152,6 +249,144 @@ export default function CotizacionPage() {
                 </button>
                 <button className="flex-1 px-8 py-4 bg-emerald-500 text-white rounded-2xl font-medium hover:bg-emerald-600 transition-all duration-200">
                   Confirmar Solicitud
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Vista de resumen de precios
+  if (mostrarResumenPrecios) {
+    return (
+      <div className="min-h-screen relative" style={{
+        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752096905/DSC_4163_spt7fv.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <div className="max-w-4xl mx-auto w-full px-4">
+            {/* Header */}
+            <div className="text-center py-16">
+              <h1 className="text-5xl font-light text-white mb-4">Resumen de Cotización</h1>
+              <p className="text-xl text-gray-200 font-light max-w-2xl mx-auto">
+                Revisa los precios y detalles de tu selección
+              </p>
+            </div>
+
+            {/* Contenido principal */}
+            <div className="bg-white bg-opacity-75 backdrop-blur-lg rounded-3xl shadow-xl p-8">
+              {/* Tabla de productos con precios */}
+              <div className="mb-12">
+                <h2 className="text-3xl font-light text-gray-900 mb-8">Productos Seleccionados</h2>
+                <div className="space-y-6">
+                  {productosSeleccionados.map((item, index) => {
+                    const producto = getProductoInfo(item.categoria, item.productoId);
+                    if (!producto) return null;
+
+                    const subtotal = calcularSubtotal(producto, item.cantidad);
+                    return (
+                      <div key={item.id} className="bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-md transition-all duration-200">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-600">{index + 1}</span>
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-light text-gray-900">{producto.nombre}</h3>
+                              <p className="text-sm text-gray-500">{producto.codigo} • {producto.tipo}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-semibold text-gray-900">{formatearPrecio(subtotal)}</p>
+                            <p className="text-sm text-gray-500">{item.cantidad} {producto.unidad} x {formatearPrecio(producto.precio)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Resumen de precios */}
+              <div className="bg-gray-50 rounded-3xl p-8 mb-8">
+                <h3 className="text-2xl font-light text-gray-900 mb-6">Resumen de Precios</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-4 text-2xl font-bold text-emerald-600 bg-emerald-50 px-6 py-4 rounded-2xl">
+                    <span>TOTAL:</span>
+                    <span>{formatearPrecio(calcularTotal())}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Información de precios */}
+              <div className="bg-blue-50 rounded-3xl p-8 mb-8">
+                <h3 className="text-xl font-light text-blue-900 mb-4">Información de Precios</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl">🌱</span>
+                    </div>
+                    <h4 className="font-medium text-blue-900 mb-2">Microorganismos</h4>
+                    <p className="text-sm text-blue-700">$38,000 por litro</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl">🪨</span>
+                    </div>
+                    <h4 className="font-medium text-blue-900 mb-2">Biochar Blend</h4>
+                    <p className="text-sm text-blue-700">$1,190 por kg</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl">🌿</span>
+                    </div>
+                    <h4 className="font-medium text-blue-900 mb-2">Biochar Puro</h4>
+                    <p className="text-sm text-blue-700">$2,000 por kg</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                <button
+                  onClick={() => {
+                    setMostrarResumenPrecios(false);
+                    setMostrarFormulario(true);
+                  }}
+                  className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Volver atrás</span>
+                </button>
+                
+                {pdfUrl && (
+                  <button
+                    onClick={descargarPDF}
+                    className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Descargar Cotización</span>
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2"
+                >
+                  <span>Volverme cliente</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -261,17 +496,41 @@ export default function CotizacionPage() {
                   <button
                     onClick={() => setMostrarFormulario(false)}
                     className="flex-1 px-8 py-4 bg-gray-100 text-gray-700 rounded-2xl font-medium hover:bg-gray-200 transition-all duration-200"
+                    disabled={isLoading}
                   >
                     Regresar
                   </button>
                   <button
                     onClick={handleEnviarCotizacion}
                     className="flex-1 px-8 py-4 bg-emerald-500 text-white rounded-2xl font-medium hover:bg-emerald-600 transition-all duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                    disabled={!datosContacto.nombre || !datosContacto.telefono || !datosContacto.empresa || !datosContacto.correo || !datosContacto.aceptaPolitica}
+                    disabled={!datosContacto.nombre || !datosContacto.telefono || !datosContacto.empresa || !datosContacto.correo || !datosContacto.aceptaPolitica || isLoading}
                   >
-                    Descargar Cotización
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Procesando...</span>
+                      </div>
+                    ) : (
+                      'Generar Cotización'
+                    )}
                   </button>
                 </div>
+
+                {/* Mostrar error si existe */}
+                {error && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-red-700 font-medium">Error:</span>
+                    </div>
+                    <p className="text-red-600 mt-1">{error}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

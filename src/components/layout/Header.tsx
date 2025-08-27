@@ -14,15 +14,15 @@ export default function Header() {
 
   return (
     <header className="absolute top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="max-w-7xl mx-auto px- py-4">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3">
             <img 
               src="https://res.cloudinary.com/dvnuttrox/image/upload/v1752508146/logo_t6fg4d.png" 
               alt="Sirius Logo" 
-              className="h-16 w-auto"
+              className="h-20 w-auto" // Cambié h-16 por h-20 para hacerlo más grande
             />
-          </Link>
+            </Link>
           
           <nav className="hidden md:flex space-x-4">
             {user ? (

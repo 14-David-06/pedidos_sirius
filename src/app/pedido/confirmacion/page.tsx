@@ -1,9 +1,30 @@
+"use client";
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CheckCircle, Package, Phone } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function ConfirmacionPage() {
+function ConfirmacionContent() {
+  const searchParams = useSearchParams();
+  const pdfUrl = searchParams.get('pdfUrl');
+
+  // Función para descargar el PDF
+  const descargarPDF = async () => {
+    if (!pdfUrl) return;
+
+    try {
+      // Usar el endpoint proxy para evitar problemas de CORS
+      const proxyUrl = `/api/download-pdf?url=${encodeURIComponent(pdfUrl)}`;
+      window.open(proxyUrl, '_blank');
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      alert('Error al descargar el archivo. Inténtalo de nuevo.');
+    }
+  };
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
@@ -97,6 +118,18 @@ export default function ConfirmacionPage() {
                 </Button>
               </Link>
               
+              {pdfUrl && (
+                <Button 
+                  onClick={descargarPDF}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Descargar Cotización
+                </Button>
+              )}
+              
               <Link href="/mis-pedidos">
                 <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
                   Ver mis pedidos
@@ -117,5 +150,13 @@ export default function ConfirmacionPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmacionPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <ConfirmacionContent />
+    </Suspense>
   );
 }

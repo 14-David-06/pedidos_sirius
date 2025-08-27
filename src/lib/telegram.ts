@@ -143,7 +143,8 @@ function crearMensajeNotificacion(pedidoData: PedidoData): string {
   
   // Información financiera
   mensaje += `\n💰 <b>INFORMACIÓN FINANCIERA</b>\n`;
-  mensaje += `• <b>Precio por kg:</b> $${precioPorKg.toLocaleString('es-CO')} COP\n`;
+  mensaje += `• <b>4r4e3w2q
+ }o9u76yt5 por kg:</b> $${precioPorKg.toLocaleString('es-CO')} COP\n`;
   mensaje += `• <b>Valor Total:</b> $${pedidoData.precioTotal.toLocaleString('es-CO')} COP\n\n`;
 
   // Información operativa

@@ -27,6 +27,24 @@ const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const USUARIOS_RAIZ_TABLE_ID = process.env.USUARIOS_RAIZ_TABLE_ID;
 
+// Configuración adicional desde variables de entorno
+const TARGET_USERNAME = process.env.TARGET_USERNAME;
+const USUARIO_FIELD = process.env.USUARIO_FIELD || 'Usuario';
+const NOMBRE_COMPLETO_FIELD = process.env.NOMBRE_COMPLETO_FIELD || 'Nombre Completo';
+const NOMBRE_RAZON_SOCIAL_FIELD = process.env.NOMBRE_RAZON_SOCIAL_FIELD || 'Nombre Razon Social';
+const HASH_FIELD = process.env.HASH_FIELD || 'Hash';
+const SALT_FIELD = process.env.SALT_FIELD || 'Salt';
+const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || '123456';
+
+// Validar variables de entorno requeridas
+const requiredEnvVars = ['AIRTABLE_API_KEY', 'AIRTABLE_BASE_ID', 'USUARIOS_RAIZ_TABLE_ID', 'TARGET_USERNAME'];
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`❌ Variable de entorno faltante: ${envVar}`);
+        process.exit(1);
+    }
+}
+
 function generateSalt() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
@@ -36,11 +54,11 @@ function hashPassword(password, salt) {
 }
 
 async function cambiarPasswordGuaicaramo() {
-    console.log('🔐 Iniciando cambio de contraseña para guaicaramo...');
+    console.log(`🔐 Iniciando cambio de contraseña para ${TARGET_USERNAME}...`);
     
     try {
-        // Primero buscar el usuario guaicaramo
-        const searchResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_RAIZ_TABLE_ID}?filterByFormula={Usuario}='guaicaramo'`, {
+        // Primero buscar el usuario
+        const searchResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_RAIZ_TABLE_ID}?filterByFormula={${USUARIO_FIELD}}='${TARGET_USERNAME}'`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
@@ -55,20 +73,20 @@ async function cambiarPasswordGuaicaramo() {
         const searchData = await searchResponse.json();
         
         if (!searchData.records || searchData.records.length === 0) {
-            console.log('❌ Usuario guaicaramo no encontrado');
+            console.log(`❌ Usuario ${TARGET_USERNAME} no encontrado`);
             return;
         }
 
         const userRecord = searchData.records[0];
         console.log('👤 Usuario encontrado:', {
             id: userRecord.id,
-            usuario: userRecord.fields.Usuario,
-            nombre: userRecord.fields['Nombre Completo'] || userRecord.fields['Nombre Razon Social'],
+            usuario: userRecord.fields[USUARIO_FIELD],
+            nombre: userRecord.fields[NOMBRE_COMPLETO_FIELD] || userRecord.fields[NOMBRE_RAZON_SOCIAL_FIELD],
             fields: Object.keys(userRecord.fields)
         });
 
-        // Generar nuevo salt y hash para la contraseña "123456"
-        const newPassword = '123456';
+        // Generar nuevo salt y hash para la contraseña
+        const newPassword = DEFAULT_PASSWORD;
         const newSalt = generateSalt();
         const newHash = hashPassword(newPassword, newSalt);
 
@@ -87,8 +105,8 @@ async function cambiarPasswordGuaicaramo() {
             },
             body: JSON.stringify({
                 fields: {
-                    'Hash': newHash,
-                    'Salt': newSalt
+                    [HASH_FIELD]: newHash,
+                    [SALT_FIELD]: newSalt
                 }
             })
         });
@@ -99,8 +117,8 @@ async function cambiarPasswordGuaicaramo() {
         }
 
         const result = await updateResponse.json();
-        console.log('✅ Contraseña actualizada exitosamente para guaicaramo');
-        console.log('🔑 Nueva contraseña: 123456');
+        console.log(`✅ Contraseña actualizada exitosamente para ${TARGET_USERNAME}`);
+        console.log(`🔑 Nueva contraseña: ${DEFAULT_PASSWORD}`);
         console.log('🧂 Nuevo salt:', newSalt);
         console.log('🔐 Nuevo hash:', newHash.substring(0, 20) + '...');
         
