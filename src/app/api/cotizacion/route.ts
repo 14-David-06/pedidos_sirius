@@ -270,12 +270,12 @@ const crearRegistroAirtable = async (datosContacto: DatosContacto, pdfUrl: strin
   const requiredEnvVars = [
     'AIRTABLE_API_KEY',
     'AIRTABLE_BASE_ID',
-    'NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID',
-    'NEXT_PUBLIC_COTIZACIONES_NOMBRE_COTIZANTE_FIELD_ID',
-    'NEXT_PUBLIC_COTIZACIONES_NUMERO_CONTACTO_FIELD_ID',
-    'NEXT_PUBLIC_COTIZACIONES_NOMBRE_EMPRESA_FIELD_ID',
-    'NEXT_PUBLIC_COTIZACIONES_EMAIL_FIELD_ID',
-    'NEXT_PUBLIC_COTIZACIONES_DOCUMENTO_FIELD_ID'
+    'COTIZACIONES_PAGINA_TABLE_ID',
+    'COTIZACIONES_NOMBRE_COTIZANTE_FIELD_ID',
+    'COTIZACIONES_NUMERO_CONTACTO_FIELD_ID',
+    'COTIZACIONES_NOMBRE_EMPRESA_FIELD_ID',
+    'COTIZACIONES_EMAIL_FIELD_ID',
+    'COTIZACIONES_DOCUMENTO_FIELD_ID'
   ];
 
   for (const envVar of requiredEnvVars) {
@@ -288,24 +288,24 @@ const crearRegistroAirtable = async (datosContacto: DatosContacto, pdfUrl: strin
   console.log('🔧 Variables de entorno Airtable:', {
     AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY ? 'PRESENTE' : 'FALTANTE',
     AIRTABLE_BASE_ID: process.env.AIRTABLE_BASE_ID,
-    COTIZACIONES_PAGINA_TABLE_ID: process.env.NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID,
+    COTIZACIONES_PAGINA_TABLE_ID: process.env.COTIZACIONES_PAGINA_TABLE_ID,
     fieldIds: {
-      nombre: process.env.NEXT_PUBLIC_COTIZACIONES_NOMBRE_COTIZANTE_FIELD_ID,
-      telefono: process.env.NEXT_PUBLIC_COTIZACIONES_NUMERO_CONTACTO_FIELD_ID,
-      empresa: process.env.NEXT_PUBLIC_COTIZACIONES_NOMBRE_EMPRESA_FIELD_ID,
-      correo: process.env.NEXT_PUBLIC_COTIZACIONES_EMAIL_FIELD_ID,
-      documento: process.env.NEXT_PUBLIC_COTIZACIONES_DOCUMENTO_FIELD_ID
+      nombre: process.env.COTIZACIONES_NOMBRE_COTIZANTE_FIELD_ID,
+      telefono: process.env.COTIZACIONES_NUMERO_CONTACTO_FIELD_ID,
+      empresa: process.env.COTIZACIONES_NOMBRE_EMPRESA_FIELD_ID,
+      correo: process.env.COTIZACIONES_EMAIL_FIELD_ID,
+      documento: process.env.COTIZACIONES_DOCUMENTO_FIELD_ID
     }
   });
 
   try {
     const recordData = {
       fields: {
-        [process.env.NEXT_PUBLIC_COTIZACIONES_NOMBRE_COTIZANTE_FIELD_ID!]: datosContacto.nombre,
-        [process.env.NEXT_PUBLIC_COTIZACIONES_NUMERO_CONTACTO_FIELD_ID!]: datosContacto.telefono,
-        [process.env.NEXT_PUBLIC_COTIZACIONES_NOMBRE_EMPRESA_FIELD_ID!]: datosContacto.empresa,
-        [process.env.NEXT_PUBLIC_COTIZACIONES_EMAIL_FIELD_ID!]: datosContacto.correo,
-        [process.env.NEXT_PUBLIC_COTIZACIONES_DOCUMENTO_FIELD_ID!]: [
+        [process.env.COTIZACIONES_NOMBRE_COTIZANTE_FIELD_ID!]: datosContacto.nombre,
+        [process.env.COTIZACIONES_NUMERO_CONTACTO_FIELD_ID!]: datosContacto.telefono,
+        [process.env.COTIZACIONES_NOMBRE_EMPRESA_FIELD_ID!]: datosContacto.empresa,
+        [process.env.COTIZACIONES_EMAIL_FIELD_ID!]: datosContacto.correo,
+        [process.env.COTIZACIONES_DOCUMENTO_FIELD_ID!]: [
           {
             url: pdfUrl,
             filename: pdfUrl.split('/').pop() || 'cotizacion.pdf'
@@ -316,7 +316,7 @@ const crearRegistroAirtable = async (datosContacto: DatosContacto, pdfUrl: strin
 
     console.log('📋 Datos a enviar a Airtable:', recordData);
 
-    const result = await airtableBase(process.env.NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID!).create([recordData]);
+    const result = await airtableBase(process.env.COTIZACIONES_PAGINA_TABLE_ID!).create([recordData]);
     console.log('✅ Registro creado exitosamente en Airtable:', result);
 
   } catch (error: any) {

@@ -3,14 +3,14 @@ import { useState } from "react";
 
 // Configuración simplificada - Ahora todo se hace server-side
 console.log('🔧 CONFIGURACIÓN INICIAL CARGADA');
-console.log('🌐 Variables de entorno públicas (NEXT_PUBLIC_):', {
-  NEXT_PUBLIC_AWS_REGION: process.env.NEXT_PUBLIC_AWS_REGION,
-  NEXT_PUBLIC_AWS_S3_BUCKET_NAME: process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME,
-  NEXT_PUBLIC_AWS_ACCESS_KEY_ID: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID ? `${process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID.substring(0, 8)}...` : 'FALTANTE',
-  NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY ? `${process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY.substring(0, 8)}...` : 'FALTANTE',
-  NEXT_PUBLIC_AIRTABLE_API_KEY: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY ? `${process.env.NEXT_PUBLIC_AIRTABLE_API_KEY.substring(0, 8)}...` : 'FALTANTE',
-  NEXT_PUBLIC_AIRTABLE_BASE_ID: process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID,
-  NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID: process.env.NEXT_PUBLIC_COTIZACIONES_PAGINA_TABLE_ID
+console.log('🌐 Variables de entorno del servidor (sin NEXT_PUBLIC_):', {
+  AWS_REGION: process.env.AWS_REGION,
+  AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? `${process.env.AWS_ACCESS_KEY_ID.substring(0, 8)}...` : 'FALTANTE',
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? `${process.env.AWS_SECRET_ACCESS_KEY.substring(0, 8)}...` : 'FALTANTE',
+  AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY ? `${process.env.AIRTABLE_API_KEY.substring(0, 8)}...` : 'FALTANTE',
+  AIRTABLE_BASE_ID: process.env.AIRTABLE_BASE_ID,
+  COTIZACIONES_PAGINA_TABLE_ID: process.env.COTIZACIONES_PAGINA_TABLE_ID
 });
 
 export default function CotizacionPage() {
@@ -154,7 +154,7 @@ export default function CotizacionPage() {
     try {
       console.log('� ENVIANDO DATOS AL SERVIDOR...');
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/cotizacion`, {
+      const response = await fetch(`${process.env.BASE_URL || ''}/api/cotizacion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
