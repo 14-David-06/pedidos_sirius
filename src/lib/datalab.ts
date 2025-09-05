@@ -16,6 +16,15 @@ export const createDataLabOrder = async (orderData: {
   direccionEntrega?: string;
   observaciones: string;
   realizaRegistro: string;
+  // Datos del cliente (texto simple en DataLab)
+  clienteNombre?: string;
+  clienteTipoDocumento?: string;
+  clienteNumeroDocumento?: string;
+  clienteCiudad?: string;
+  clienteDepartamento?: string;
+  clienteDireccion?: string;
+  // ID del usuario raíz para la relación Cliente
+  clienteUsuarioRaizId?: string;
   productos: Array<{
     nombre: string;
     cantidad: number;
@@ -61,6 +70,22 @@ export const createDataLabOrder = async (orderData: {
     const productosCreados = await productosResponse.json();
     const productosIds = productosCreados.records.map((record: any) => record.id);
 
+    console.log('[DataLab] Creando orden con datos del cliente:', {
+      clienteNombre: orderData.clienteNombre,
+      clienteTipoDocumento: orderData.clienteTipoDocumento,
+      clienteNumeroDocumento: orderData.clienteNumeroDocumento,
+      clienteCiudad: orderData.clienteCiudad,
+      clienteDepartamento: orderData.clienteDepartamento,
+      clienteDireccion: orderData.clienteDireccion,
+      clienteUsuarioRaizId: orderData.clienteUsuarioRaizId
+    });
+
+    console.log('[DataLab] 🎯 Valor específico para "Nombre o Razón Social (from Cliente)":', orderData.clienteNombre);
+    console.log('[DataLab] 🎯 Tipo de dato:', typeof orderData.clienteNombre);
+    console.log('[DataLab] 🎯 Es undefined?', orderData.clienteNombre === undefined);
+    console.log('[DataLab] 🎯 Es null?', orderData.clienteNombre === null);
+    console.log('[DataLab] 🎯 Es "N/A"?', orderData.clienteNombre === 'N/A');
+
     // 2. Crear la orden
     const ordenData = {
       records: [{
@@ -74,6 +99,15 @@ export const createDataLabOrder = async (orderData: {
           'Direccion Entrega': orderData.direccionEntrega,
           'Observaciones': orderData.observaciones,
           'Realiza Registro': orderData.realizaRegistro,
+          // Datos del cliente como texto simple (no lookup)
+          'Nombre o Razón Social (from Cliente)': orderData.clienteNombre,
+          'Tipo Documento (from Cliente)': orderData.clienteTipoDocumento,
+          'Numero Documento (from Cliente)': orderData.clienteNumeroDocumento,
+          'Ciudad (from Cliente)': orderData.clienteCiudad,
+          'Departamento (from Cliente)': orderData.clienteDepartamento,
+          'Dirección (from Cliente)': orderData.clienteDireccion,
+          // ID del usuario raíz como texto en Cliente Ordenes Compras
+          'Cliente Ordenes Compras': orderData.clienteUsuarioRaizId,
           'Productos Ordenados 2': productosIds
         }
       }]

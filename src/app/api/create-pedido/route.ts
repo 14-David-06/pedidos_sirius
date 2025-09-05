@@ -71,9 +71,29 @@ export async function POST(request: NextRequest) {
     } = requestBody;
 
     // Extraer datos del usuario
+    console.log('🔍 Datos del usuario recibidos:', usuario);
     const usuarioId = usuario?.id || usuario?.documento || 'N/A';
-    const usuarioNombre = usuario?.nombre || 'N/A';
+    
+    // Intentar múltiples campos para obtener el nombre del usuario
+    let usuarioNombre = 'Usuario Desconocido';
+    if (usuario?.nombre) {
+      usuarioNombre = usuario.nombre;
+    } else if (usuario?.nombreCompleto) {
+      usuarioNombre = usuario.nombreCompleto;
+    } else if (usuario?.nombreRazonSocial) {
+      usuarioNombre = usuario.nombreRazonSocial;
+    } else if (usuario?.usuario) {
+      usuarioNombre = usuario.usuario; // Usar el campo usuario como fallback
+    }
+    
     const usuarioEmail = usuario?.usuario || 'N/A'; // Usando el campo 'usuario' como email
+    
+    console.log('📋 Datos del usuario procesados:', {
+      usuarioId,
+      usuarioNombre,
+      usuarioEmail,
+      tipoUsuario: usuario?.tipoUsuario
+    });
 
     if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
       return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
@@ -224,14 +244,50 @@ export async function POST(request: NextRequest) {
 
     console.log('Usuario raíz encontrado:', { usuarioRaizId, tipoUsuario: usuario?.tipoUsuario, documento: usuario?.documento });
 
+    // Obtener datos completos del usuario raíz para DataLab
+    let datosUsuarioRaiz = null;
+    if (usuarioRaizId) {
+      try {
+        const usuariosRaizTableId = process.env.USUARIOS_RAIZ_TABLE_ID;
+        const usuarioRaizResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${usuariosRaizTableId!}/${usuarioRaizId}`, {
+          headers: {
+            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (usuarioRaizResponse.ok) {
+          const usuarioRaizData = await usuarioRaizResponse.json();
+          datosUsuarioRaiz = usuarioRaizData.fields;
+          console.log('Datos del usuario raíz obtenidos:', datosUsuarioRaiz);
+          console.log('Field IDs disponibles:', Object.keys(datosUsuarioRaiz || {}));
+          console.log('Variables de entorno para campos:', {
+            nombreField: process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID,
+            tipoDocField: process.env.USUARIOS_RAIZ_TIPO_DOCUMENTO_FIELD_ID,
+            numDocField: process.env.USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID,
+            ciudadField: process.env.USUARIOS_RAIZ_CIUDAD_FIELD_ID,
+            departamentoField: process.env.USUARIOS_RAIZ_DEPARTAMENTO_FIELD_ID,
+            direccionField: process.env.USUARIOS_RAIZ_DIRECCION_FIELD_ID
+          });
+        }
+      } catch (error) {
+        console.error('Error obteniendo datos del usuario raíz:', error);
+      }
+    }
+
     // 1. Crear la orden de compra principal
+    console.log('📝 Valor asignado a Realiza Registro:', usuarioNombre);
+    console.log('📝 Field ID para Realiza Registro:', REALIZA_REGISTRO_FIELD);
+    
     const ordenCompraData = {
       fields: {
         // Fecha Creacion se crea automáticamente
         [FECHA_RECOGIDA_FIELD]: fechaEntrega, // Fecha Recogida
         [CLIENTE_RECOGE_PEDIDO_FIELD]: recogesPedido === 'si', // Cliente Recoge Pedido (checkbox)
         [OBSERVACIONES_FIELD]: observaciones || '', // Solo las observaciones del usuario
-        [REALIZA_REGISTRO_FIELD]: usuarioNombre, // Nombre de quien realiza el pedido
+        [REALIZA_REGISTRO_FIELD]: usuarioNombre === 'Usuario Desconocido' && datosUsuarioRaiz?.[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!] 
+          ? datosUsuarioRaiz[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!] 
+          : usuarioNombre, // Nombre de quien realiza el pedido, fallback al usuario raíz si es necesario
         [CLIENTE_FIELD]: usuarioRaizId ? [usuarioRaizId] : [], // ID del usuario raíz (relación)
         
         // Solo agregar campos de entrega si no recoge el pedido
@@ -361,6 +417,75 @@ export async function POST(request: NextRequest) {
 
     // 4. Crear el pedido en DataLab
     try {
+      // Preparar datos del cliente para DataLab
+      console.log('📋 Enviando datos del cliente a DataLab:');
+      
+      // Función auxiliar para obtener valor del campo usando field ID o nombre
+      const getFieldValue = (fieldId: string | undefined, fallbackName: string, defaultValue: string = 'N/A') => {
+        if (!datosUsuarioRaiz) return defaultValue;
+        
+        // Intentar primero con field ID
+        if (fieldId && datosUsuarioRaiz[fieldId]) {
+          return datosUsuarioRaiz[fieldId];
+        }
+        
+        // Intentar con nombre del campo
+        if (datosUsuarioRaiz[fallbackName]) {
+          return datosUsuarioRaiz[fallbackName];
+        }
+        
+        // Intentar con variaciones del nombre del campo
+        const fieldVariations = [
+          fallbackName,
+          fallbackName.replace(' ', ''),
+          fallbackName.toLowerCase(),
+          fallbackName.toUpperCase(),
+          fallbackName.replace(/\s+/g, ''),
+          // Variaciones específicas para Airtable
+          fallbackName.replace('Razon', 'Razón'),
+          fallbackName.replace('Direccion', 'Dirección'),
+          // Variaciones específicas para "Nombre o Razón Social"
+          'Nombre o Razón Social',
+          'Nombre o Razon Social',
+          'NombreoRazónSocial',
+          'NombreoRazonSocial',
+          'Nombre / Razón Social',
+          'Nombre/Razón Social',
+          'Nombre Razón Social',
+          'nombre_razon_social'
+        ];
+        
+        for (const variation of fieldVariations) {
+          if (datosUsuarioRaiz[variation]) {
+            console.log(`🔍 Encontrado valor usando variación "${variation}":`, datosUsuarioRaiz[variation]);
+            return datosUsuarioRaiz[variation];
+          }
+        }
+        
+        console.log(`⚠️ No se encontró valor para field ID "${fieldId}" ni variaciones de "${fallbackName}". Usando valor por defecto: "${defaultValue}"`);
+        console.log('🔍 Campos disponibles en datosUsuarioRaiz:', Object.keys(datosUsuarioRaiz));
+        return defaultValue;
+      };
+      
+      const clienteDataLab = {
+        clienteNombre: getFieldValue(process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID, 'Nombre / Razon Social', usuarioNombre),
+        clienteTipoDocumento: getFieldValue(process.env.USUARIOS_RAIZ_TIPO_DOCUMENTO_FIELD_ID, 'Tipo Documento'),
+        clienteNumeroDocumento: getFieldValue(process.env.USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID, 'Numero Documento'),
+        clienteCiudad: getFieldValue(process.env.USUARIOS_RAIZ_CIUDAD_FIELD_ID, 'Ciudad'),
+        clienteDepartamento: getFieldValue(process.env.USUARIOS_RAIZ_DEPARTAMENTO_FIELD_ID, 'Departamento'),
+        clienteDireccion: getFieldValue(process.env.USUARIOS_RAIZ_DIRECCION_FIELD_ID, 'Direccion')
+      };
+      
+      console.log('📋 Datos del cliente extraídos para DataLab:');
+      console.log('  - clienteNombre (para "Nombre o Razón Social (from Cliente)"):', clienteDataLab.clienteNombre);
+      console.log('  - clienteTipoDocumento:', clienteDataLab.clienteTipoDocumento);
+      console.log('  - clienteNumeroDocumento:', clienteDataLab.clienteNumeroDocumento);
+      console.log('  - clienteCiudad:', clienteDataLab.clienteCiudad);
+      console.log('  - clienteDepartamento:', clienteDataLab.clienteDepartamento);
+      console.log('  - clienteDireccion:', clienteDataLab.clienteDireccion);
+      console.log('🔍 Usuario root field ID:', process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID);
+      console.log('🔍 Valor del usuario actual (fallback):', usuarioNombre);
+
       if (tipo === 'biologicos' && microorganismosSeleccionados) {
         const dataLabProductos = microorganismosSeleccionados.map((micro: { microorganismoNombre: string, cantidad: number }) => ({
           nombre: micro.microorganismoNombre,
@@ -379,7 +504,46 @@ export async function POST(request: NextRequest) {
           direccionEntrega: recogesPedido === 'no' ? direccionEntrega : undefined,
           observaciones: observaciones || '',
           realizaRegistro: usuarioNombre,
+          // Datos del cliente del usuario raíz
+          clienteNombre: clienteDataLab.clienteNombre,
+          clienteTipoDocumento: clienteDataLab.clienteTipoDocumento,
+          clienteNumeroDocumento: clienteDataLab.clienteNumeroDocumento,
+          clienteCiudad: clienteDataLab.clienteCiudad,
+          clienteDepartamento: clienteDataLab.clienteDepartamento,
+          clienteDireccion: clienteDataLab.clienteDireccion,
+          // ID del usuario raíz para la relación Cliente en DataLab
+          clienteUsuarioRaizId: usuarioRaizId,
           productos: dataLabProductos
+        });
+      } else if (tipo === 'biochar' && biocharTipo && biocharCantidad && biocharUnidad) {
+        // Crear orden para biochar
+        const dataLabProductosBiochar = [{
+          nombre: biocharTipo,
+          cantidad: parseFloat(biocharCantidad),
+          unidadMedida: biocharUnidad,
+          precioUnitario: 0 // Por definir
+        }];
+
+        await createDataLabOrder({
+          fechaRecogida: fechaEntrega,
+          clienteRecogeProducto: recogesPedido === 'si',
+          nombreRecibe: recogesPedido === 'no' ? nombreRecibe : undefined,
+          cedulaRecibe: recogesPedido === 'no' ? cedulaRecibe : undefined,
+          departamentoEntrega: recogesPedido === 'no' ? departamento : undefined,
+          ciudadEntrega: recogesPedido === 'no' ? ciudad : undefined,
+          direccionEntrega: recogesPedido === 'no' ? direccionEntrega : undefined,
+          observaciones: observaciones || '',
+          realizaRegistro: usuarioNombre,
+          // Datos del cliente del usuario raíz
+          clienteNombre: clienteDataLab.clienteNombre,
+          clienteTipoDocumento: clienteDataLab.clienteTipoDocumento,
+          clienteNumeroDocumento: clienteDataLab.clienteNumeroDocumento,
+          clienteCiudad: clienteDataLab.clienteCiudad,
+          clienteDepartamento: clienteDataLab.clienteDepartamento,
+          clienteDireccion: clienteDataLab.clienteDireccion,
+          // ID del usuario raíz para la relación Cliente en DataLab
+          clienteUsuarioRaizId: usuarioRaizId,
+          productos: dataLabProductosBiochar
         });
       }
 
