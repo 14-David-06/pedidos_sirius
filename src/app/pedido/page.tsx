@@ -888,7 +888,7 @@ function PedidoContent() {
                               <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>
                             )}
                           </div>
-                          <span className="text-white font-medium">No, necesito entrega</span>
+                          <span className="text-white font-medium">No, necesito envío</span>
                         </label>
                       </div>
                     </div>
