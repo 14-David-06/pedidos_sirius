@@ -1029,30 +1029,7 @@ export default function CotizacionPage() {
               </div>
             </div>
 
-            {/* Carrito flotante */}
-            {productosSeleccionados.length > 0 && (
-              <div className="fixed bottom-8 right-8 z-50 animate-bounce">
-                <button
-                  onClick={() => setMostrarCotizacion(true)}
-                  className="bg-white bg-opacity-95 backdrop-blur-md text-gray-900 rounded-2xl px-6 py-4 shadow-xl hover:shadow-2xl border border-gray-200 transition-all duration-300 transform hover:translate-y-[-4px] hover:scale-105 active:scale-95"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
-                        {productosSeleccionados.length}
-                      </span>
-                    </div>
-                    <div className="text-left">
-                      <span className="font-medium text-gray-900 block">Revisar Selección</span>
-                      <span className="text-xs text-gray-500">{productosSeleccionados.length} producto{productosSeleccionados.length > 1 ? 's' : ''}</span>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            )}
+
 
             {/* Sección del Carrito */}
             <div className="bg-white bg-opacity-20 backdrop-blur-md rounded-3xl shadow-2xl border border-white border-opacity-20 p-8 mb-16">
