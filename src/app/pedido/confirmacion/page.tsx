@@ -29,7 +29,7 @@ function ConfirmacionContent() {
     <div 
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
       style={{
-        backgroundImage: 'url(https://res.cloudinary.com/dvnuttrox/image/upload/v1752167867/DSC_3797_1_wcrfu9.jpg)',
+        backgroundImage: 'url(/18032025-DSC_2933.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -37,12 +37,12 @@ function ConfirmacionContent() {
       }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
       
       <div className="max-w-md w-full space-y-8 relative z-10">
         <br /><br />
         {/* Confirmación */}
-        <Card className="shadow-2xl bg-white bg-opacity-95 backdrop-blur-sm border-0">
+        <Card className="shadow-2xl bg-white bg-opacity-20 backdrop-blur-md border-0">
           <CardHeader className="text-center space-y-4">
             <div className="flex justify-center">
               <CheckCircle className="h-16 w-16 text-green-500" />
