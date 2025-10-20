@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,6 +60,7 @@ function PedidoContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [microorganismos, setMicroorganismos] = useState<Microorganismo[]>([]); // Lista de microorganismos disponibles
+  const [productosPirolisis, setProductosPirolisis] = useState<any[]>([]); // Lista de productos de pirólisis
   
   // Estados para grabación de voz
   const [isRecording, setIsRecording] = useState(false);
@@ -67,6 +68,7 @@ function PedidoContent() {
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [loadingMicroorganismos, setLoadingMicroorganismos] = useState(false);
+  const [loadingProductosPirolisis, setLoadingProductosPirolisis] = useState(false);
   
   // Estados para el selector de microorganismos
   const [selectedMicro, setSelectedMicro] = useState('');
@@ -82,10 +84,9 @@ function PedidoContent() {
       'Rhizobium'
     ],
     biochar: [
-      'Biochar Premium',
-      'Biochar Estándar',
-      'Biochar Activado',
-      'Biochar Inoculado'
+      'Biochar Blend',
+      'Start Dust',
+      'Tricochar'
     ]
   };
 
@@ -128,7 +129,7 @@ function PedidoContent() {
   };
 
   // NUEVA FUNCIÓN - Cargar microorganismos al montar el componente (solo para productos biológicos)
-  const loadMicroorganismos = async () => {
+  const loadMicroorganismos = useCallback(async () => {
     if (tipo !== 'biologicos') return;
     
     setLoadingMicroorganismos(true);
@@ -145,14 +146,41 @@ function PedidoContent() {
     } finally {
       setLoadingMicroorganismos(false);
     }
-  };
+  }, [tipo]);
+
+  // NUEVA FUNCIÓN - Cargar productos de pirólisis al montar el componente (solo para biochar)
+  const loadProductosPirolisis = useCallback(async () => {
+    if (tipo !== 'biochar') return;
+    
+    setLoadingProductosPirolisis(true);
+    try {
+      const response = await fetch('/api/productos-pirolisis');
+      if (response.ok) {
+        const data = await response.json();
+        setProductosPirolisis(data.productos || []);
+      } else {
+        console.error('Error al cargar productos de pirólisis:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error al cargar productos de pirólisis:', error);
+    } finally {
+      setLoadingProductosPirolisis(false);
+    }
+  }, [tipo]);
 
   // Cargar microorganismos al montar el componente si es tipo biológicos
   useEffect(() => {
     if (tipo === 'biologicos') {
       loadMicroorganismos();
     }
-  }, [tipo]);
+  }, [tipo, loadMicroorganismos]);
+
+  // Cargar productos de pirólisis al montar el componente si es tipo biochar
+  useEffect(() => {
+    if (tipo === 'biochar') {
+      loadProductosPirolisis();
+    }
+  }, [tipo, loadProductosPirolisis]);
 
   // Inicializar reconocimiento de voz
   useEffect(() => {
@@ -787,19 +815,34 @@ function PedidoContent() {
                         <label className="block text-sm font-medium text-white mb-2">
                           Producto *
                         </label>
-                        <select
-                          value={formData.biocharTipo || ''}
-                          onChange={(e) => setBiocharTipo(e.target.value)}
-                          required
-                          className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        >
-                          <option value="" className="text-gray-800">Selecciona un producto</option>
-                          {productos.biochar.map(producto => (
-                            <option key={producto} value={producto} className="text-gray-800">
-                              {producto}
-                            </option>
-                          ))}
-                        </select>
+                        {loadingProductosPirolisis ? (
+                          <div className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white">
+                            <div className="flex items-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Cargando productos...
+                            </div>
+                          </div>
+                        ) : (
+                          <select
+                            value={formData.biocharTipo || ''}
+                            onChange={(e) => setBiocharTipo(e.target.value)}
+                            required
+                            className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          >
+                            <option value="" className="text-gray-800">Selecciona un producto</option>
+                            {productosPirolisis.map(producto => (
+                              <option key={producto.id} value={producto.nombre} className="text-gray-800">
+                                {producto.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        
+                        {productosPirolisis.length === 0 && !loadingProductosPirolisis && (
+                          <p className="text-yellow-400 text-sm mt-2">
+                            No se encontraron productos de pirólisis disponibles
+                          </p>
+                        )}
                         
                         <div className="grid grid-cols-2 gap-4 mt-4">
                           <div>

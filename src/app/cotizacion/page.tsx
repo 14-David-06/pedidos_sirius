@@ -62,7 +62,7 @@ export default function CotizacionPage() {
     biofertilizantes: [
       { 
         id: 'SD', 
-        nombre: 'Start Dust', 
+        nombre: 'Star Dust', 
         tipo: 'Biochar', 
         codigo: 'SD', 
         unidad: 'kg', 
@@ -70,7 +70,7 @@ export default function CotizacionPage() {
         descripcion: 'Carbón vegetal activado con tecnología de pirolisis avanzada, enriquecido con consorcios microbianos específicos. Incrementa la capacidad de intercambio catiónico del suelo, mejora la retención hídrica y establece una base sólida para el ecosistema radicular. Su estructura porosa actúa como refugio para microorganismos beneficiosos, optimizando los ciclos biogeoquímicos y la disponibilidad de nutrientes.',
         categoria: 'Biofertilizante',
         icono: '🦠',
-        imagen: '/Start Dust.jpg'
+        imagen: '/Star Dust.jpg'
       },
       { 
         id: 'TC', 

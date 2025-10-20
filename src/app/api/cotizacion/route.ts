@@ -425,17 +425,11 @@ const generarPDFBuffer = (productosSeleccionados: ProductoSeleccionado[], datosC
   pdf.setFontSize(60);
   pdf.setFont('helvetica', 'bold');
   
-  // Guardar estado actual
-  pdf.saveGraphicsState();
-  
-  // Aplicar rotación y transparencia simulada
+  // Aplicar marca de agua con rotación
   const centerX = 105;
   const centerY = 148;
   
   pdf.text('SIRIUS', centerX - 30, centerY, { angle: 45 });
-  
-  // Restaurar estado
-  pdf.restoreGraphicsState();
 
   // Retornar el PDF como buffer
   const pdfBuffer = Buffer.from(pdf.output('arraybuffer'));
