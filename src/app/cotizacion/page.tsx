@@ -792,14 +792,6 @@ export default function CotizacionPage() {
             {/* Header */}
             <div className="text-center py-16">
               <br /><br />
-              {/* Logo de Sirius */}
-              <div className="mb-8">
-                <img 
-                  src="/Logo-Sirius.png" 
-                  alt="Sirius Lab Logo" 
-                  className="h-20 w-auto mx-auto drop-shadow-lg"
-                />
-              </div>
               <h1 className="text-5xl font-light text-white mb-4">Catálogo de Productos</h1>
               <p className="text-xl text-gray-200 font-light max-w-3xl mx-auto">
                 Soluciones biotecnológicas avanzadas para agricultura regenerativa y sostenible
