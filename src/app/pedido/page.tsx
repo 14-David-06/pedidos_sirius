@@ -53,6 +53,7 @@ function PedidoContent() {
     departamento: '',
     ciudad: '',
     direccionEntrega: '',
+    ubicacionAplicacion: '', // Campo para ubicación de aplicación del producto
     observaciones: ''
   });
 
@@ -508,6 +509,7 @@ function PedidoContent() {
         tipo,
         recogesPedido: formData.recogesPedido,
         fechaEntrega: formData.fechaEntrega, // Siempre incluida
+        ubicacionAplicacion: formData.ubicacionAplicacion, // Campo de ubicación de aplicación
         observaciones: formData.observaciones,
         // Solo incluir campos de entrega si necesita entrega
         ...(formData.recogesPedido === 'no' && {
@@ -1015,8 +1017,23 @@ function PedidoContent() {
                             </div>
                           </>
                         )}
+
                       </div>
                     )}
+
+                    {/* Campo Ubicación Aplicación - visible para todos los casos */}
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Ubicación de Aplicación del Producto
+                      </label>
+                      <Input
+                        type="text"
+                        value={formData.ubicacionAplicacion}
+                        onChange={(e) => handleInputChange('ubicacionAplicacion', e.target.value)}
+                        className="bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60"
+                        placeholder="Ej: Finca La Esperanza, Cultivo de café, Zona norte de la propiedad"
+                      />
+                    </div>
                   </div>
 
                   {/* Observaciones */}

@@ -18,6 +18,7 @@ const CEDULA_RECIBE_FIELD = process.env.PEDIDOS_CEDULA_RECIBE_FIELD_ID;
 const DEPARTAMENTO_ENTREGA_FIELD = process.env.PEDIDOS_DEPARTAMENTO_ENTREGA_FIELD_ID;
 const CIUDAD_ENTREGA_FIELD = process.env.PEDIDOS_CIUDAD_ENTREGA_FIELD_ID;
 const DIRECCION_ENTREGA_FIELD = process.env.PEDIDOS_DIRECCION_ENTREGA_FIELD_ID;
+const UBICACION_APLICACION_FIELD = process.env.PEDIDOS_UBICACION_APLICACION_FIELD_ID;
 const OBSERVACIONES_FIELD = process.env.PEDIDOS_OBSERVACIONES_FIELD_ID;
 const PRODUCTOS_ORDENADOS_FIELD = process.env.PEDIDOS_PRODUCTOS_ORDENADOS_FIELD_ID;
 const REALIZA_REGISTRO_FIELD = process.env.PEDIDOS_REALIZA_REGISTRO_FIELD_ID;
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
         !CLIENTE_RECOGE_PEDIDO_FIELD || !NOMBRE_RECIBE_FIELD ||
         !CEDULA_RECIBE_FIELD || !DEPARTAMENTO_ENTREGA_FIELD ||
         !CIUDAD_ENTREGA_FIELD || !DIRECCION_ENTREGA_FIELD ||
-        !OBSERVACIONES_FIELD || !PRODUCTOS_ORDENADOS_FIELD ||
+        !UBICACION_APLICACION_FIELD || !OBSERVACIONES_FIELD || !PRODUCTOS_ORDENADOS_FIELD ||
         !REALIZA_REGISTRO_FIELD || !CLIENTE_FIELD ||
         !NOMBRE_PRODUCTO_FIELD || !CANTIDAD_FIELD ||
         !UNIDAD_MEDIDA_FIELD || !PRECIO_UNITARIO_FIELD ||
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
       tipo,
       recogesPedido,
       fechaEntrega,
+      ubicacionAplicacion,
       observaciones,
       microorganismosSeleccionados,
       biocharTipo,
@@ -284,6 +286,7 @@ export async function POST(request: NextRequest) {
         // Fecha Creacion se crea automáticamente
         [FECHA_RECOGIDA_FIELD]: fechaEntrega, // Fecha Recogida
         [CLIENTE_RECOGE_PEDIDO_FIELD]: recogesPedido === 'si', // Cliente Recoge Pedido (checkbox)
+        [UBICACION_APLICACION_FIELD]: ubicacionAplicacion || '', // Ubicación Aplicación del Producto
         [OBSERVACIONES_FIELD]: observaciones || '', // Solo las observaciones del usuario
         [REALIZA_REGISTRO_FIELD]: usuarioNombre === 'Usuario Desconocido' && datosUsuarioRaiz?.[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!] 
           ? datosUsuarioRaiz[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!] 
