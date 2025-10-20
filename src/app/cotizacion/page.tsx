@@ -31,6 +31,11 @@ export default function CotizacionPage() {
   
   // Estado para manejar cantidades en las tarjetas del marketplace
   const [cantidadesMarketplace, setCantidadesMarketplace] = useState<{[key: string]: number}>({});
+  
+  // Estado para el modal de imagen
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [productoModalSeleccionado, setProductoModalSeleccionado] = useState<any>(null);
+  const [cantidadModal, setCantidadModal] = useState(1);
 
   // Función para descargar el PDF
   const descargarPDF = async () => {
@@ -58,11 +63,11 @@ export default function CotizacionPage() {
       { 
         id: 'SD', 
         nombre: 'Start Dust', 
-        tipo: 'Bacteria', 
+        tipo: 'Biochar', 
         codigo: 'SD', 
-        unidad: 'litros', 
+        unidad: 'kg', 
         precio: 38000,
-        descripcion: 'Bacteria promotora del crecimiento vegetal',
+        descripcion: 'Carbón vegetal activado con tecnología de pirolisis avanzada, enriquecido con consorcios microbianos específicos. Incrementa la capacidad de intercambio catiónico del suelo, mejora la retención hídrica y establece una base sólida para el ecosistema radicular. Su estructura porosa actúa como refugio para microorganismos beneficiosos, optimizando los ciclos biogeoquímicos y la disponibilidad de nutrientes.',
         categoria: 'Biofertilizante',
         icono: '🦠',
         imagen: '/Start Dust.jpg'
@@ -74,7 +79,7 @@ export default function CotizacionPage() {
         codigo: 'TC', 
         unidad: 'kg', 
         precio: 2500,
-        descripcion: 'Biochar enriquecido con Trichoderma harzianum para máxima eficiencia',
+        descripcion: 'Matriz de carbón bioactivado inoculado con cepas seleccionadas de Trichoderma harzianum. Esta sinergia biotecnológica proporciona control biológico preventivo contra patógenos radiculares, mientras que el biochar mejora las propiedades físico-químicas del sustrato. Estimula la formación de micorrizas y incrementa la eficiencia en la absorción de fósforo y micronutrientes.',
         categoria: 'Biofertilizante',
         icono: '🌿',
         imagen: '/Biochar.webp'
@@ -86,7 +91,7 @@ export default function CotizacionPage() {
         codigo: 'BB', 
         unidad: 'kg', 
         precio: 1190,
-        descripcion: 'Mezcla de biochar con microorganismos beneficiosos',
+        descripcion: 'Formulación integral que combina carbón vegetal activado, materia orgánica compostada y consorcios microbiológicos multifuncionales. Aporta macro y micronutrientes de liberación controlada, mejora la estructura del suelo aumentando la porosidad y estabilidad de agregados. Facilita la colonización de rizobacterias promotoras del crecimiento vegetal (PGPR) y optimiza los procesos de mineralización.',
         categoria: 'Biofertilizante',
         icono: '🌱',
         imagen: '/Biochar Blend.jpg'
@@ -95,24 +100,24 @@ export default function CotizacionPage() {
     biocontroladores: [
       { 
         id: 'TR', 
-        nombre: 'Trichoderma harzianum', 
+        nombre: 'Trichoderma Harzianum', 
         tipo: 'Hongo', 
         codigo: 'TR', 
         unidad: 'litros', 
         precio: 38000,
-        descripcion: 'Hongo antagonista para control de patógenos del suelo',
+        descripcion: 'Cepa élite de hongo filamentoso con actividad micoparasítica demostrada contra Fusarium, Rhizoctonia, Sclerotinia y Pythium. Produce metabolitos antifúngicos específicos, enzimas quitinolíticas y establece competencia por espacio y nutrientes. Su colonización radicular induce resistencia sistémica adquirida (SAR), mejorando las defensas naturales de la planta y optimizando la absorción de nutrientes.',
         categoria: 'Biocontrolador',
         icono: '🍄',
         imagen: '/Trichoderma Harzianum.jpg'
       },
       { 
         id: 'MT', 
-        nombre: 'Metarhizium anisopliae', 
+        nombre: 'Metarhizium Anisopliae', 
         tipo: 'Hongo', 
         codigo: 'MT', 
         unidad: 'litros', 
         precio: 38000,
-        descripcion: 'Control biológico de insectos plaga',
+        descripcion: 'Hongo entomopatógeno especializado en el control biológico de coleópteros, hemípteros, lepidópteros y dípteros. Su mecanismo de acción incluye adhesión al tegumento del insecto, penetración cuticular mediante enzimas proteolíticas y colonización hemocélica. Presenta alta especificidad hacia plagas sin afectar insectos benéficos, manteniendo el equilibrio del agroecosistema.',
         categoria: 'Biocontrolador',
         icono: '🕷️',
         imagen: '/Metarhizium.jpg'
@@ -124,19 +129,19 @@ export default function CotizacionPage() {
         codigo: 'PL', 
         unidad: 'litros', 
         precio: 38000,
-        descripcion: 'Control de nematodos fitopatógenos',
+        descripcion: 'Agente de biocontrol altamente eficaz contra nematodos fitopatógenos incluyendo Meloidogyne, Heterodera, Globodera y Pratylenchus. Su modo de acción involucra la parasitación de huevos mediante enzimas quitinasas y proteasas, destruyendo las masas ovígeras y reduciendo significativamente las poblaciones. Mejora la salud radicular y promueve el desarrollo de sistemas radicales robustos.',
         categoria: 'Biocontrolador',
         icono: '🪱',
         imagen: '/Purpureocillum.jpg'
       },
       { 
         id: 'BV', 
-        nombre: 'Beauveria bassiana', 
+        nombre: 'Beauveria Bassiana', 
         tipo: 'Hongo', 
         codigo: 'BV', 
         unidad: 'litros', 
         precio: 38000,
-        descripcion: 'Control de insectos de cuerpo blando',
+        descripcion: 'Hongo entomopatógeno de amplio espectro especializado en el control de hemípteros, tisanópteros, afídidos y ácaros fitófagos. Su infección procede por contacto directo, germinación de conidias sobre la cutícula y penetración mediante apresorio. Produce toxinas específicas como bassianolidas que causan disfunción fisiológica en el hospedero, resultando en mortalidad efectiva y sostenida.',
         categoria: 'Biocontrolador',
         icono: '🦗',
         imagen: '/Beaveria.png'
@@ -148,7 +153,7 @@ export default function CotizacionPage() {
         codigo: 'BT', 
         unidad: 'litros', 
         precio: 38000,
-        descripcion: 'Control específico de larvas de lepidópteros',
+        descripcion: 'Bacteria Gram-positiva productora de cristales proteicos (δ-endotoxinas) con actividad insecticida específica contra larvas de lepidópteros. Sus proteínas Cry se activan en el pH alcalino del intestino medio larvario, causando lisis celular y parálisis del sistema digestivo. Altamente selectivo, no afecta organismos no objetivo y es completamente biodegradable en el ambiente.',
         categoria: 'Biocontrolador',
         icono: '🐛',
         imagen: '/Bacillus Thurigensis.png'
@@ -160,7 +165,7 @@ export default function CotizacionPage() {
         codigo: 'SB', 
         unidad: 'litros', 
         precio: 38000,
-        descripcion: 'Bacteria promotora del crecimiento vegetal',
+        descripcion: 'Consorcio de rizobacterias promotoras del crecimiento vegetal (PGPR) que incluye cepas de Bacillus, Pseudomonas y Azotobacter. Facilita la solubilización de fosfatos, fijación biológica de nitrógeno y producción de fitohormonas (auxinas, giberelinas, citoquininas). Induce resistencia sistémica inducida (ISR) mediante la activación de rutas de señalización de defensa, optimizando la respuesta ante estrés biótico y abiótico.',
         categoria: 'Biofertilizante',
         icono: '🦠',
         imagen: '/SiriusBacter.png'
@@ -243,6 +248,20 @@ export default function CotizacionPage() {
     }));
   };
 
+  // Función para abrir modal con información del producto
+  const abrirModal = (producto: any) => {
+    setProductoModalSeleccionado(producto);
+    setCantidadModal(1); // Resetear cantidad al abrir modal
+    setMostrarModal(true);
+  };
+
+  // Función para cerrar modal
+  const cerrarModal = () => {
+    setMostrarModal(false);
+    setProductoModalSeleccionado(null);
+    setCantidadModal(1); // Resetear cantidad al cerrar modal
+  };
+
   // Función para actualizar cantidad en marketplace
   const actualizarCantidadMarketplace = (categoria: keyof typeof productos, productoId: string, cantidad: number) => {
     setCantidadesMarketplace(prev => ({
@@ -254,6 +273,21 @@ export default function CotizacionPage() {
   // Función para obtener cantidad actual del marketplace
   const obtenerCantidadMarketplace = (categoria: keyof typeof productos, productoId: string) => {
     return cantidadesMarketplace[`${categoria}-${productoId}`] || 1;
+  };
+
+  // Función para agregar al carrito desde el modal
+  const agregarAlCarritoDesdeModal = () => {
+    if (productoModalSeleccionado) {
+      const nuevoId = Date.now().toString();
+      setProductosSeleccionados([...productosSeleccionados, {
+        id: nuevoId,
+        categoria: productoModalSeleccionado.categoria === 'Biofertilizante' ? 'biofertilizantes' : 'biocontroladores',
+        productoId: productoModalSeleccionado.id,
+        cantidad: cantidadModal
+      }]);
+      cerrarModal();
+      // El producto se agrega al carrito, pero NO se abre automáticamente la cotización
+    }
   };
 
   const validarSeleccion = () => {
@@ -414,10 +448,10 @@ export default function CotizacionPage() {
             </div>
 
             {/* Contenido principal */}
-            <div className="bg-white bg-opacity-75 backdrop-blur-lg rounded-3xl shadow-xl p-8">
+            <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl shadow-xl border border-white border-opacity-20 p-8">
               {/* Tabla de productos con precios */}
               <div className="mb-12">
-                <h2 className="text-3xl font-light text-gray-900 mb-8">Productos Seleccionados</h2>
+                <h2 className="text-3xl font-light text-white mb-8 drop-shadow-md">Productos Seleccionados</h2>
                 <div className="space-y-6">
                   {productosSeleccionados.map((item, index) => {
                     const producto = getProductoInfo(item.categoria, item.productoId);
@@ -425,20 +459,20 @@ export default function CotizacionPage() {
 
                     const subtotal = calcularSubtotal(producto, item.cantidad);
                     return (
-                      <div key={item.id} className="bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-md transition-all duration-200">
+                      <div key={item.id} className="bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-30 rounded-3xl p-8 hover:shadow-md transition-all duration-200">
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-600">{index + 1}</span>
+                            <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white border-opacity-30">
+                              <span className="text-sm font-medium text-white drop-shadow-sm">{index + 1}</span>
                             </div>
                             <div>
-                              <h3 className="text-xl font-light text-gray-900">{producto.nombre}</h3>
-                              <p className="text-sm text-gray-500">{producto.codigo} • {producto.tipo}</p>
+                              <h3 className="text-xl font-light text-white drop-shadow-md">{producto.nombre}</h3>
+                              <p className="text-sm text-white text-opacity-80 drop-shadow-sm">{producto.codigo} • {producto.tipo}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-semibold text-gray-900">{formatearPrecio(subtotal)}</p>
-                            <p className="text-sm text-gray-500">{item.cantidad} {producto.unidad} x {formatearPrecio(producto.precio)}</p>
+                            <p className="text-lg font-semibold text-white drop-shadow-md">{formatearPrecio(subtotal)}</p>
+                            <p className="text-sm text-white text-opacity-70 drop-shadow-sm">{item.cantidad} {producto.unidad} x {formatearPrecio(producto.precio)}</p>
                           </div>
                         </div>
                       </div>
@@ -448,66 +482,15 @@ export default function CotizacionPage() {
               </div>
 
               {/* Resumen de precios */}
-              <div className="bg-gray-50 rounded-3xl p-8 mb-8">
-                <h3 className="text-2xl font-light text-gray-900 mb-6">Resumen de Precios</h3>
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-white border-opacity-20">
+                <h3 className="text-2xl font-light text-white mb-6 drop-shadow-md">Resumen de Precios</h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center py-4 text-2xl font-bold text-emerald-600 bg-emerald-50 px-6 py-4 rounded-2xl">
+                  <div className="flex justify-between items-center py-4 text-2xl font-bold text-emerald-400 bg-emerald-500 bg-opacity-20 backdrop-blur-sm px-6 py-4 rounded-2xl border border-emerald-300 border-opacity-30 drop-shadow-md">
                     <span>TOTAL:</span>
                     <span>{formatearPrecio(calcularTotal())}</span>
                   </div>
                 </div>
               </div>
-
-              {/* Información de precios */}
-              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-3xl p-8 mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">💰 Información de Precios</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Biofertilizantes */}
-                  <div className="bg-white rounded-2xl p-6 shadow-lg">
-                    <div className="text-center mb-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-2xl">🌱</span>
-                      </div>
-                      <h4 className="text-xl font-bold text-emerald-900 mb-2">Biofertilizantes</h4>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Microorganismos</span>
-                        <span className="font-medium">$38,000/L</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Tricochar</span>
-                        <span className="font-medium">$2,500/kg</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Biochar Blend</span>
-                        <span className="font-medium">$1,190/kg</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Biocontroladores */}
-                  <div className="bg-white rounded-2xl p-6 shadow-lg">
-                    <div className="text-center mb-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-2xl">🛡️</span>
-                      </div>
-                      <h4 className="text-xl font-bold text-orange-900 mb-2">Biocontroladores</h4>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Hongos entomopatógenos</span>
-                        <span className="font-medium">$38,000/L</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Bacterias de control</span>
-                        <span className="font-medium">$38,000/L</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Botones de acción */}
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <button
@@ -515,7 +498,7 @@ export default function CotizacionPage() {
                     setMostrarResumenPrecios(false);
                     setMostrarFormulario(true);
                   }}
-                  className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2"
+                  className="px-8 py-4 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2 border border-white border-opacity-30 drop-shadow-sm"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -526,7 +509,7 @@ export default function CotizacionPage() {
                 {pdfUrl && (
                   <button
                     onClick={descargarPDF}
-                    className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2"
+                    className="px-8 py-4 bg-blue-500 bg-opacity-90 hover:bg-opacity-100 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2 border border-blue-400 border-opacity-50 drop-shadow-md"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -537,7 +520,7 @@ export default function CotizacionPage() {
                 
                 <button
                   onClick={() => window.location.href = '/dashboard'}
-                  className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2"
+                  className="px-8 py-4 bg-emerald-500 bg-opacity-90 hover:bg-opacity-100 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2 border border-emerald-400 border-opacity-50 drop-shadow-md"
                 >
                   <span>Volverme cliente</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -573,16 +556,16 @@ export default function CotizacionPage() {
             </div>
             
             {/* Formulario de contacto */}
-            <div className="bg-white bg-opacity-75 backdrop-blur-lg rounded-3xl shadow-xl p-8">
+            <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl shadow-xl border border-white border-opacity-20 p-8">
               <div className="space-y-6">
                 {/* Nombre personal */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Nombre personal *</label>
+                  <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">Nombre personal *</label>
                   <input
                     type="text"
                     value={datosContacto.nombre}
                     onChange={(e) => setDatosContacto({...datosContacto, nombre: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300"
                     placeholder="Ingrese su nombre completo"
                   />
                 </div>
@@ -590,24 +573,24 @@ export default function CotizacionPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Teléfono */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Número telefónico *</label>
+                    <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">Número telefónico *</label>
                     <input
                       type="tel"
                       value={datosContacto.telefono}
                       onChange={(e) => setDatosContacto({...datosContacto, telefono: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300"
                       placeholder="+57 300 123 4567"
                     />
                   </div>
 
                   {/* Empresa */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Nombre de la empresa *</label>
+                    <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">Nombre de la empresa *</label>
                     <input
                       type="text"
                       value={datosContacto.empresa}
                       onChange={(e) => setDatosContacto({...datosContacto, empresa: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300"
                       placeholder="Nombre de su empresa"
                     />
                   </div>
@@ -615,12 +598,12 @@ export default function CotizacionPage() {
 
                 {/* Correo */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Correo electrónico *</label>
+                  <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">Correo electrónico *</label>
                   <input
                     type="email"
                     value={datosContacto.correo}
                     onChange={(e) => setDatosContacto({...datosContacto, correo: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300"
                     placeholder="correo@ejemplo.com"
                   />
                 </div>
@@ -632,15 +615,15 @@ export default function CotizacionPage() {
                     id="politica"
                     checked={datosContacto.aceptaPolitica}
                     onChange={(e) => setDatosContacto({...datosContacto, aceptaPolitica: e.target.checked})}
-                    className="mt-1 w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                    className="mt-1 w-5 h-5 text-emerald-400 bg-white bg-opacity-20 border-white border-opacity-30 rounded focus:ring-emerald-400 focus:ring-opacity-50 backdrop-blur-sm"
                   />
-                  <label htmlFor="politica" className="text-sm text-gray-700">
+                  <label htmlFor="politica" className="text-sm text-white text-opacity-90 drop-shadow-sm">
                     Acepto el manejo de mis datos personales de acuerdo con la{' '}
                     <a 
                       href="https://www.siriusregenerative.co/privacypolicy" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+                      className="text-emerald-300 hover:text-emerald-200 underline font-medium drop-shadow-md"
                     >
                       Política de Privacidad
                     </a>
@@ -651,14 +634,14 @@ export default function CotizacionPage() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
                   <button
                     onClick={() => setMostrarFormulario(false)}
-                    className="flex-1 px-8 py-4 bg-gray-100 text-gray-700 rounded-2xl font-medium hover:bg-gray-200 transition-all duration-200"
+                    className="flex-1 px-8 py-4 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-200 border border-white border-opacity-30 drop-shadow-sm"
                     disabled={isLoading}
                   >
                     Regresar
                   </button>
                   <button
                     onClick={handleEnviarCotizacion}
-                    className="flex-1 px-8 py-4 bg-emerald-500 text-white rounded-2xl font-medium hover:bg-emerald-600 transition-all duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="flex-1 px-8 py-4 bg-emerald-500 bg-opacity-90 hover:bg-opacity-100 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-200 disabled:bg-gray-400 disabled:bg-opacity-50 disabled:cursor-not-allowed border border-emerald-400 border-opacity-50 drop-shadow-md"
                     disabled={!datosContacto.nombre || !datosContacto.telefono || !datosContacto.empresa || !datosContacto.correo || !datosContacto.aceptaPolitica || isLoading}
                   >
                     {isLoading ? (
@@ -677,14 +660,14 @@ export default function CotizacionPage() {
 
                 {/* Mostrar error si existe */}
                 {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                  <div className="mt-4 p-4 bg-red-100 bg-opacity-80 backdrop-blur-sm border border-red-200 border-opacity-50 rounded-2xl">
                     <div className="flex items-center space-x-2">
-                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="text-red-700 font-medium">Error:</span>
+                      <span className="text-red-800 font-medium drop-shadow-sm">Error:</span>
                     </div>
-                    <p className="text-red-600 mt-1">{error}</p>
+                    <p className="text-red-700 mt-1 drop-shadow-sm">{error}</p>
                   </div>
                 )}
               </div>
@@ -829,15 +812,15 @@ export default function CotizacionPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
                   {productos.biofertilizantes.map((producto) => (
                     <div key={producto.id} className="group">
-                      <div className="bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:border-emerald-200 hover:-translate-y-1 h-full flex flex-col">
+                      <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl shadow-lg border border-white border-opacity-30 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:border-emerald-200 hover:border-opacity-50 hover:-translate-y-1 h-full flex flex-col">
                         {/* Círculo del producto - Tamaño fijo */}
                         <div className="relative mb-6 flex-shrink-0">
-                          <div className="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
+                          <div className="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 cursor-pointer hover:ring-2 hover:ring-emerald-300" onClick={() => abrirModal(producto)}>
                             {producto.imagen ? (
                               <img 
                                 src={producto.imagen} 
                                 alt={producto.nombre}
-                                className="w-28 h-28 object-cover rounded-full"
+                                className="w-28 h-28 object-cover rounded-full hover:scale-110 transition-transform duration-300"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                   const emojiSpan = e.currentTarget.nextElementSibling as HTMLElement;
@@ -858,21 +841,21 @@ export default function CotizacionPage() {
                         
                         {/* Información del producto - Altura fija */}
                         <div className="text-center mb-6 flex-grow">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-3 h-14 flex items-center justify-center leading-tight">{producto.nombre}</h3>
-                          <p className="text-sm text-gray-600 mb-4 leading-relaxed h-20 overflow-hidden">{producto.descripcion}</p>
+                          <h3 className="text-xl font-semibold text-white mb-3 h-14 flex items-center justify-center leading-tight drop-shadow-md">{producto.nombre}</h3>
+                          <p className="text-sm text-white text-opacity-90 mb-4 leading-relaxed h-20 overflow-hidden drop-shadow-sm">{producto.descripcion}</p>
                           
-                          <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                          <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 mb-4 border border-white border-opacity-30">
                             <div className="flex justify-center items-baseline space-x-1">
-                              <span className="text-2xl font-bold text-gray-900">
+                              <span className="text-2xl font-bold text-white drop-shadow-md">
                                 {formatearPrecio(producto.precio)}
                               </span>
-                              <span className="text-sm text-gray-500 font-medium">por {producto.unidad}</span>
+                              <span className="text-sm text-white text-opacity-80 font-medium drop-shadow-sm">por {producto.unidad}</span>
                             </div>
                           </div>
                           
                           <div className="flex justify-center">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              <span className="w-2 h-2 bg-emerald-400 rounded-full mr-2"></span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 bg-opacity-90 text-emerald-800 border border-emerald-300 border-opacity-50 backdrop-blur-sm">
+                              <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
                               {producto.tipo}
                             </span>
                           </div>
@@ -880,7 +863,7 @@ export default function CotizacionPage() {
                         
                         {/* Selector de cantidad - Posición fija */}
                         <div className="mb-6 flex-shrink-0">
-                          <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
+                          <label className="block text-sm font-medium text-white text-opacity-90 mb-3 text-center drop-shadow-sm">
                             Cantidad ({producto.unidad})
                           </label>
                           <div className="flex items-center justify-center space-x-3">
@@ -936,15 +919,15 @@ export default function CotizacionPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
                   {productos.biocontroladores.map((producto) => (
                     <div key={producto.id} className="group">
-                      <div className="bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:border-orange-200 hover:-translate-y-1 h-full flex flex-col">
+                      <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl shadow-lg border border-white border-opacity-30 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:border-orange-200 hover:border-opacity-50 hover:-translate-y-1 h-full flex flex-col">
                         {/* Círculo del producto - Tamaño fijo */}
                         <div className="relative mb-6 flex-shrink-0">
-                          <div className="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
+                          <div className="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 cursor-pointer hover:ring-2 hover:ring-orange-300" onClick={() => abrirModal(producto)}>
                             {producto.imagen ? (
                               <img 
                                 src={producto.imagen} 
                                 alt={producto.nombre}
-                                className="w-28 h-28 object-cover rounded-full"
+                                className="w-28 h-28 object-cover rounded-full hover:scale-110 transition-transform duration-300"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                   const emojiSpan = e.currentTarget.nextElementSibling as HTMLElement;
@@ -965,21 +948,21 @@ export default function CotizacionPage() {
                         
                         {/* Información del producto - Altura fija */}
                         <div className="text-center mb-6 flex-grow">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-3 h-14 flex items-center justify-center leading-tight">{producto.nombre}</h3>
-                          <p className="text-sm text-gray-600 mb-4 leading-relaxed h-20 overflow-hidden">{producto.descripcion}</p>
+                          <h3 className="text-xl font-semibold text-white mb-3 h-14 flex items-center justify-center leading-tight drop-shadow-md">{producto.nombre}</h3>
+                          <p className="text-sm text-white text-opacity-90 mb-4 leading-relaxed h-20 overflow-hidden drop-shadow-sm">{producto.descripcion}</p>
                           
-                          <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                          <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 mb-4 border border-white border-opacity-30">
                             <div className="flex justify-center items-baseline space-x-1">
-                              <span className="text-2xl font-bold text-gray-900">
+                              <span className="text-2xl font-bold text-white drop-shadow-md">
                                 {formatearPrecio(producto.precio)}
                               </span>
-                              <span className="text-sm text-gray-500 font-medium">por {producto.unidad}</span>
+                              <span className="text-sm text-white text-opacity-80 font-medium drop-shadow-sm">por {producto.unidad}</span>
                             </div>
                           </div>
                           
                           <div className="flex justify-center">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
-                              <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 bg-opacity-90 text-orange-800 border border-orange-300 border-opacity-50 backdrop-blur-sm">
+                              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
                               {producto.tipo}
                             </span>
                           </div>
@@ -987,7 +970,7 @@ export default function CotizacionPage() {
                         
                         {/* Selector de cantidad - Posición fija */}
                         <div className="mb-6 flex-shrink-0">
-                          <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
+                          <label className="block text-sm font-medium text-white text-opacity-90 mb-3 text-center drop-shadow-sm">
                             Cantidad ({producto.unidad})
                           </label>
                           <div className="flex items-center justify-center space-x-3">
@@ -1047,7 +1030,7 @@ export default function CotizacionPage() {
                   {productosSeleccionados.map((item, index) => {
                     const producto = getProductoInfo(item.categoria, item.productoId);
                     return (
-                      <div key={item.id} className="bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] hover:-translate-y-1 hover:border-blue-200">
+                      <div key={item.id} className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl shadow-lg border border-white border-opacity-30 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] hover:-translate-y-1 hover:border-blue-200 hover:border-opacity-50">
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center space-x-6">
                             {/* Imagen del producto */}
@@ -1077,18 +1060,18 @@ export default function CotizacionPage() {
                             </div>
                             
                             <div className="flex-grow">
-                              <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                              <h3 className="text-xl font-semibold text-white mb-1 drop-shadow-md">
                                 {producto ? producto.nombre : `Producto ${index + 1}`}
                               </h3>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-white text-opacity-80 drop-shadow-sm">
                                 {producto ? `${producto.codigo} • ${producto.tipo}` : 'Configurar producto'}
                               </p>
                               {producto && (
                                 <div className="flex items-center mt-2 space-x-4">
-                                  <span className="text-lg font-bold text-gray-900">
+                                  <span className="text-lg font-bold text-white drop-shadow-md">
                                     {formatearPrecio(producto.precio * item.cantidad)}
                                   </span>
-                                  <span className="text-sm text-gray-500">
+                                  <span className="text-sm text-white text-opacity-70 drop-shadow-sm">
                                     {item.cantidad} {producto.unidad} × {formatearPrecio(producto.precio)}
                                   </span>
                                 </div>
@@ -1098,9 +1081,9 @@ export default function CotizacionPage() {
                           
                           <button
                             onClick={() => eliminarProducto(item.id)}
-                            className="w-10 h-10 bg-red-50 hover:bg-red-100 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                            className="w-10 h-10 bg-red-100 bg-opacity-80 hover:bg-opacity-100 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 flex-shrink-0 border border-red-200 border-opacity-50"
                           >
-                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
@@ -1109,11 +1092,11 @@ export default function CotizacionPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           {/* Categoría */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Categoría</label>
+                            <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">Categoría</label>
                             <select
                               value={item.categoria}
                               onChange={(e) => actualizarProducto(item.id, 'categoria', e.target.value)}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300 [&>option]:text-gray-900 [&>option]:bg-white"
                             >
                               <option value="">Seleccionar categoría</option>
                               <option value="biofertilizantes">Biofertilizantes</option>
@@ -1123,12 +1106,12 @@ export default function CotizacionPage() {
                           
                           {/* Producto */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Producto</label>
+                            <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">Producto</label>
                             <select
                               value={item.productoId}
                               onChange={(e) => actualizarProducto(item.id, 'productoId', e.target.value)}
                               disabled={!item.categoria}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-400"
+                              className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300 disabled:bg-opacity-10 disabled:text-white disabled:text-opacity-50 [&>option]:text-gray-900 [&>option]:bg-white"
                             >
                               <option value="">Seleccionar producto</option>
                               {item.categoria && productos[item.categoria]?.map(producto => (
@@ -1141,12 +1124,12 @@ export default function CotizacionPage() {
                           
                           {/* Cantidad */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                            <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">
                               Cantidad
                               {(() => {
                                 const info = item.productoId ? getProductoInfo(item.categoria, item.productoId) : null;
                                 return info?.unidad ? (
-                                  <span className="text-gray-500 font-normal"> ({info.unidad})</span>
+                                  <span className="text-white text-opacity-60 font-normal"> ({info.unidad})</span>
                                 ) : null;
                               })()}
                             </label>
@@ -1155,7 +1138,7 @@ export default function CotizacionPage() {
                               min="1"
                               value={item.cantidad}
                               onChange={(e) => actualizarProducto(item.id, 'cantidad', parseInt(e.target.value) || 1)}
-                              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 focus:border-opacity-70 transition-all duration-200 text-white placeholder-gray-300"
                             />
                           </div>
                         </div>
@@ -1167,19 +1150,19 @@ export default function CotizacionPage() {
 
               {/* Total del carrito */}
               {productosSeleccionados.length > 0 && (
-                <div className="bg-white bg-opacity-90 backdrop-blur-md rounded-2xl p-6 mb-8 border border-gray-200 transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg">
+                <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 mb-8 border border-white border-opacity-30 transform transition-all duration-500 hover:scale-[1.01] hover:shadow-lg">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Total estimado</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="text-xl font-semibold text-white drop-shadow-md">Total estimado</h3>
+                      <p className="text-sm text-white text-opacity-80 drop-shadow-sm">
                         {productosSeleccionados.length} producto{productosSeleccionados.length > 1 ? 's' : ''} seleccionado{productosSeleccionados.length > 1 ? 's' : ''}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-3xl font-bold text-emerald-600">
+                      <div className="text-3xl font-bold text-emerald-400 drop-shadow-md">
                         {formatearPrecio(calcularTotal())}
                       </div>
-                      <p className="text-sm text-gray-500">Precio de referencia</p>
+                      <p className="text-sm text-white text-opacity-70 drop-shadow-sm">Precio de referencia</p>
                     </div>
                   </div>
                 </div>
@@ -1229,6 +1212,134 @@ export default function CotizacionPage() {
                     </span>
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal para mostrar imagen ampliada */}
+        {mostrarModal && productoModalSeleccionado && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={cerrarModal}>
+            <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto shadow-2xl border border-white border-opacity-20" onClick={(e) => e.stopPropagation()}>
+              <div className="p-8">
+                {/* Botón cerrar */}
+                <div className="flex justify-end mb-4">
+                  <button 
+                    onClick={cerrarModal}
+                    className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border border-white border-opacity-30"
+                  >
+                    <svg className="w-6 h-6 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                  {/* Imagen del producto */}
+                  <div className="text-center">
+                    {productoModalSeleccionado.imagen ? (
+                      <img 
+                        src={productoModalSeleccionado.imagen} 
+                        alt={productoModalSeleccionado.nombre}
+                        className="w-full max-w-md mx-auto rounded-2xl shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-full max-w-md mx-auto h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
+                        <span className="text-6xl">{productoModalSeleccionado.icono}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Información del producto */}
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="px-3 py-1 bg-blue-100 bg-opacity-90 text-blue-800 rounded-full text-sm font-medium backdrop-blur-sm border border-blue-200 border-opacity-50">
+                          {productoModalSeleccionado.codigo}
+                        </span>
+                        <span className="px-3 py-1 bg-green-100 bg-opacity-90 text-green-800 rounded-full text-sm font-medium backdrop-blur-sm border border-green-200 border-opacity-50">
+                          {productoModalSeleccionado.categoria}
+                        </span>
+                      </div>
+                      <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">
+                        {productoModalSeleccionado.nombre}
+                      </h2>
+                      <p className="text-lg text-white text-opacity-80 mb-4 drop-shadow-sm">
+                        {productoModalSeleccionado.tipo}
+                      </p>
+                    </div>
+
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20">
+                      <h3 className="text-xl font-semibold text-white mb-3 drop-shadow-md">Descripción del Producto</h3>
+                      <p className="text-white text-opacity-90 leading-relaxed text-base drop-shadow-sm">
+                        {productoModalSeleccionado.descripcion}
+                      </p>
+                    </div>
+
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20">
+                      <div className="space-y-4">
+                        {/* Precio y total */}
+                        <div>
+                          <p className="text-sm text-white text-opacity-70 mb-1 drop-shadow-sm">Precio por {productoModalSeleccionado.unidad}</p>
+                          <p className="text-2xl font-bold text-white mb-2 drop-shadow-md">
+                            {formatearPrecio(productoModalSeleccionado.precio)}
+                          </p>
+                          <div className="border-t border-white border-opacity-20 pt-2">
+                            <p className="text-sm text-white text-opacity-70 mb-1 drop-shadow-sm">Total: {cantidadModal} {productoModalSeleccionado.unidad}</p>
+                            <p className="text-3xl font-bold text-white drop-shadow-md">
+                              {formatearPrecio(productoModalSeleccionado.precio * cantidadModal)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Selector de cantidad */}
+                        <div>
+                          <label className="block text-sm font-medium text-white text-opacity-90 mb-3 drop-shadow-sm">
+                            Cantidad ({productoModalSeleccionado.unidad})
+                          </label>
+                          <div className="flex items-center justify-center space-x-3 mb-4">
+                            <button
+                              onClick={() => setCantidadModal(Math.max(1, cantidadModal - 1))}
+                              className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border border-white border-opacity-30"
+                            >
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                              </svg>
+                            </button>
+                            <input
+                              type="number"
+                              min="1"
+                              value={cantidadModal}
+                              onChange={(e) => setCantidadModal(Math.max(1, parseInt(e.target.value) || 1))}
+                              className="w-20 h-10 text-center bg-white bg-opacity-20 backdrop-blur-sm text-white border border-white border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-opacity-70"
+                            />
+                            <button
+                              onClick={() => setCantidadModal(cantidadModal + 1)}
+                              className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border border-white border-opacity-30"
+                            >
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Botón agregar al carrito */}
+                        <button 
+                          onClick={agregarAlCarritoDesdeModal}
+                          className="w-full bg-blue-600 bg-opacity-90 hover:bg-opacity-100 backdrop-blur-sm text-white px-6 py-4 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl border border-blue-400 border-opacity-50 hover:border-opacity-70"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span>Agregar al Carrito</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

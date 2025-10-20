@@ -33,17 +33,99 @@ interface DatosContacto {
 }
 
 const productos = {
-  microorganismos: [
-    { id: 'TR', nombre: 'Trichoderma harzianum', tipo: 'Hongo', codigo: 'TR', unidad: 'litros', precio: 38000 },
-    { id: 'MT', nombre: 'Metarhizium anisopliae', tipo: 'Hongo', codigo: 'MT', unidad: 'litros', precio: 38000 },
-    { id: 'PL', nombre: 'Purpureocillium lilacinum', tipo: 'Hongo', codigo: 'PL', unidad: 'litros', precio: 38000 },
-    { id: 'BV', nombre: 'Beauveria bassiana', tipo: 'Hongo', codigo: 'BV', unidad: 'litros', precio: 38000 },
-    { id: 'BT', nombre: 'Bacillus thuringiensis', tipo: 'Bacteria', codigo: 'BT', unidad: 'litros', precio: 38000 },
-    { id: 'SB', nombre: 'Siriusbacter', tipo: 'Bacteria', codigo: 'SB', unidad: 'litros', precio: 38000 }
+  biofertilizantes: [
+    { 
+      id: 'SD', 
+      nombre: 'Start Dust', 
+      tipo: 'Biochar', 
+      codigo: 'SD', 
+      unidad: 'kg', 
+      precio: 38000,
+      descripcion: 'Carbón vegetal activado con tecnología de pirolisis avanzada, enriquecido con consorcios microbianos específicos.',
+      categoria: 'Biofertilizante'
+    },
+    { 
+      id: 'TC', 
+      nombre: 'Tricochar', 
+      tipo: 'Biochar', 
+      codigo: 'TC', 
+      unidad: 'kg', 
+      precio: 2500,
+      descripcion: 'Matriz de carbón bioactivado inoculado con cepas seleccionadas de Trichoderma harzianum.',
+      categoria: 'Biofertilizante'
+    },
+    { 
+      id: 'BB', 
+      nombre: 'Biochar Blend', 
+      tipo: 'Biochar', 
+      codigo: 'BB', 
+      unidad: 'kg', 
+      precio: 1190,
+      descripcion: 'Mezcla especializada de Biochar, BioAbono y microorganismos beneficiosos para optimización del suelo.',
+      categoria: 'Biofertilizante'
+    }
   ],
-  biochar: [
-    { id: 'BB', nombre: 'Biochar Blend', tipo: 'Biochar', codigo: 'BB', unidad: 'kg', precio: 1190 },
-    { id: 'BC', nombre: 'Biochar', tipo: 'Biochar', codigo: 'BC', unidad: 'kg', precio: 2000 }
+  biocontroladores: [
+    { 
+      id: 'TR', 
+      nombre: 'Trichoderma Harzianum', 
+      tipo: 'Hongo', 
+      codigo: 'TR', 
+      unidad: 'litros', 
+      precio: 38000,
+      descripcion: 'Cepa élite de hongo filamentoso con actividad micoparasítica contra patógenos del suelo.',
+      categoria: 'Biocontrolador'
+    },
+    { 
+      id: 'MT', 
+      nombre: 'Metarhizium Anisopliae', 
+      tipo: 'Hongo', 
+      codigo: 'MT', 
+      unidad: 'litros', 
+      precio: 38000,
+      descripcion: 'Hongo entomopatógeno especializado en control biológico de insectos plaga.',
+      categoria: 'Biocontrolador'
+    },
+    { 
+      id: 'PL', 
+      nombre: 'Purpureocillium lilacinum', 
+      tipo: 'Hongo', 
+      codigo: 'PL', 
+      unidad: 'litros', 
+      precio: 38000,
+      descripcion: 'Agente de biocontrol eficaz contra nematodos fitopatógenos.',
+      categoria: 'Biocontrolador'
+    },
+    { 
+      id: 'BV', 
+      nombre: 'Beauveria Bassiana', 
+      tipo: 'Hongo', 
+      codigo: 'BV', 
+      unidad: 'litros', 
+      precio: 38000,
+      descripcion: 'Hongo entomopatógeno de amplio espectro para control de hemípteros y tisanópteros.',
+      categoria: 'Biocontrolador'
+    },
+    { 
+      id: 'BT', 
+      nombre: 'Bacillus thuringiensis', 
+      tipo: 'Bacteria', 
+      codigo: 'BT', 
+      unidad: 'litros', 
+      precio: 38000,
+      descripcion: 'Bacteria productora de δ-endotoxinas con actividad específica contra lepidópteros.',
+      categoria: 'Biocontrolador'
+    },
+    { 
+      id: 'SB', 
+      nombre: 'SiriusBacter', 
+      tipo: 'Bacteria', 
+      codigo: 'SB', 
+      unidad: 'litros', 
+      precio: 38000,
+      descripcion: 'Consorcio de rizobacterias promotoras del crecimiento vegetal (PGPR).',
+      categoria: 'Biofertilizante'
+    }
   ]
 };
 
@@ -74,85 +156,155 @@ const formatearPrecio = (precio: number) => {
 
 // Función para generar y retornar PDF como buffer
 const generarPDFBuffer = (productosSeleccionados: ProductoSeleccionado[], datosContacto: DatosContacto): Buffer => {
-  console.log('📄 INICIANDO GENERACIÓN DE PDF EN SERVIDOR');
+  console.log('📄 INICIANDO GENERACIÓN DE PDF PROFESIONAL EN SERVIDOR');
 
-  // Crear instancia de jsPDF
-  const pdf = new jsPDF();
+  // Crear instancia de jsPDF con configuración A4
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
 
-  // Configuración de colores y fuentes
-  const primaryColor: [number, number, number] = [34, 197, 94]; // emerald-500
-  const secondaryColor: [number, number, number] = [107, 114, 128]; // gray-500
+  // Configuración de colores profesionales
+  const primaryColor: [number, number, number] = [22, 163, 74]; // green-600
+  const secondaryColor: [number, number, number] = [75, 85, 99]; // gray-600
+  const accentColor: [number, number, number] = [249, 115, 22]; // orange-500
+  const backgroundColor: [number, number, number] = [248, 250, 252]; // slate-50
 
-  // Header
+  // === HEADER PROFESIONAL ===
+  // Fondo del header con gradiente simulado
   pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  pdf.rect(0, 0, 210, 40, 'F');
+  pdf.rect(0, 0, 210, 45, 'F');
 
+  // Logo y título principal
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(24);
-  pdf.text('SIRIUS REGENERATIVE SOLUTIONS', 20, 20);
-
+  pdf.setFontSize(28);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('SIRIUS', 20, 22);
+  
   pdf.setFontSize(14);
-  pdf.text('Cotización de Productos', 20, 32);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('REGENERATIVE SOLUTIONS', 20, 32);
 
-  // Fecha
+  // Subtítulo elegante
+  pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
+  pdf.rect(20, 38, 100, 4, 'F');
+  
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('COTIZACIÓN COMERCIAL', 130, 25);
+
+  // Número de cotización y fecha
+  const numeroCotizacion = `COT-${Date.now().toString().slice(-6)}`;
+  const fecha = new Date();
+  const fechaFormatted = fecha.toLocaleDateString('es-CO', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`No. ${numeroCotizacion}`, 130, 32);
+  pdf.text(`${fechaFormatted}`, 130, 38);
+
+  // === INFORMACIÓN DEL CLIENTE (SECCIÓN ELEGANTE) ===
+  let yPos = 60;
+
+  // Caja de información del cliente
+  pdf.setFillColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
+  pdf.rect(20, yPos, 170, 35, 'F');
+  pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setLineWidth(0.5);
+  pdf.rect(20, yPos, 170, 35, 'S');
+
+  // Título de la sección
+  pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('INFORMACIÓN DEL CLIENTE', 25, yPos + 8);
+
+  // Información en dos columnas
   pdf.setTextColor(0, 0, 0);
   pdf.setFontSize(10);
-  const fecha = new Date().toLocaleDateString('es-CO');
-  pdf.text(`Fecha: ${fecha}`, 150, 50);
+  pdf.setFont('helvetica', 'normal');
 
-  // Información del cliente
-  let yPosition = 70;
-  if (datosContacto.nombre) {
-    pdf.setFontSize(12);
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.text('Información del Cliente:', 20, yPosition);
-    yPosition += 10;
+  const clienteInfo = [
+    ['Cliente:', datosContacto.nombre],
+    ['Empresa:', datosContacto.empresa],
+    ['Teléfono:', datosContacto.telefono],
+    ['Email:', datosContacto.correo]
+  ];
 
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(10);
-    pdf.text(`Nombre: ${datosContacto.nombre}`, 20, yPosition);
-    yPosition += 8;
-    pdf.text(`Empresa: ${datosContacto.empresa}`, 20, yPosition);
-    yPosition += 8;
-    pdf.text(`Teléfono: ${datosContacto.telefono}`, 20, yPosition);
-    yPosition += 8;
-    pdf.text(`Correo: ${datosContacto.correo}`, 20, yPosition);
-    yPosition += 15;
-  }
+  clienteInfo.forEach((info, index) => {
+    const x = 25;
+    const y = yPos + 15 + (index * 5);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(info[0], x, y);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(info[1], x + 20, y);
+  });
 
-  // Crear tabla manualmente
-  const startY = yPosition;
-  const rowHeight = 12;
-  const colWidths = [15, 60, 25, 25, 35, 30];
-  const tableWidth = colWidths.reduce((sum, width) => sum + width, 0);
+  yPos += 45;
 
-  // Header de tabla
+  // === TABLA DE PRODUCTOS PROFESIONAL ===
+  yPos += 10;
+
+  // Título de la tabla
+  pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('DETALLE DE PRODUCTOS', 20, yPos);
+
+  yPos += 10;
+
+  // Configuración de la tabla
+  const tableStartY = yPos;
+  const rowHeight = 14;
+  const headerHeight = 16;
+  const colWidths = [15, 70, 20, 25, 30, 30]; // Ajustado para mejor distribución
+  
+  // Header de la tabla con estilo profesional
   pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(10);
+  pdf.rect(20, tableStartY, 190, headerHeight, 'F');
 
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
+
+  const headers = ['#', 'Producto', 'Cód.', 'Cantidad', 'Precio Unit.', 'Subtotal'];
   let currentX = 20;
-  const headers = ['#', 'Producto', 'Código', 'Cantidad', 'Precio Unit.', 'Subtotal'];
 
   headers.forEach((header, index) => {
-    pdf.rect(currentX, startY, colWidths[index], rowHeight, 'F');
-    pdf.text(header, currentX + 2, startY + 8);
+    const textWidth = pdf.getTextWidth(header);
+    const centerX = currentX + (colWidths[index] - textWidth) / 2;
+    pdf.text(header, centerX, tableStartY + 11);
     currentX += colWidths[index];
   });
 
-  // Filas de datos
+  // Filas de datos con alternancia de colores
+  let currentY = tableStartY + headerHeight;
   pdf.setTextColor(0, 0, 0);
   pdf.setFontSize(9);
 
-  let currentY = startY + rowHeight;
   productosSeleccionados.forEach((item, index) => {
     const producto = getProductoInfo(item.categoria, item.productoId);
     if (!producto) return;
 
+    // Alternar color de fondo para las filas
+    if (index % 2 === 1) {
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.rect(20, currentY, 190, rowHeight, 'F');
+    }
+
     const subtotal = calcularSubtotal(producto, item.cantidad);
+    
+    // Datos de la fila
     const rowData = [
       (index + 1).toString(),
-      producto.nombre.length > 25 ? producto.nombre.substring(0, 22) + '...' : producto.nombre,
+      producto.nombre,
       producto.codigo,
       `${item.cantidad} ${producto.unidad}`,
       formatearPrecio(producto.precio),
@@ -161,15 +313,16 @@ const generarPDFBuffer = (productosSeleccionados: ProductoSeleccionado[], datosC
 
     currentX = 20;
     rowData.forEach((data, colIndex) => {
-      // Dibujar borde de celda
-      pdf.rect(currentX, currentY, colWidths[colIndex], rowHeight);
+      // Bordes de celda sutiles
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.1);
+      pdf.rect(currentX, currentY, colWidths[colIndex], rowHeight, 'S');
 
-      // Agregar texto
-      const textX = currentX + 2;
-      const textY = currentY + 8;
-
-      // Ajustar texto largo
+      // Texto centrado o alineado según la columna
+      let textX = currentX + 2;
       let displayText = data;
+
+      // Truncar texto si es muy largo
       const maxWidth = colWidths[colIndex] - 4;
       if (pdf.getTextWidth(displayText) > maxWidth) {
         while (pdf.getTextWidth(displayText + '...') > maxWidth && displayText.length > 3) {
@@ -178,35 +331,115 @@ const generarPDFBuffer = (productosSeleccionados: ProductoSeleccionado[], datosC
         displayText += '...';
       }
 
-      pdf.text(displayText, textX, textY);
+      // Alinear números a la derecha (precios)
+      if (colIndex >= 3) {
+        const textWidth = pdf.getTextWidth(displayText);
+        textX = currentX + colWidths[colIndex] - textWidth - 2;
+      }
+
+      pdf.setFont('helvetica', colIndex === 1 ? 'bold' : 'normal');
+      pdf.text(displayText, textX, currentY + 9);
       currentX += colWidths[colIndex];
     });
 
     currentY += rowHeight;
   });
 
-  // Total
-  const finalY = currentY + 20;
+  // === TOTALES PROFESIONALES ===
+  const totalY = currentY + 15;
   const total = calcularTotal(productosSeleccionados);
 
-  pdf.setFontSize(14);
-  pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  pdf.text('TOTAL:', 140, finalY);
+  // Caja para totales
+  pdf.setFillColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
+  pdf.rect(130, totalY, 80, 25, 'F');
+  pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setLineWidth(0.8);
+  pdf.rect(130, totalY, 80, 25, 'S');
 
+  // Subtotal (opcional, por ahora igual al total)
+  pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Subtotal:', 135, totalY + 8);
+  pdf.text(formatearPrecio(total), 175, totalY + 8);
+
+  // Total principal
+  pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('TOTAL:', 135, totalY + 18);
+  
   pdf.setFontSize(16);
   pdf.setTextColor(0, 0, 0);
-  pdf.text(formatearPrecio(total), 170, finalY);
+  pdf.text(formatearPrecio(total), 175, totalY + 18);
 
-  // Footer
-  const pageHeight = pdf.internal.pageSize.height;
-  pdf.setFontSize(8);
+  // === TÉRMINOS Y CONDICIONES ===
+  const termsY = totalY + 40;
+  
+  pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('TÉRMINOS Y CONDICIONES', 20, termsY);
+
   pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-  pdf.text('Sirius Regenerative Solutions - Cotización generada automáticamente', 20, pageHeight - 20);
-  pdf.text('www.siriusregenerative.co', 20, pageHeight - 10);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+
+  const terminos = [
+    '• Esta cotización tiene validez de 30 días calendario.',
+    '• Los precios incluyen IVA y están sujetos a cambios sin previo aviso.',
+    '• Tiempo de entrega: 5-10 días hábiles una vez confirmado el pedido.',
+    '• Productos biotecnológicos de alta calidad con certificación de calidad.',
+    '• Garantía técnica y soporte especializado incluido.'
+  ];
+
+  terminos.forEach((termino, index) => {
+    pdf.text(termino, 20, termsY + 8 + (index * 4));
+  });
+
+  // === FOOTER PROFESIONAL ===
+  const pageHeight = pdf.internal.pageSize.height;
+  
+  // Línea separadora
+  pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  pdf.setLineWidth(1);
+  pdf.line(20, pageHeight - 30, 190, pageHeight - 30);
+
+  // Información de contacto
+  pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('SIRIUS REGENERATIVE SOLUTIONS', 20, pageHeight - 22);
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.text('Email: contacto@siriusregenerative.co | Web: www.siriusregenerative.co', 20, pageHeight - 18);
+  pdf.text('Soluciones biotecnológicas para agricultura sostenible', 20, pageHeight - 14);
+
+  // Fecha y página
+  pdf.text(`Generado el ${fechaFormatted}`, 20, pageHeight - 8);
+  pdf.text('Página 1 de 1', 170, pageHeight - 8);
+
+  // === MARCA DE AGUA SUTIL ===
+  pdf.setTextColor(240, 240, 240);
+  pdf.setFontSize(60);
+  pdf.setFont('helvetica', 'bold');
+  
+  // Guardar estado actual
+  pdf.saveGraphicsState();
+  
+  // Aplicar rotación y transparencia simulada
+  const centerX = 105;
+  const centerY = 148;
+  
+  pdf.text('SIRIUS', centerX - 30, centerY, { angle: 45 });
+  
+  // Restaurar estado
+  pdf.restoreGraphicsState();
 
   // Retornar el PDF como buffer
   const pdfBuffer = Buffer.from(pdf.output('arraybuffer'));
-  console.log('✅ PDF generado exitosamente en servidor, tamaño:', pdfBuffer.length, 'bytes');
+  console.log('✅ PDF PROFESIONAL generado exitosamente en servidor, tamaño:', pdfBuffer.length, 'bytes');
 
   return pdfBuffer;
 };
