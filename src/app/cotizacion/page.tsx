@@ -519,7 +519,7 @@ export default function CotizacionPage() {
                 )}
                 
                 <button
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={() => window.location.href = '/registro'}
                   className="px-8 py-4 bg-emerald-500 bg-opacity-90 hover:bg-opacity-100 backdrop-blur-sm text-white rounded-2xl font-medium transition-all duration-200 flex items-center space-x-2 border border-emerald-400 border-opacity-50 drop-shadow-md"
                 >
                   <span>Volverme cliente</span>
