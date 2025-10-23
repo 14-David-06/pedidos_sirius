@@ -22,7 +22,6 @@ class SecureLogger {
     if (typeof data === 'string') {
       // Eliminar posibles credenciales o información sensible
       return data.replace(/pat[a-zA-Z0-9]{16,}/g, '[AIRTABLE_TOKEN]')
-                 .replace(/\d{10}:\w+/g, '[TELEGRAM_TOKEN]')
                  .replace(/app[a-zA-Z0-9]{16,}/g, '[AIRTABLE_BASE]')
                  .replace(/tbl[a-zA-Z0-9]{14,}/g, '[AIRTABLE_TABLE]');
     }

@@ -16,7 +16,7 @@ export default function LoginPage() {
     password: '',
     newPassword: '',
     confirmPassword: '',
-    tipoUsuario: 'raiz' // por defecto usuario root
+    tipoUsuario: 'regular' // por defecto usuario regular (sin selector)
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,33 +44,18 @@ export default function LoginPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // Si cambia el tipo de usuario, limpiar los campos
-    if (name === 'tipoUsuario') {
-      setFormData({
-        usuario: '',
-        password: '',
-        newPassword: '',
-        confirmPassword: '',
-        tipoUsuario: value
-      });
-      setShowPasswordSetup(false);
-      setIsFirstLogin(false);
-      setHasCheckedFirstLogin(false);
-      setFoundUserName('');
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
     
     // Limpiar error cuando el usuario comience a escribir
     if (error) setError('');
   };
 
-  // Función para verificar si es primer login (solo para usuarios regulares)
+  // Función para verificar si es primer login
   const checkFirstLogin = async () => {
-    if (formData.tipoUsuario !== 'regular' || !formData.usuario.trim()) {
+    if (!formData.usuario.trim()) {
       return;
     }
 
@@ -211,56 +196,42 @@ export default function LoginPage() {
     
     console.log('🔒 [SECURITY] Formulario enviado via JavaScript, no GET tradicional');
     console.log('📋 [LOGIN] Estado actual:', {
-      tipoUsuario: formData.tipoUsuario,
       showPasswordSetup,
       isFirstLogin,
       hasUsuario: !!formData.usuario,
       hasPassword: !!formData.password
     });
 
-    // FLUJO PARA USUARIOS GENÉRICOS (REGULARES)
-    if (formData.tipoUsuario === 'regular') {
-      // Validar que tenga documento
-      if (!formData.usuario.trim()) {
-        setError('Por favor ingresa tu número de documento');
-        return;
-      }
-
-      // Si aún no hemos verificado si es primer login, hacerlo
-      if (!hasCheckedFirstLogin) {
-        console.log('🔍 [LOGIN] Usuario regular - verificando primer login...');
-        await checkFirstLogin();
-        return;
-      }
-
-      // Si es configuración de contraseña por primera vez
-      if (showPasswordSetup && isFirstLogin) {
-        console.log('🆕 [LOGIN] Configurando contraseña por primera vez...');
-        await handlePasswordSetup(e);
-        return;
-      }
-
-      // Si el usuario ya tiene contraseña configurada, proceder con login normal
-      if (hasCheckedFirstLogin && !isFirstLogin && !showPasswordSetup) {
-        if (!formData.password) {
-          setError('Por favor ingresa tu contraseña');
-          return;
-        }
-        console.log('🔐 [LOGIN] Login normal para usuario regular con contraseña...');
-        // Continuar con el login normal más abajo
-      }
+    // Validar que tenga documento
+    if (!formData.usuario.trim()) {
+      setError('Por favor ingresa tu número de documento');
+      return;
     }
 
-    // FLUJO PARA USUARIOS ROOT
-    if (formData.tipoUsuario === 'raiz') {
-      console.log('👑 [LOGIN] Login de usuario root...');
-      if (!formData.usuario || !formData.password) {
-        setError('Por favor completa todos los campos');
-        return;
-      }
+    // Si aún no hemos verificado si es primer login, hacerlo
+    if (!hasCheckedFirstLogin) {
+      console.log('🔍 [LOGIN] Verificando primer login...');
+      await checkFirstLogin();
+      return;
     }
 
-    // LOGIN NORMAL (para usuarios root O usuarios regulares con contraseña)
+    // Si es configuración de contraseña por primera vez
+    if (showPasswordSetup && isFirstLogin) {
+      console.log('🆕 [LOGIN] Configurando contraseña por primera vez...');
+      await handlePasswordSetup(e);
+      return;
+    }
+
+    // Si el usuario ya tiene contraseña configurada, proceder con login normal
+    if (hasCheckedFirstLogin && !isFirstLogin && !showPasswordSetup) {
+      if (!formData.password) {
+        setError('Por favor ingresa tu contraseña');
+        return;
+      }
+      console.log('🔐 [LOGIN] Login normal para usuario con contraseña...');
+    }
+
+    // LOGIN NORMAL
     setIsLoading(true);
     setError('');
 
@@ -283,8 +254,7 @@ export default function LoginPage() {
 
       const requestBody = {
         usuario: formData.usuario,
-        password: formData.password,
-        tipoUsuarioPreferido: formData.tipoUsuario
+        password: formData.password
       };
 
       console.log('📤 [FRONTEND] Enviando request...');
@@ -403,49 +373,17 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} method="POST" className="space-y-8">
-              {/* Selector de tipo de usuario - Solo mostrar si no está configurando contraseña */}
-              {!showPasswordSetup && (
-                <div>
-                  <label htmlFor="tipoUsuario" className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                    Tipo de Usuario
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="tipoUsuario"
-                      name="tipoUsuario"
-                      value={formData.tipoUsuario}
-                      onChange={handleInputChange}
-                      className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500 focus:ring-opacity-20 focus:border-green-500 transition-all duration-300 text-lg bg-gray-50 focus:bg-white appearance-none cursor-pointer"
-                    >
-                      <option value="raiz">Usuario Root (Administrador)</option>
-                      <option value="regular">Usuario Genérico</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {formData.tipoUsuario === 'raiz' 
-                      ? 'Acceso completo a todas las funciones administrativas' 
-                      : 'Acceso con número de documento - primer ingreso requiere configurar contraseña'
-                    }
-                  </p>
-                </div>
-              )}
-
               {/* Campo Usuario/Documento */}
               <div>
                 <label htmlFor="usuario" className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                  {formData.tipoUsuario === 'raiz' ? 'Usuario' : 'Número de Documento'}
+                  Número de Documento
                 </label>
                 <div className="relative">
                   <Input
                     id="usuario"
                     name="usuario"
                     type="text"
-                    placeholder={formData.tipoUsuario === 'raiz' ? 'Ej: tu_usuario' : 'Ej: 12345678'}
+                    placeholder="Ej: 12345678"
                     value={formData.usuario}
                     onChange={handleInputChange}
                     disabled={showPasswordSetup}
@@ -453,13 +391,11 @@ export default function LoginPage() {
                   />
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  {formData.tipoUsuario === 'raiz' 
-                    ? 'Ingresa tu nombre de usuario de administrador' 
-                    : showPasswordSetup 
-                      ? `Hola ${foundUserName || 'Usuario'}, configura tu contraseña para completar el registro`
-                      : hasCheckedFirstLogin && !isFirstLogin
-                        ? `Bienvenido/a ${foundUserName || 'Usuario'} - ingresa tu contraseña actual`
-                        : 'Ingresa tu número de documento para verificar tu cuenta'
+                  {showPasswordSetup 
+                    ? `Hola ${foundUserName || 'Usuario'}, configura tu contraseña para completar el registro`
+                    : hasCheckedFirstLogin && !isFirstLogin
+                      ? `Bienvenido/a ${foundUserName || 'Usuario'} - ingresa tu contraseña actual`
+                      : 'Ingresa tu número de documento para verificar tu cuenta'
                   }
                 </p>
               </div>
@@ -507,9 +443,8 @@ export default function LoginPage() {
                 </>
               ) : (
                 // Campo de contraseña normal 
-                // Para usuarios root SIEMPRE, o para usuarios regulares que YA tienen contraseña configurada
-                (formData.tipoUsuario === 'raiz' || 
-                 (formData.tipoUsuario === 'regular' && hasCheckedFirstLogin && !isFirstLogin)) && (
+                // Para usuarios que YA tienen contraseña configurada
+                (hasCheckedFirstLogin && !isFirstLogin) && (
                   <div>
                     <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                       Contraseña
@@ -553,7 +488,7 @@ export default function LoginPage() {
                       <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>
                         {showPasswordSetup ? 'Configurando...' : 
-                         formData.tipoUsuario === 'regular' && !hasCheckedFirstLogin ? 'Verificando usuario...' : 
+                         !hasCheckedFirstLogin ? 'Verificando usuario...' : 
                          'Ingresando...'}
                       </span>
                     </div>
@@ -561,7 +496,7 @@ export default function LoginPage() {
                     <div className="flex items-center justify-center space-x-2">
                       <span>
                         {showPasswordSetup ? 'Configurar Contraseña' : 
-                         formData.tipoUsuario === 'regular' && !hasCheckedFirstLogin ? 'Verificar Usuario' : 
+                         !hasCheckedFirstLogin ? 'Verificar Usuario' : 
                          'Ingresar'}
                       </span>
                       <svg className="w-5 h-5 transform transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

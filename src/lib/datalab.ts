@@ -9,11 +9,6 @@ const DATALAB_PRODUCTOS_TABLE = process.env.DATALAB_PRODUCTOS_TABLE_ID;
 export const createDataLabOrder = async (orderData: {
   fechaRecogida?: string;
   clienteRecogeProducto: boolean;
-  nombreRecibe?: string;
-  cedulaRecibe?: string;
-  departamentoEntrega?: string;
-  ciudadEntrega?: string;
-  direccionEntrega?: string;
   observaciones: string;
   realizaRegistro: string;
   // Datos del cliente (texto simple en DataLab)
@@ -92,11 +87,6 @@ export const createDataLabOrder = async (orderData: {
         fields: {
           'Fecha Recogida': orderData.fechaRecogida,
           'Cliente Recoge Pedido': orderData.clienteRecogeProducto,
-          'Nombre Recibe': orderData.nombreRecibe,
-          'Cedula Recibe': orderData.cedulaRecibe,
-          'Departamento Entrega': orderData.departamentoEntrega,
-          'Ciudad Entrega': orderData.ciudadEntrega,
-          'Direccion Entrega': orderData.direccionEntrega,
           'Observaciones': orderData.observaciones,
           'Realiza Registro': orderData.realizaRegistro,
           // Datos del cliente como texto simple (no lookup)

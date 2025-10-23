@@ -47,12 +47,6 @@ function PedidoContent() {
     biocharUnidad: 'kg',
     recogesPedido: '', // 'si' o 'no'
     fechaEntrega: '',
-    // Campos para entrega
-    nombreRecibe: '',
-    cedulaRecibe: '',
-    departamento: '',
-    ciudad: '',
-    direccionEntrega: '',
     ubicacionAplicacion: '', // Campo para ubicación de aplicación del producto
     observaciones: ''
   });
@@ -91,42 +85,6 @@ function PedidoContent() {
   };
 
   const unidades = tipo === 'biologicos' ? ['kg', 'gr', 'lt', 'ml'] : ['ton', 'kg', 'm³'];
-
-  // Datos de departamentos y ciudades de Colombia
-  const departamentosCiudades = {
-    'Amazonas': ['Leticia', 'Puerto Nariño', 'El Encanto', 'La Chorrera', 'La Pedrera', 'La Victoria', 'Miriti-Paraná', 'Puerto Alegría', 'Puerto Arica', 'Puerto Santander', 'Tarapacá'],
-    'Antioquia': ['Medellín', 'Bello', 'Itagüí', 'Envigado', 'Apartadó', 'Turbo', 'Rionegro', 'Sabaneta', 'La Estrella', 'Caldas', 'Copacabana', 'Girardota', 'Barbosa', 'Carmen de Viboral', 'Marinilla', 'Guarne', 'San Pedro de los Milagros', 'Don Matías', 'Entrerríos', 'Caucasia', 'Necoclí', 'Carepa', 'Chigorodó', 'Mutatá', 'Vigía del Fuerte', 'Bagre', 'Nechí', 'Tarazá', 'Cáceres', 'Zaragoza', 'El Bagre', 'Segovia', 'Remedios', 'Yondó', 'Amalfi', 'Anorí', 'Cisneros', 'Maceo', 'Puerto Berrío', 'Puerto Nare', 'Puerto Triunfo', 'San Luis', 'San Rafael', 'Yalí', 'Yolombó', 'Andes', 'Betania', 'Betulia', 'Ciudad Bolívar', 'Concordia', 'Hispania', 'Jardín', 'Jericó', 'La Pintada', 'Montebello', 'Pueblorrico', 'Salgar', 'Santa Bárbara', 'Támesis', 'Tarso', 'Titiribí', 'Urrao', 'Valparaíso', 'Venecia', 'Abejorral', 'Alejandría', 'Argelia', 'El Carmen de Viboral', 'Cocorná', 'Concepción', 'El Peñol', 'El Retiro', 'El Santuario', 'Granada', 'Guatapé', 'La Ceja', 'La Unión', 'Marinilla', 'Nariño', 'Rionegro', 'San Carlos', 'San Francisco', 'San Luis', 'San Rafael', 'San Vicente', 'Sonsón', 'Abriaquí', 'Anzá', 'Armenia', 'Buriticá', 'Cañasgordas', 'Caicedo', 'Campamento', 'Carolina', 'Ebéjico', 'Frontino', 'Giraldo', 'Gómez Plata', 'Guadalupe', 'Heliconia', 'Liborina', 'Olaya', 'Peque', 'Sabanalarga', 'San Andrés de Cuerquia', 'San José de la Montaña', 'Santa Rosa de Osos', 'Toledo', 'Yarumal'],
-    'Arauca': ['Arauca', 'Tame', 'Saravena', 'Fortul', 'Arauquita', 'Cravo Norte', 'Puerto Rondón'],
-    'Atlántico': ['Barranquilla', 'Soledad', 'Malambo', 'Sabanagrande', 'Galapa', 'Puerto Colombia', 'Tubará', 'Usiacurí', 'Baranoa', 'Candelaria', 'Campo de la Cruz', 'Luruaco', 'Repelón', 'Sabanalarga', 'Santa Lucía', 'Santo Tomás', 'Suan', 'Piojó', 'Polonuevo', 'Ponedera', 'Palmar de Varela', 'Juan de Acosta', 'Manatí'],
-    'Bolívar': ['Cartagena', 'Magangué', 'Turbaco', 'Arjona', 'El Carmen de Bolívar', 'Santa Rosa', 'Sincelejo', 'Mompós', 'San Juan Nepomuceno', 'Mahates', 'Santa Catalina', 'Clemencia', 'María la Baja', 'San Cristóbal', 'San Estanislao', 'Villanueva', 'Soplaviento', 'Santa Rosa del Sur', 'Simití', 'Morales', 'Regidor', 'Río Viejo', 'San Fernando', 'San Jacinto', 'San Martín de Loba', 'Talaigua Nuevo', 'Tiquisio', 'Zambrano', 'Córdoba', 'El Guamo', 'El Peñón', 'Hatillo de Loba', 'Margarita', 'Montecristo', 'Norosí', 'Pinillos', 'San Pablo', 'Santa Rosa del Sur', 'Achí', 'Altos del Rosario', 'Arenal', 'Cantagallo', 'Cicuco', 'Mompós', 'Talaigua Nuevo', 'Barranco de Loba'],
-    'Boyacá': ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa', 'Villa de Leyva', 'Nobsa', 'Tibasosa', 'Santa Rosa de Viterbo', 'Monguí', 'Tópaga', 'Corrales', 'Floresta', 'Busbanzá', 'Iza', 'Firavitoba', 'Pesca', 'Toca', 'Siachoque', 'Cucaita', 'Samacá', 'Ventaquemada', 'Boyacá', 'Jenesano', 'Nuevo Colón', 'Rondón', 'Tibaná', 'Turmequé', 'Úmbita', 'Villapinzón', 'Chocontá', 'Machetá', 'Manta', 'Sesquilé', 'Suesca', 'Sutatausa', 'Tausa', 'Cogua', 'Nemocón', 'Zipaquirá', 'Gachancipá', 'Lenguazaque', 'Guachetá', 'Ráquira', 'Sáchica', 'Sutamarchán', 'Tinjacá', 'Togüí', 'Villa de Leyva', 'Arcabuco', 'Gachantivá', 'Moniquirá', 'San José de Pare', 'Santana', 'Chitaraque', 'Gámeza', 'Paz de Río', 'Socha', 'Socotá', 'Tasco', 'Betéitiva', 'Belén', 'Cerinza', 'Encino', 'Floresta', 'Tutazá', 'Aquitania', 'Cuítiva', 'Tota', 'Labranzagrande', 'Mongua', 'Pisba', 'Campohermoso', 'Chivor', 'Guateque', 'La Capilla', 'Pachavita', 'San Luis de Gaceno', 'Santa María', 'Somondoco', 'Sutatenza', 'Tenza', 'Garagoa', 'Macanal', 'San Eduardo', 'Almeida', 'Chivatá', 'Cómbita', 'Motavita', 'Oicatá', 'Sora', 'Soracá', 'Sotaquirá', 'Tuta', 'Chíquiza', 'Buenavista', 'Caldas', 'Chiscas', 'El Cocuy', 'El Espino', 'Güicán', 'Panqueba', 'Berbeo', 'Miraflores', 'Páez', 'San Eduardo', 'Zetaquira', 'Boavita', 'Covarachía', 'La Uvita', 'San Mateo', 'Sativanorte', 'Sativasur', 'Susacón', 'Tipacoque', 'Ciénega', 'Cubará', 'Puerto Boyacá'],
-    'Caldas': ['Manizales', 'La Dorada', 'Chinchiná', 'Riosucio', 'Anserma', 'Villamaría', 'Palestina', 'Neira', 'Aranzazu', 'Filadelfia', 'Supía', 'Marmato', 'Aguadas', 'Pácora', 'Salamina', 'La Merced', 'Samaná', 'Victoria', 'Marquetalia', 'Marulanda', 'Manzanares', 'Pensilvania', 'Risaralda', 'Viterbo', 'Belalcázar', 'San José'],
-    'Caquetá': ['Florencia', 'San Vicente del Caguán', 'Puerto Rico', 'El Doncello', 'La Montañita', 'Paujil', 'Curillo', 'El Paujil', 'Albania', 'Belén de los Andaquíes', 'Cartagena del Chairá', 'Milán', 'Morelia', 'Solano', 'Solita', 'Valparaíso'],
-    'Casanare': ['Yopal', 'Aguazul', 'Villanueva', 'Tauramena', 'Monterrey', 'Paz de Ariporo', 'Hato Corozal', 'Trinidad', 'Maní', 'Nunchía', 'Orocué', 'Pore', 'Recetor', 'Sabanalarga', 'Sácama', 'San Luis de Palenque', 'Támara', 'La Salina', 'Chámeza'],
-    'Cauca': ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Guapi', 'Patía', 'Piendamó', 'Caldono', 'Jambaló', 'Toribío', 'Corinto', 'Miranda', 'Padilla', 'Villa Rica', 'Suárez', 'Buenos Aires', 'Caloto', 'Guachené', 'Timbío', 'Rosas', 'La Sierra', 'La Vega', 'Sotará', 'Puracé', 'Coconuco', 'Inzá', 'Belalcázar', 'Páez', 'Silvia', 'Totoró', 'El Tambo', 'Morales', 'Cajibío', 'Argelia', 'Balboa', 'Bolívar', 'Mercaderes', 'Florencia', 'Almaguer', 'San Sebastián', 'Santa Rosa', 'López de Micay', 'Timbiquí'],
-    'Cesar': ['Valledupar', 'Aguachica', 'Bosconia', 'Codazzi', 'La Jagua de Ibirico', 'Chiriguaná', 'Curumaní', 'El Copey', 'El Paso', 'Gamarra', 'González', 'La Gloria', 'La Paz', 'Manaure', 'Pailitas', 'Pelaya', 'Pueblo Bello', 'Río de Oro', 'San Alberto', 'San Diego', 'San Martín', 'Tamalameque', 'Astrea', 'Becerril'],
-    'Chocó': ['Quibdó', 'Istmina', 'Condoto', 'Tadó', 'Acandí', 'Turbo', 'Apartadó', 'Carepa', 'Chigorodó', 'Mutatá', 'Necoclí', 'San Juan de Urabá', 'San Pedro de Urabá', 'Vigía del Fuerte', 'Bagadó', 'Bahía Solano', 'Bajo Baudó', 'Bojayá', 'El Cantón del San Pablo', 'Carmen del Darién', 'Cértegui', 'Juradó', 'Lloró', 'Medio Atrato', 'Medio Baudó', 'Medio San Juan', 'Nóvita', 'Nuquí', 'Río Iró', 'Río Quito', 'Riosucio', 'San José del Palmar', 'Sipí', 'Unguía', 'Unión Panamericana'],
-    'Córdoba': ['Montería', 'Lorica', 'Cereté', 'Sahagún', 'Planeta Rica', 'Chinú', 'Ciénaga de Oro', 'Cotorra', 'Los Córdobas', 'Momil', 'Purísima', 'San Andrés Sotavento', 'San Antero', 'San Bernardo del Viento', 'San Carlos', 'San José de Uré', 'San Pelayo', 'Tierralta', 'Tuchín', 'Valencia', 'Ayapel', 'Buenavista', 'Canalete', 'La Apartada', 'Montelíbano', 'Moñitos', 'Pueblo Nuevo', 'Puerto Escondido', 'Puerto Libertador'],
-    'Cundinamarca': ['Bogotá', 'Soacha', 'Girardot', 'Zipaquirá', 'Facatativá', 'Chía', 'Madrid', 'Funza', 'Mosquera', 'Fusagasugá', 'Villeta', 'Guaduas', 'La Mesa', 'Anapoima', 'Anolaima', 'Cachipay', 'El Rosal', 'Quipile', 'San Antonio del Tequendama', 'Viotá', 'Albán', 'La Peña', 'Nimaima', 'Nocaima', 'Quebradanegra', 'Sasaima', 'Supatá', 'Útica', 'Vergara', 'Villeta', 'Cajicá', 'Cogua', 'Gachancipá', 'Nemocón', 'Sopó', 'Tabio', 'Tenjo', 'Tocancipá', 'Zipaquirá', 'Bojacá', 'El Rosal', 'Facatativá', 'Funza', 'Madrid', 'Mosquera', 'Subachoque', 'Zipacón', 'Arbeláez', 'Cabrera', 'Fusagasugá', 'Granada', 'Pandi', 'Pasca', 'San Bernardo', 'Silvania', 'Tibacuy', 'Venecia', 'Agua de Dios', 'Girardot', 'Guataquí', 'Jerusalem', 'Nariño', 'Nilo', 'Ricaurte', 'Tocaima', 'Beltrán', 'Bituima', 'Chaguaní', 'Guayabal de Síquima', 'Pulí', 'San Juan de Río Seco', 'Vianí', 'Carmen de Carupa', 'Cucunubá', 'Fúquene', 'Guachetá', 'Lenguazaque', 'Simijaca', 'Susa', 'Sutatausa', 'Tausa', 'Ubaté', 'Villa de San Diego de Ubaté', 'Caldas', 'Choachí', 'Chocontá', 'Fómeque', 'Fosca', 'Guasca', 'Guatavita', 'Junín', 'La Calera', 'Machetá', 'Manta', 'Sesquilé', 'Sibaté', 'Suesca', 'Tibirita', 'Villapinzón', 'Cáqueza', 'Chipaque', 'Choachí', 'Fómeque', 'Fosca', 'Guayabetal', 'Gutiérrez', 'Quetame', 'Une', 'Ubaque', 'Apulo', 'Tocaima', 'Venecia', 'Pacho', 'El Peñón', 'La Palma', 'Paime', 'San Cayetano', 'Topaipi', 'Villagómez', 'Yacopí', 'Medina', 'Paratebueno'],
-    'Guainía': ['Inírida', 'Barranco Minas', 'Mapiripán', 'San Felipe', 'Puerto Colombia', 'La Guadalupe', 'Cacahual', 'Pana Pana', 'Morichal'],
-    'Guaviare': ['San José del Guaviare', 'Calamar', 'El Retorno', 'Miraflores'],
-    'Huila': ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre', 'Aipe', 'Algeciras', 'Altamira', 'Baraya', 'Colombia', 'Elías', 'Gigante', 'Guadalupe', 'Hobo', 'Íquira', 'Isnos', 'La Argentina', 'Nátaga', 'Oporapa', 'Paicol', 'Palermo', 'Rivera', 'Saladoblanco', 'San Agustín', 'Santa María', 'Suaza', 'Tarqui', 'Tello', 'Teruel', 'Tesalia', 'Timaná', 'Villavieja', 'Yaguará', 'Acevedo', 'Palestina', 'Pital'],
-    'La Guajira': ['Riohacha', 'Maicao', 'Uribia', 'Manaure', 'San Juan del Cesar', 'Fonseca', 'Barrancas', 'Distracción', 'El Molino', 'Hatonuevo', 'La Jagua del Pilar', 'Urumita', 'Villanueva', 'Dibulla', 'Albania'],
-    'Magdalena': ['Santa Marta', 'Ciénaga', 'Fundación', 'Zona Bananera', 'El Banco', 'Plato', 'Aracataca', 'Algarrobo', 'Ariguaní', 'Cerro San Antonio', 'Chivolo', 'Concordia', 'El Piñón', 'El Retén', 'Guamal', 'Nueva Granada', 'Pedraza', 'Pijiño del Carmen', 'Pivijay', 'Puebloviejo', 'Remolino', 'Sabanas de San Ángel', 'Salamina', 'San Sebastián de Buenavista', 'San Zenón', 'Santa Ana', 'Santa Bárbara de Pinto', 'Sitionuevo', 'Tenerife', 'Zapayán', 'Pijino del Carmen'],
-    'Meta': ['Villavicencio', 'Acacías', 'Granada', 'San Martín', 'Puerto López', 'Barranca de Upía', 'Cumaral', 'El Calvario', 'El Castillo', 'El Dorado', 'Fuentedeoro', 'Guamal', 'Lejanías', 'Mapiripán', 'Mesetas', 'La Macarena', 'Puerto Concordia', 'Puerto Gaitán', 'Puerto Lleras', 'Puerto Rico', 'Restrepo', 'San Carlos de Guaroa', 'San Juan de Arama', 'San Juanito', 'Uribe', 'Vistahermosa', 'Cabuyaro', 'Castilla la Nueva'],
-    'Nariño': ['Pasto', 'Tumaco', 'Ipiales', 'Tuquerres', 'Samaniego', 'Aldana', 'Ancuyá', 'Arboleda', 'Barbacoas', 'Belén', 'Buesaco', 'Chachagüí', 'Colón', 'Consacá', 'Contadero', 'Córdoba', 'Cuaspud', 'Cumbal', 'Cumbitara', 'El Charco', 'El Peñol', 'El Rosario', 'El Tablón de Gómez', 'El Tambo', 'Funes', 'Guachucal', 'Guaitarilla', 'Gualmatán', 'Iles', 'Imués', 'La Cruz', 'La Florida', 'La Llanada', 'La Tola', 'La Unión', 'Leiva', 'Linares', 'Los Andes', 'Magüí', 'Mallama', 'Mosquera', 'Nariño', 'Olaya Herrera', 'Ospina', 'Francisco Pizarro', 'Policarpa', 'Potosí', 'Providencia', 'Puerres', 'Pupiales', 'Ricaurte', 'Roberto Payán', 'Sandona', 'San Bernardo', 'San Lorenzo', 'San Pablo', 'San Pedro de Cartago', 'Santa Bárbara', 'Santacruz', 'Sapuyes', 'Taminango', 'Tangua', 'Yacuanquer'],
-    'Norte de Santander': ['Cúcuta', 'Ocaña', 'Pamplona', 'Villa del Rosario', 'Los Patios', 'Tibú', 'El Zulia', 'San Cayetano', 'Puerto Santander', 'Villa Caro', 'Teorama', 'El Tarra', 'Convención', 'El Carmen', 'Hacarí', 'La Playa', 'Sardinata', 'Abrego', 'La Esperanza', 'Chinácota', 'Ragonvalia', 'Herrán', 'Mutiscua', 'Silos', 'Cacota', 'Chitagá', 'Cucutilla', 'Labateca', 'Pamplonita', 'Arboledas', 'Salazar', 'Toledo', 'Bochalema', 'Durania', 'Cachirá', 'Villacaro', 'Ábrego', 'Bucarasica', 'El Zulia', 'Gramalote', 'Lourdes', 'Santiago', 'San Calixto'],
-    'Putumayo': ['Mocoa', 'Puerto Asís', 'Orito', 'Villa Garzón', 'Puerto Caicedo', 'Puerto Guzmán', 'La Hormiga', 'Valle del Guamuez', 'San Francisco', 'San Miguel', 'Santiago', 'Sibundoy', 'Colón'],
-    'Quindío': ['Armenia', 'Calarcá', 'La Tebaida', 'Montenegro', 'Quimbaya', 'Circasia', 'Filandia', 'Génova', 'Pijao', 'Salento', 'Buenavista', 'Córdoba'],
-    'Risaralda': ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia', 'Cartago', 'Ansermanuevo', 'Argelia', 'Balboa', 'Belén de Umbría', 'Guática', 'La Celia', 'Marsella', 'Mistrató', 'Pueblo Rico', 'Quinchía', 'Santuario'],
-    'San Andrés y Providencia': ['San Andrés', 'Providencia'],
-    'Santander': ['Bucaramanga', 'Floridablanca', 'Girón', 'Piedecuesta', 'Barrancabermeja', 'Málaga', 'Socorro', 'San Gil', 'Barbosa', 'Vélez', 'Zapatoca', 'Simacota', 'Barichara', 'Villanueva', 'Puente Nacional', 'Sabana de Torres', 'Rionegro', 'Lebrija', 'Tona', 'Matanza', 'Charta', 'El Playón', 'Santa Bárbara', 'Suratá', 'Vetas', 'California', 'Concepción', 'Cerrito', 'Palmas del Socorro', 'Simacota', 'Ocamonte', 'Aguada', 'Albania', 'Aratoca', 'Cabrera', 'Carcasí', 'Cepitá', 'Confines', 'Contratación', 'Coromoro', 'Enciso', 'Galán', 'Gambita', 'Guaca', 'Guadalupe', 'Guapotá', 'Guavatá', 'Güepsa', 'Hato', 'Jesús María', 'Jordán', 'La Belleza', 'La Paz', 'Landázuri', 'Lebríja', 'Los Santos', 'Macaravita', 'Mogotes', 'Molagavita', 'Ocamonte', 'Onzaga', 'Palmar', 'Palmas del Socorro', 'Páramo', 'Pinchote', 'Puente Nacional', 'Puerto Parra', 'Puerto Wilches', 'Sabana de Torres', 'San Andrés', 'San Benito', 'San José de Miranda', 'San Miguel', 'San Vicente de Chucurí', 'Santa Helena del Opón', 'Simacota', 'Sucre', 'Suratá', 'Valle de San José', 'Villanueva', 'Chipatá', 'El Carmen de Chucurí', 'El Guacamayo', 'El Peñón', 'Florián', 'Gámbita', 'Guavatá', 'Landázuri', 'Bolívar', 'Cimitarra', 'Puerto Parra', 'Puerto Wilches', 'Rionegro', 'San Vicente de Chucurí', 'Santa Helena del Opón', 'Yondó'],
-    'Sucre': ['Sincelejo', 'Corozal', 'San Marcos', 'Sampués', 'Tolú', 'Toluviejo', 'Ovejas', 'Coveñas', 'Majagual', 'Guaranda', 'Buenavista', 'Caimito', 'Chalán', 'Coloso', 'El Roble', 'Galeras', 'La Unión', 'Los Palmitos', 'Morroa', 'Palmito', 'San Benito Abad', 'San Juan de Betulia', 'San Luis de Sincé', 'San Onofre', 'San Pedro', 'Santiago de Tolú', 'Sucre'],
-    'Tolima': ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Líbano', 'Mariquita', 'Armero', 'Guamo', 'Saldaña', 'Chaparral', 'Ataco', 'Planadas', 'Rioblanco', 'Roncesvalles', 'Rovira', 'San Antonio', 'Ambalema', 'Anzoátegui', 'Cajamarca', 'Carmen de Apicalá', 'Casabianca', 'Coello', 'Coyaima', 'Cunday', 'Dolores', 'Falan', 'Flandes', 'Fresno', 'Guayabal', 'Herveo', 'Icononzo', 'Lérida', 'Murillo', 'Natagaima', 'Ortega', 'Palocabildo', 'Piedras', 'Prado', 'Purificación', 'Suárez', 'Valle de San Juan', 'Venadillo', 'Villahermosa', 'Villarrica'],
-    'Valle del Cauca': ['Cali', 'Palmira', 'Buenaventura', 'Tuluá', 'Cartago', 'Buga', 'Jamundí', 'Yumbo', 'Candelaria', 'Florida', 'Pradera', 'Cerrito', 'Ginebra', 'Guacarí', 'Restrepo', 'Vijes', 'La Cumbre', 'Dagua', 'La Unión', 'Roldanillo', 'Bolívar', 'Toro', 'Versalles', 'Ansermanuevo', 'Argelia', 'El Águila', 'El Cairo', 'El Dovio', 'Trujillo', 'Ulloa', 'Alcalá', 'Andalucía', 'Bugalagrande', 'Caicedonia', 'Obando', 'Sevilla', 'Zarzal', 'Calima', 'Darién', 'Yotoco'],
-    'Vaupés': ['Mitú', 'Caruru', 'Pacoa', 'Taraira', 'Papunaua', 'Yavaraté'],
-    'Vichada': ['Puerto Carreño', 'La Primavera', 'Santa Rosalía', 'Cumaribo']
-  };
 
   // NUEVA FUNCIÓN - Cargar microorganismos al montar el componente (solo para productos biológicos)
   const loadMicroorganismos = useCallback(async () => {
@@ -306,15 +264,6 @@ function PedidoContent() {
 
   const setBiocharUnidad = (valor: string) => {
     setFormData(prev => ({ ...prev, biocharUnidad: valor }));
-  };
-
-  // Función para manejar cambio de departamento (limpiar ciudad)
-  const handleDepartamentoChange = (departamento: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      departamento, 
-      ciudad: '' // Limpiar ciudad cuando cambie departamento
-    }));
   };
 
   // Función para calcular días hábiles (lunes a viernes)
@@ -505,30 +454,6 @@ function PedidoContent() {
       return;
     }
 
-    // Validar campos de entrega solo si necesita entrega
-    if (formData.recogesPedido === 'no') {
-      if (!formData.nombreRecibe.trim()) {
-        alert('Debes especificar el nombre de quien recibe.');
-        return;
-      }
-      if (!formData.cedulaRecibe.trim()) {
-        alert('Debes especificar la cédula de quien recibe.');
-        return;
-      }
-      if (!formData.departamento) {
-        alert('Debes seleccionar un departamento.');
-        return;
-      }
-      if (!formData.ciudad) {
-        alert('Debes seleccionar una ciudad.');
-        return;
-      }
-      if (!formData.direccionEntrega.trim()) {
-        alert('Debes especificar una dirección de entrega.');
-        return;
-      }
-    }
-
     setIsLoading(true);
 
     try {
@@ -539,14 +464,6 @@ function PedidoContent() {
         fechaEntrega: formData.fechaEntrega, // Siempre incluida
         ubicacionAplicacion: formData.ubicacionAplicacion, // Campo de ubicación de aplicación
         observaciones: formData.observaciones,
-        // Solo incluir campos de entrega si necesita entrega
-        ...(formData.recogesPedido === 'no' && {
-          nombreRecibe: formData.nombreRecibe,
-          cedulaRecibe: formData.cedulaRecibe,
-          departamento: formData.departamento,
-          ciudad: formData.ciudad,
-          direccionEntrega: formData.direccionEntrega,
-        }),
         ...(tipo === 'biologicos' 
           ? { 
               microorganismosSeleccionados: formData.microorganismosSeleccionados,
@@ -968,97 +885,18 @@ function PedidoContent() {
                           />
                         </div>
 
-                        {/* Campos adicionales solo para entrega */}
+                        {/* Información simplificada sobre envío */}
                         {formData.recogesPedido === 'no' && (
-                          <>
-                            {/* Información de quien recibe */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-white mb-2">
-                                  Nombre de quien recibe *
-                                </label>
-                                <Input
-                                  type="text"
-                                  value={formData.nombreRecibe}
-                                  onChange={(e) => handleInputChange('nombreRecibe', e.target.value)}
-                                  required
-                                  className="bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60"
-                                  placeholder="Nombre completo"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-white mb-2">
-                                  Cédula de quien recibe *
-                                </label>
-                                <Input
-                                  type="text"
-                                  value={formData.cedulaRecibe}
-                                  onChange={(e) => handleInputChange('cedulaRecibe', e.target.value)}
-                                  required
-                                  className="bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60"
-                                  placeholder="Número de cédula"
-                                />
-                              </div>
+                          <div className="bg-blue-500 bg-opacity-20 backdrop-blur-sm border border-blue-500 border-opacity-30 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Package className="h-5 w-5 text-blue-400" />
+                              <h3 className="text-lg font-semibold text-blue-400">Envío a Domicilio</h3>
                             </div>
-
-                            {/* Ubicación */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-white mb-2">
-                                  Departamento *
-                                </label>
-                                <select
-                                  value={formData.departamento}
-                                  onChange={(e) => handleDepartamentoChange(e.target.value)}
-                                  required
-                                  className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                >
-                                  <option value="" className="text-gray-800">Selecciona un departamento</option>
-                                  {Object.keys(departamentosCiudades).map(depto => (
-                                    <option key={depto} value={depto} className="text-gray-800">
-                                      {depto}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-white mb-2">
-                                  Ciudad *
-                                </label>
-                                <select
-                                  value={formData.ciudad}
-                                  onChange={(e) => handleInputChange('ciudad', e.target.value)}
-                                  required
-                                  disabled={!formData.departamento}
-                                  className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  <option value="" className="text-gray-800">
-                                    {formData.departamento ? 'Selecciona una ciudad' : 'Primero selecciona departamento'}
-                                  </option>
-                                  {formData.departamento && departamentosCiudades[formData.departamento as keyof typeof departamentosCiudades]?.map(ciudad => (
-                                    <option key={ciudad} value={ciudad} className="text-gray-800">
-                                      {ciudad}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-
-                            {/* Dirección */}
-                            <div>
-                              <label className="block text-sm font-medium text-white mb-2">
-                                Dirección de Entrega *
-                              </label>
-                              <textarea
-                                value={formData.direccionEntrega}
-                                onChange={(e) => handleInputChange('direccionEntrega', e.target.value)}
-                                required
-                                rows={3}
-                                className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                                placeholder="Dirección completa: calle, carrera, número, barrio, puntos de referencia"
-                              />
-                            </div>
-                          </>
+                            <p className="text-white text-sm">
+                              Has seleccionado <strong>envío a domicilio</strong>. Nuestro equipo se pondrá en contacto contigo 
+                              para coordinar los detalles de entrega y la dirección exacta.
+                            </p>
+                          </div>
                         )}
 
                       </div>

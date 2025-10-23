@@ -72,7 +72,12 @@ export default function RegistroPage() {
     rutFile: null as File | null,
     camaraComercioFile: null as File | null,
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    // Campos específicos para tabla Usuarios
+    nombreCompleto: '',
+    tipoDocumentoUsuario: '',
+    numeroDocumentoUsuario: '',
+    areaEmpresa: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -125,8 +130,10 @@ export default function RegistroPage() {
     setError('');
 
     // Validaciones básicas
-    if (!formData.nombreRazonSocial || !formData.tipoDocumento || !formData.documento || !formData.usuario || !formData.password) {
-      setError('Los campos obligatorios son: Nombre/Razón Social, Tipo de Documento, Número de Documento, Usuario y Contraseña');
+    if (!formData.nombreRazonSocial || !formData.tipoDocumento || !formData.documento || 
+        !formData.nombreCompleto || !formData.tipoDocumentoUsuario || !formData.numeroDocumentoUsuario || 
+        !formData.areaEmpresa || !formData.password) {
+      setError('Todos los campos marcados con * son obligatorios');
       setIsLoading(false);
       return;
     }
@@ -138,10 +145,19 @@ export default function RegistroPage() {
       return;
     }
 
-    // Validar documento según el tipo
+    // Validar documento según el tipo (para la empresa)
     if (formData.tipoDocumento === 'Cédula de Ciudadanía' || formData.tipoDocumento === 'Cédula de Extranjería') {
       if (!/^\d+$/.test(formData.documento)) {
-        setError('El número de documento debe contener solo números');
+        setError('El número de documento de la empresa debe contener solo números');
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Validar documento del usuario según el tipo
+    if (formData.tipoDocumentoUsuario === 'CC' || formData.tipoDocumentoUsuario === 'CE' || formData.tipoDocumentoUsuario === 'TI') {
+      if (!/^\d+$/.test(formData.numeroDocumentoUsuario)) {
+        setError('El número de documento del usuario debe contener solo números');
         setIsLoading(false);
         return;
       }
@@ -677,58 +693,126 @@ export default function RegistroPage() {
 
               {/* Información de Acceso */}
               <div className="pb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Información de Acceso</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="usuario" className="block text-sm font-medium text-gray-700 mb-2">
-                      Usuario <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="usuario"
-                      name="usuario"
-                      type="text"
-                      placeholder="Nombre de usuario"
-                      value={formData.usuario}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      required
-                    />
+                <h3 className="text-lg font-semibold text-gray-800 mb-6">Información de Acceso</h3>
+                <div className="space-y-6">
+                  {/* Primera fila: Nombre y Tipo de Documento */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Nombre Completo */}
+                    <div>
+                      <label htmlFor="nombreCompleto" className="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre Completo <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="nombreCompleto"
+                        name="nombreCompleto"
+                        type="text"
+                        placeholder="Nombre completo del usuario"
+                        value={formData.nombreCompleto}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        required
+                      />
+                    </div>
+
+                    {/* Tipo de Documento del Usuario */}
+                    <div>
+                      <label htmlFor="tipoDocumentoUsuario" className="block text-sm font-medium text-gray-700 mb-2">
+                        Tipo de Documento <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="tipoDocumentoUsuario"
+                        name="tipoDocumentoUsuario"
+                        value={formData.tipoDocumentoUsuario}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        required
+                      >
+                        <option value="">Selecciona tipo de documento</option>
+                        <option value="CC">Cédula de Ciudadanía</option>
+                        <option value="CE">Cédula de Extranjería</option>
+                        <option value="TI">Tarjeta de Identidad</option>
+                        <option value="PP">Pasaporte</option>
+                      </select>
+                    </div>
                   </div>
-                  <div></div>
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                      Contraseña <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      placeholder="Mínimo 6 caracteres"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      minLength={6}
-                      required
-                    />
+
+                  {/* Segunda fila: Número de Documento y Área */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Número de Documento del Usuario */}
+                    <div>
+                      <label htmlFor="numeroDocumentoUsuario" className="block text-sm font-medium text-gray-700 mb-2">
+                        Número de Documento <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="numeroDocumentoUsuario"
+                        name="numeroDocumentoUsuario"
+                        type="text"
+                        placeholder="Número de documento del usuario"
+                        value={formData.numeroDocumentoUsuario}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        required
+                      />
+                    </div>
+
+                    {/* Área de la Empresa */}
+                    <div>
+                      <label htmlFor="areaEmpresa" className="block text-sm font-medium text-gray-700 mb-2">
+                        Área de la Empresa <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="areaEmpresa"
+                        name="areaEmpresa"
+                        type="text"
+                        placeholder="Ej: Compras, Contabilidad, Administración"
+                        value={formData.areaEmpresa}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        required
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                      Confirmar Contraseña <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      placeholder="Repite tu contraseña"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      minLength={6}
-                      required
-                    />
+
+                  {/* Tercera fila: Contraseñas */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Contraseña */}
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="Mínimo 6 caracteres"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        minLength={6}
+                        required
+                      />
+                    </div>
+
+                    {/* Confirmar Contraseña */}
+                    <div>
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirmar Contraseña <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="Repite tu contraseña"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        minLength={6}
+                        required
+                      />
                     </div>
                   </div>
                 </div>
+              </div>
 
                 {/* Error message */}
                 {error && (

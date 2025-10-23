@@ -7,24 +7,31 @@ const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 
 // IDs de las tablas
-const USUARIOS_RAIZ_TABLE_ID = process.env.USUARIOS_RAIZ_TABLE_ID;
+const CLIENTES_TABLE_ID = process.env.CLIENTES_TABLE_ID;
+const USUARIOS_TABLE_ID = process.env.USUARIOS_TABLE_ID;
 const CONTACTO_USUARIO_TABLE_ID = process.env.CONTACTO_USUARIO_TABLE_ID;
 
-// Field IDs para la tabla de Usuarios Raíz
-const USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID = process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID;
-const USUARIOS_RAIZ_USUARIO_FIELD_ID = process.env.USUARIOS_RAIZ_USUARIO_FIELD_ID;
-const USUARIOS_RAIZ_HASH_FIELD_ID = process.env.USUARIOS_RAIZ_HASH_FIELD_ID;
-const USUARIOS_RAIZ_SALT_FIELD_ID = process.env.USUARIOS_RAIZ_SALT_FIELD_ID;
-const USUARIOS_RAIZ_TEMPORAL_TOKEN_FIELD_ID = process.env.USUARIOS_RAIZ_TEMPORAL_TOKEN_FIELD_ID;
-const USUARIOS_RAIZ_TIPO_DOCUMENTO_FIELD_ID = process.env.USUARIOS_RAIZ_TIPO_DOCUMENTO_FIELD_ID;
-const USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID = process.env.USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID;
-const USUARIOS_RAIZ_CIUDAD_FIELD_ID = process.env.USUARIOS_RAIZ_CIUDAD_FIELD_ID;
-const USUARIOS_RAIZ_DEPARTAMENTO_FIELD_ID = process.env.USUARIOS_RAIZ_DEPARTAMENTO_FIELD_ID;
-const USUARIOS_RAIZ_DIRECCION_FIELD_ID = process.env.USUARIOS_RAIZ_DIRECCION_FIELD_ID;
-const USUARIOS_RAIZ_CONTRIBUYENTE_FIELD_ID = process.env.USUARIOS_RAIZ_CONTRIBUYENTE_FIELD_ID;
-const USUARIOS_RAIZ_TIPO_CULTIVO_FIELD_ID = process.env.USUARIOS_RAIZ_TIPO_CULTIVO_FIELD_ID;
-const USUARIOS_RAIZ_RUT_FIELD_ID = process.env.USUARIOS_RAIZ_RUT_FIELD_ID;
-const USUARIOS_RAIZ_CAMARA_COMERCIO_FIELD_ID = process.env.USUARIOS_RAIZ_CAMARA_COMERCIO_FIELD_ID;
+// Field IDs para la tabla de Clientes (datos de la empresa)
+const CLIENTES_NOMBRE_RAZON_SOCIAL_FIELD_ID = process.env.CLIENTES_NOMBRE_RAZON_SOCIAL_FIELD_ID;
+const CLIENTES_TIPO_DOCUMENTO_FIELD_ID = process.env.CLIENTES_TIPO_DOCUMENTO_FIELD_ID;
+const CLIENTES_NUMERO_DOCUMENTO_FIELD_ID = process.env.CLIENTES_NUMERO_DOCUMENTO_FIELD_ID;
+const CLIENTES_CIUDAD_FIELD_ID = process.env.CLIENTES_CIUDAD_FIELD_ID;
+const CLIENTES_DEPARTAMENTO_FIELD_ID = process.env.CLIENTES_DEPARTAMENTO_FIELD_ID;
+const CLIENTES_DIRECCION_FIELD_ID = process.env.CLIENTES_DIRECCION_FIELD_ID;
+const CLIENTES_CONTRIBUYENTE_FIELD_ID = process.env.CLIENTES_CONTRIBUYENTE_FIELD_ID;
+const CLIENTES_TIPO_CULTIVO_FIELD_ID = process.env.CLIENTES_TIPO_CULTIVO_FIELD_ID;
+const CLIENTES_RUT_FIELD_ID = process.env.CLIENTES_RUT_FIELD_ID;
+const CLIENTES_CAMARA_COMERCIO_FIELD_ID = process.env.CLIENTES_CAMARA_COMERCIO_FIELD_ID;
+
+// Field IDs para la tabla de Usuarios (credenciales)
+const USUARIOS_NOMBRE_COMPLETO_FIELD_ID = process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID;
+const USUARIOS_TIPO_DOCUMENTO_FIELD_ID = process.env.USUARIOS_TIPO_DOCUMENTO_FIELD_ID;
+const USUARIOS_NUMERO_DOCUMENTO_FIELD_ID = process.env.USUARIOS_NUMERO_DOCUMENTO_FIELD_ID;
+const USUARIOS_HASH_FIELD_ID = process.env.USUARIOS_HASH_FIELD_ID;
+const USUARIOS_SALT_FIELD_ID = process.env.USUARIOS_SALT_FIELD_ID;
+const USUARIOS_AREA_EMPRESA_FIELD_ID = process.env.USUARIOS_AREA_EMPRESA_FIELD_ID;
+const USUARIOS_ROL_USUARIO_FIELD_ID = process.env.USUARIOS_ROL_USUARIO_FIELD_ID;
+const USUARIOS_ENTIDAD_FIELD_ID = process.env.USUARIOS_ENTIDAD_FIELD_ID;
 
 // Field IDs para tabla Contacto_Usuario
 const CONTACTO_NOMBRE_FIELD_ID = process.env.CONTACTO_NOMBRE_FIELD_ID;
@@ -80,13 +87,10 @@ function generateSalt(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Función para generar token temporal
-function generateTemporalToken(): string {
-  return crypto.randomBytes(16).toString('hex');
-}
+
 
 export async function POST(request: NextRequest) {
-  console.log('🔵 Iniciando registro de Usuario Raíz...');
+  console.log('🔵 Iniciando registro de Cliente y Usuario...');
   
   try {
     // Manejar FormData del frontend
@@ -109,15 +113,18 @@ export async function POST(request: NextRequest) {
     
     // Validaciones básicas
     console.log('🔵 Validando campos obligatorios...');
-    if (!formData.nombreRazonSocial || !formData.documento || !formData.password || !formData.usuario) {
+    if (!formData.nombreRazonSocial || !formData.documento || !formData.password || 
+        !formData.nombreCompleto || !formData.numeroDocumentoUsuario || !formData.areaEmpresa) {
       console.log('❌ Faltan campos obligatorios:', {
         nombreRazonSocial: !!formData.nombreRazonSocial,
         documento: !!formData.documento,
         password: !!formData.password,
-        usuario: !!formData.usuario
+        nombreCompleto: !!formData.nombreCompleto,
+        numeroDocumentoUsuario: !!formData.numeroDocumentoUsuario,
+        areaEmpresa: !!formData.areaEmpresa
       });
       return NextResponse.json({ 
-        error: 'Nombre/Razón Social, documento, usuario y contraseña son campos obligatorios' 
+        error: 'Nombre/Razón Social, documento, contraseña, nombre completo, número de documento del usuario y área de empresa son campos obligatorios' 
       }, { status: 400 });
     }
 
@@ -132,16 +139,45 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Verificar si el usuario ya existe (por documento/NIT)
-    console.log('🔵 Verificando si el usuario ya existe...');
-    const checkUserUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_RAIZ_TABLE_ID}`;
+    // Verificar configuración de tablas y campos requeridos
+    console.log('🔵 Verificando configuración de tablas y campos...');
+    const requiredEnvVars = {
+      CLIENTES_TABLE_ID,
+      USUARIOS_TABLE_ID,
+      CLIENTES_NOMBRE_RAZON_SOCIAL_FIELD_ID,
+      CLIENTES_TIPO_DOCUMENTO_FIELD_ID,
+      CLIENTES_NUMERO_DOCUMENTO_FIELD_ID,
+      USUARIOS_NOMBRE_COMPLETO_FIELD_ID,
+      USUARIOS_TIPO_DOCUMENTO_FIELD_ID,
+      USUARIOS_NUMERO_DOCUMENTO_FIELD_ID,
+      USUARIOS_HASH_FIELD_ID,
+      USUARIOS_SALT_FIELD_ID,
+      USUARIOS_AREA_EMPRESA_FIELD_ID,
+      USUARIOS_ROL_USUARIO_FIELD_ID,
+      USUARIOS_ENTIDAD_FIELD_ID
+    };
+
+    const missingVars = Object.entries(requiredEnvVars)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      console.log('❌ Variables de entorno faltantes:', missingVars);
+      return NextResponse.json({ 
+        error: 'Error de configuración del servidor - variables faltantes: ' + missingVars.join(', ')
+      }, { status: 500 });
+    }
+
+    // Verificar si el cliente ya existe (por documento/NIT)
+    console.log('🔵 Verificando si el cliente ya existe...');
+    const checkClientUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${CLIENTES_TABLE_ID}`;
     const searchParams = new URLSearchParams({
-      filterByFormula: `{${USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID}} = "${formData.documento}"`
+      filterByFormula: `{${CLIENTES_NUMERO_DOCUMENTO_FIELD_ID}} = "${formData.documento}"`
     });
 
-    console.log('🔵 URL de verificación:', `${checkUserUrl}?${searchParams}`);
+    console.log('🔵 URL de verificación:', `${checkClientUrl}?${searchParams}`);
 
-    const checkResponse = await fetch(`${checkUserUrl}?${searchParams}`, {
+    const checkResponse = await fetch(`${checkClientUrl}?${searchParams}`, {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
@@ -152,19 +188,19 @@ export async function POST(request: NextRequest) {
 
     if (!checkResponse.ok) {
       const errorText = await checkResponse.text();
-      console.log('❌ Error al verificar usuario:', errorText);
+      console.log('❌ Error al verificar cliente:', errorText);
       return NextResponse.json({ 
-        error: 'Error al verificar usuario existente' 
+        error: 'Error al verificar cliente existente' 
       }, { status: 500 });
     }
 
-    const existingUsers = await checkResponse.json();
-    console.log('🔵 Usuarios existentes encontrados:', existingUsers.records?.length || 0);
+    const existingClients = await checkResponse.json();
+    console.log('🔵 Clientes existentes encontrados:', existingClients.records?.length || 0);
     
-    if (existingUsers.records.length > 0) {
-      console.log('❌ Usuario ya existe con documento:', formData.documento);
+    if (existingClients.records.length > 0) {
+      console.log('❌ Cliente ya existe con documento:', formData.documento);
       return NextResponse.json({ 
-        error: 'Ya existe un usuario registrado con este documento/NIT' 
+        error: 'Ya existe un cliente registrado con este documento/NIT' 
       }, { status: 409 });
     }
 
@@ -177,46 +213,46 @@ export async function POST(request: NextRequest) {
     console.log('   - Salt generado:', salt.length, 'caracteres');
     console.log('   - Hash generado:', passwordHash.length, 'caracteres');
 
-    // Preparar datos del usuario raíz
-    console.log('🔵 Preparando datos del Usuario Raíz...');
-    const usuarioRaizData = {
+    // PASO 1: Crear el cliente en la tabla Clientes
+    console.log('🔵 Preparando datos del Cliente...');
+    const clienteData = {
       records: [{
         fields: {} as any
       }]
     };
 
-    // Agregar campos usando variables de entorno
-    const fields = usuarioRaizData.records[0].fields;
+    // Agregar campos del cliente
+    const clienteFields = clienteData.records[0].fields;
     
-    if (USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID) fields[USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID] = formData.nombreRazonSocial;
-    if (USUARIOS_RAIZ_HASH_FIELD_ID) fields[USUARIOS_RAIZ_HASH_FIELD_ID] = passwordHash;
-    if (USUARIOS_RAIZ_SALT_FIELD_ID) fields[USUARIOS_RAIZ_SALT_FIELD_ID] = salt;
-    if (USUARIOS_RAIZ_TEMPORAL_TOKEN_FIELD_ID) fields[USUARIOS_RAIZ_TEMPORAL_TOKEN_FIELD_ID] = '';
-    if (USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID) fields[USUARIOS_RAIZ_NUMERO_DOCUMENTO_FIELD_ID] = formData.documento;
-    if (USUARIOS_RAIZ_CIUDAD_FIELD_ID) fields[USUARIOS_RAIZ_CIUDAD_FIELD_ID] = formData.ciudad;
-    if (USUARIOS_RAIZ_DEPARTAMENTO_FIELD_ID) fields[USUARIOS_RAIZ_DEPARTAMENTO_FIELD_ID] = formData.departamento;
-    if (USUARIOS_RAIZ_DIRECCION_FIELD_ID) fields[USUARIOS_RAIZ_DIRECCION_FIELD_ID] = formData.direccion;
-    if (USUARIOS_RAIZ_CONTRIBUYENTE_FIELD_ID) fields[USUARIOS_RAIZ_CONTRIBUYENTE_FIELD_ID] = formData.contribuyente;
-    if (USUARIOS_RAIZ_TIPO_CULTIVO_FIELD_ID) fields[USUARIOS_RAIZ_TIPO_CULTIVO_FIELD_ID] = formData.tipoCultivo === 'Otro' ? formData.tipoCultivoOtro : formData.tipoCultivo;
-    if (USUARIOS_RAIZ_USUARIO_FIELD_ID) fields[USUARIOS_RAIZ_USUARIO_FIELD_ID] = formData.usuario;
-    if (USUARIOS_RAIZ_TIPO_DOCUMENTO_FIELD_ID) fields[USUARIOS_RAIZ_TIPO_DOCUMENTO_FIELD_ID] = formData.tipoDocumento;
+    clienteFields[CLIENTES_NOMBRE_RAZON_SOCIAL_FIELD_ID!] = formData.nombreRazonSocial;
+    clienteFields[CLIENTES_TIPO_DOCUMENTO_FIELD_ID!] = formData.tipoDocumento;
+    clienteFields[CLIENTES_NUMERO_DOCUMENTO_FIELD_ID!] = formData.documento;
+    if (formData.ciudad && CLIENTES_CIUDAD_FIELD_ID) clienteFields[CLIENTES_CIUDAD_FIELD_ID] = formData.ciudad;
+    if (formData.departamento && CLIENTES_DEPARTAMENTO_FIELD_ID) clienteFields[CLIENTES_DEPARTAMENTO_FIELD_ID] = formData.departamento;
+    if (formData.direccion && CLIENTES_DIRECCION_FIELD_ID) clienteFields[CLIENTES_DIRECCION_FIELD_ID] = formData.direccion;
+    if (formData.contribuyente && CLIENTES_CONTRIBUYENTE_FIELD_ID) clienteFields[CLIENTES_CONTRIBUYENTE_FIELD_ID] = formData.contribuyente;
+    if (formData.tipoCultivo === 'Otro' && CLIENTES_TIPO_CULTIVO_FIELD_ID) {
+      clienteFields[CLIENTES_TIPO_CULTIVO_FIELD_ID] = formData.tipoCultivoOtro;
+    } else if (formData.tipoCultivo && CLIENTES_TIPO_CULTIVO_FIELD_ID) {
+      clienteFields[CLIENTES_TIPO_CULTIVO_FIELD_ID] = formData.tipoCultivo;
+    }
 
     // Manejo de archivos - Subida a AWS S3
     console.log('📎 Verificando archivos recibidos:', {
       rutFile: !!formData.rutFile,
-      camaraComercioFile: !!formData.camaraComercioFile,
-      RUT_FIELD_ID: USUARIOS_RAIZ_RUT_FIELD_ID,
-      CAMARA_COMERCIO_FIELD_ID: USUARIOS_RAIZ_CAMARA_COMERCIO_FIELD_ID
+      camaraComercioFile: !!formData.camaraComercioFile
     });
 
-    if (formData.rutFile && USUARIOS_RAIZ_RUT_FIELD_ID) {
+    if (formData.rutFile) {
       console.log('🔵 Subiendo archivo RUT a S3...');
       try {
         const rutUrl = await uploadFileToS3(formData.rutFile, 'rut-files');
-        fields[USUARIOS_RAIZ_RUT_FIELD_ID] = [{
-          filename: formData.rutFile.name,
-          url: rutUrl
-        }];
+        if (CLIENTES_RUT_FIELD_ID) {
+          clienteFields[CLIENTES_RUT_FIELD_ID] = [{
+            filename: formData.rutFile.name,
+            url: rutUrl
+          }];
+        }
         console.log('✅ Archivo RUT subido exitosamente');
       } catch (error) {
         console.error('❌ Error subiendo archivo RUT:', error);
@@ -224,14 +260,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (formData.camaraComercioFile && USUARIOS_RAIZ_CAMARA_COMERCIO_FIELD_ID) {
+    if (formData.camaraComercioFile) {
       console.log('🔵 Subiendo archivo Cámara de Comercio a S3...');
       try {
         const camaraUrl = await uploadFileToS3(formData.camaraComercioFile, 'camara-comercio-files');
-        fields[USUARIOS_RAIZ_CAMARA_COMERCIO_FIELD_ID] = [{
-          filename: formData.camaraComercioFile.name,
-          url: camaraUrl
-        }];
+        if (CLIENTES_CAMARA_COMERCIO_FIELD_ID) {
+          clienteFields[CLIENTES_CAMARA_COMERCIO_FIELD_ID] = [{
+            filename: formData.camaraComercioFile.name,
+            url: camaraUrl
+          }];
+        }
         console.log('✅ Archivo Cámara de Comercio subido exitosamente');
       } catch (error) {
         console.error('❌ Error subiendo archivo Cámara de Comercio:', error);
@@ -239,31 +277,75 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('🔵 Creando Usuario Raíz en Airtable...');
-    const createUserResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_RAIZ_TABLE_ID}`, {
+    console.log('🔵 Creando Cliente en Airtable...');
+    const createClientResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${CLIENTES_TABLE_ID}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(usuarioRaizData)
+      body: JSON.stringify(clienteData)
     });
 
-    console.log('🔵 Respuesta de creación de Usuario Raíz:', createUserResponse.status, createUserResponse.statusText);
+    console.log('🔵 Respuesta de creación de Cliente:', createClientResponse.status, createClientResponse.statusText);
+
+    if (!createClientResponse.ok) {
+      const errorData = await createClientResponse.text();
+      console.error('❌ Error creating client:', errorData);
+      return NextResponse.json({ 
+        error: 'Error al crear el cliente' 
+      }, { status: 500 });
+    }
+
+    const createdClient = await createClientResponse.json();
+    console.log('✅ Cliente creado exitosamente:', createdClient.records[0].id);
+    const clienteId = createdClient.records[0].id;
+
+    // PASO 2: Crear el usuario en la tabla Usuarios
+    console.log('🔵 Preparando datos del Usuario...');
+    const usuarioData = {
+      records: [{
+        fields: {} as any
+      }]
+    };
+
+    // Agregar campos del usuario
+    const usuarioFields = usuarioData.records[0].fields;
+    
+    usuarioFields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID!] = formData.nombreCompleto;
+    if (USUARIOS_TIPO_DOCUMENTO_FIELD_ID) usuarioFields[USUARIOS_TIPO_DOCUMENTO_FIELD_ID] = formData.tipoDocumentoUsuario;
+    if (USUARIOS_NUMERO_DOCUMENTO_FIELD_ID) usuarioFields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID] = formData.numeroDocumentoUsuario;
+    usuarioFields[USUARIOS_HASH_FIELD_ID!] = passwordHash;
+    usuarioFields[USUARIOS_SALT_FIELD_ID!] = salt;
+    if (USUARIOS_AREA_EMPRESA_FIELD_ID) usuarioFields[USUARIOS_AREA_EMPRESA_FIELD_ID] = formData.areaEmpresa;
+    usuarioFields[USUARIOS_ROL_USUARIO_FIELD_ID!] = 'Usuario Raiz';
+    usuarioFields[USUARIOS_ENTIDAD_FIELD_ID!] = [clienteId]; // Relación con el cliente
+
+    console.log('🔵 Creando Usuario en Airtable...');
+    const createUserResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(usuarioData)
+    });
+
+    console.log('🔵 Respuesta de creación de Usuario:', createUserResponse.status, createUserResponse.statusText);
 
     if (!createUserResponse.ok) {
       const errorData = await createUserResponse.text();
       console.error('❌ Error creating user:', errorData);
       return NextResponse.json({ 
-        error: 'Error al crear el Usuario Raíz' 
+        error: 'Error al crear el usuario' 
       }, { status: 500 });
     }
 
     const createdUser = await createUserResponse.json();
-    console.log('✅ Usuario Raíz creado exitosamente:', createdUser.records[0].id);
+    console.log('✅ Usuario creado exitosamente:', createdUser.records[0].id);
     const userId = createdUser.records[0].id;
 
-    // Crear los contactos asociados
+    // PASO 3: Crear los contactos asociados al cliente
     console.log('🔵 Preparando contactos...');
     const contactos = [];
 
@@ -276,7 +358,7 @@ export async function POST(request: NextRequest) {
       if (CONTACTO_TELEFONO_FIELD_ID) contactoFields[CONTACTO_TELEFONO_FIELD_ID] = formData.telefonoContable;
       if (CONTACTO_EMAIL_FIELD_ID) contactoFields[CONTACTO_EMAIL_FIELD_ID] = formData.emailContable;
       if (CONTACTO_AREA_FIELD_ID) contactoFields[CONTACTO_AREA_FIELD_ID] = 'Contable';
-      if (CONTACTO_USUARIO_RELATION_FIELD_ID) contactoFields[CONTACTO_USUARIO_RELATION_FIELD_ID] = [userId];
+      if (CONTACTO_USUARIO_RELATION_FIELD_ID) contactoFields[CONTACTO_USUARIO_RELATION_FIELD_ID] = [clienteId];
       
       contactos.push({ fields: contactoFields });
     }
@@ -290,7 +372,7 @@ export async function POST(request: NextRequest) {
       if (CONTACTO_TELEFONO_FIELD_ID) contactoFields[CONTACTO_TELEFONO_FIELD_ID] = formData.telefonoTesoreria;
       if (CONTACTO_EMAIL_FIELD_ID) contactoFields[CONTACTO_EMAIL_FIELD_ID] = formData.emailTesoreria;
       if (CONTACTO_AREA_FIELD_ID) contactoFields[CONTACTO_AREA_FIELD_ID] = 'Tesoria';
-      if (CONTACTO_USUARIO_RELATION_FIELD_ID) contactoFields[CONTACTO_USUARIO_RELATION_FIELD_ID] = [userId];
+      if (CONTACTO_USUARIO_RELATION_FIELD_ID) contactoFields[CONTACTO_USUARIO_RELATION_FIELD_ID] = [clienteId];
       
       contactos.push({ fields: contactoFields });
     }
@@ -304,7 +386,7 @@ export async function POST(request: NextRequest) {
       if (CONTACTO_TELEFONO_FIELD_ID) contactoFields[CONTACTO_TELEFONO_FIELD_ID] = formData.telefonoCompras;
       if (CONTACTO_EMAIL_FIELD_ID) contactoFields[CONTACTO_EMAIL_FIELD_ID] = formData.emailCompras;
       if (CONTACTO_AREA_FIELD_ID) contactoFields[CONTACTO_AREA_FIELD_ID] = 'Compras';
-      if (CONTACTO_USUARIO_RELATION_FIELD_ID) contactoFields[CONTACTO_USUARIO_RELATION_FIELD_ID] = [userId];
+      if (CONTACTO_USUARIO_RELATION_FIELD_ID) contactoFields[CONTACTO_USUARIO_RELATION_FIELD_ID] = [clienteId];
       
       contactos.push({ fields: contactoFields });
     }
@@ -337,7 +419,7 @@ export async function POST(request: NextRequest) {
       } else {
         const errorText = await createContactsResponse.text();
         console.error('❌ Error creating contacts:', errorText);
-        console.error('Error creating contacts, but user was created successfully');
+        console.error('Error creating contacts, but client and user were created successfully');
         // No fallar completamente si los contactos no se crean
       }
     } else {
@@ -345,13 +427,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Respuesta exitosa
-    console.log('✅ Registro de Usuario Raíz completado exitosamente');
+    console.log('✅ Registro de Cliente y Usuario completado exitosamente');
     return NextResponse.json({
       success: true,
-      message: 'Usuario Raíz registrado exitosamente',
+      message: 'Cliente y Usuario registrados exitosamente',
+      cliente: {
+        id: clienteId,
+        nombre: formData.nombreRazonSocial,
+        documento: formData.documento
+      },
       usuario: {
         id: userId,
-        nombre: formData.nombreRazonSocial,
+        nombre: formData.usuario,
         documento: formData.documento,
         tipoUsuario: 'raiz'
       },

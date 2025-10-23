@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendTelegramNotification } from '@/lib/telegram';
 import { createDataLabOrder } from '@/lib/datalab';
 
 // Configuración de Airtable
@@ -12,17 +11,13 @@ const PRODUCTOS_ORDENADOS_TABLE_ID = process.env.PEDIDOS_PRODUCTOS_ORDENADOS_TAB
 
 // Field IDs para Ordenes Compras
 const FECHA_RECOGIDA_FIELD = process.env.PEDIDOS_FECHA_RECOGIDA_FIELD_ID;
-const CLIENTE_RECOGE_PEDIDO_FIELD = process.env.PEDIDOS_CLIENTE_RECOGE_PEDIDO_FIELD_ID;
-const NOMBRE_RECIBE_FIELD = process.env.PEDIDOS_NOMBRE_RECIBE_FIELD_ID;
-const CEDULA_RECIBE_FIELD = process.env.PEDIDOS_CEDULA_RECIBE_FIELD_ID;
-const DEPARTAMENTO_ENTREGA_FIELD = process.env.PEDIDOS_DEPARTAMENTO_ENTREGA_FIELD_ID;
-const CIUDAD_ENTREGA_FIELD = process.env.PEDIDOS_CIUDAD_ENTREGA_FIELD_ID;
-const DIRECCION_ENTREGA_FIELD = process.env.PEDIDOS_DIRECCION_ENTREGA_FIELD_ID;
+const NECESITA_ENVIO_FIELD = process.env.PEDIDOS_NECESITA_ENVIO_FIELD_ID;
 const UBICACION_APLICACION_FIELD = process.env.PEDIDOS_UBICACION_APLICACION_FIELD_ID;
 const OBSERVACIONES_FIELD = process.env.PEDIDOS_OBSERVACIONES_FIELD_ID;
 const PRODUCTOS_ORDENADOS_FIELD = process.env.PEDIDOS_PRODUCTOS_ORDENADOS_FIELD_ID;
 const REALIZA_REGISTRO_FIELD = process.env.PEDIDOS_REALIZA_REGISTRO_FIELD_ID;
 const CLIENTE_FIELD = process.env.PEDIDOS_CLIENTE_FIELD_ID;
+const USUARIOS_FIELD = process.env.PEDIDOS_USUARIOS_FIELD_ID;
 
 // Field IDs para Productos Ordenados
 const NOMBRE_PRODUCTO_FIELD = process.env.PEDIDOS_NOMBRE_PRODUCTO_FIELD_ID;
@@ -34,23 +29,24 @@ const ORDEN_COMPRA_FIELD = process.env.PEDIDOS_ORDEN_COMPRA_FIELD_ID;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔵 [create-pedido] Iniciando proceso...');
     const requestBody = await request.json();
-    console.log('Datos recibidos:', JSON.stringify(requestBody, null, 2));
+    console.log('🔵 [create-pedido] Datos recibidos:', JSON.stringify(requestBody, null, 2));
     
     // Validar que todas las variables de entorno requeridas estén configuradas
+    console.log('🔵 [create-pedido] Validando variables de entorno...');
     if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !ORDENES_COMPRAS_TABLE_ID ||
         !PRODUCTOS_ORDENADOS_TABLE_ID || !FECHA_RECOGIDA_FIELD ||
-        !CLIENTE_RECOGE_PEDIDO_FIELD || !NOMBRE_RECIBE_FIELD ||
-        !CEDULA_RECIBE_FIELD || !DEPARTAMENTO_ENTREGA_FIELD ||
-        !CIUDAD_ENTREGA_FIELD || !DIRECCION_ENTREGA_FIELD ||
+        !NECESITA_ENVIO_FIELD ||
         !UBICACION_APLICACION_FIELD || !OBSERVACIONES_FIELD || !PRODUCTOS_ORDENADOS_FIELD ||
-        !REALIZA_REGISTRO_FIELD || !CLIENTE_FIELD ||
+        !REALIZA_REGISTRO_FIELD || !USUARIOS_FIELD ||
         !NOMBRE_PRODUCTO_FIELD || !CANTIDAD_FIELD ||
         !UNIDAD_MEDIDA_FIELD || !PRECIO_UNITARIO_FIELD ||
         !SUBTOTAL_FIELD || !ORDEN_COMPRA_FIELD) {
       console.error('❌ Error de configuración: faltan variables de entorno requeridas para crear pedido');
       return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
     }
+    console.log('🔵 [create-pedido] Variables de entorno validadas correctamente');
 
     const {
       usuario,
@@ -63,14 +59,24 @@ export async function POST(request: NextRequest) {
       biocharTipo,
       biocharCantidad,
       biocharUnidad,
-      nombreRecibe,
-      cedulaRecibe,
-      departamento,
-      ciudad,
-      direccionEntrega,
       precioTotal,
       totalLitros
     } = requestBody;
+
+    console.log('🔵 [create-pedido] Datos extraídos:', {
+      usuario: usuario ? 'Presente' : 'Ausente',
+      tipo,
+      recogesPedido,
+      fechaEntrega,
+      ubicacionAplicacion,
+      observaciones,
+      microorganismosCount: microorganismosSeleccionados?.length || 0,
+      biocharTipo,
+      biocharCantidad,
+      biocharUnidad,
+      precioTotal,
+      totalLitros
+    });
 
     // Extraer datos del usuario
     console.log('🔍 Datos del usuario recibidos:', usuario);
@@ -104,11 +110,6 @@ export async function POST(request: NextRequest) {
     // Validaciones básicas
     if (!usuarioId || !usuarioNombre || !tipo || !fechaEntrega) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
-    }
-
-    // Validación para entrega
-    if (recogesPedido === 'no' && (!nombreRecibe || !cedulaRecibe || !departamento || !ciudad || !direccionEntrega)) {
-      return NextResponse.json({ error: 'Faltan datos de entrega' }, { status: 400 });
     }
 
     // Validación para productos biológicos
@@ -284,23 +285,14 @@ export async function POST(request: NextRequest) {
     const ordenCompraData = {
       fields: {
         // Fecha Creacion se crea automáticamente
-        [FECHA_RECOGIDA_FIELD]: fechaEntrega, // Fecha Recogida
-        [CLIENTE_RECOGE_PEDIDO_FIELD]: recogesPedido === 'si', // Cliente Recoge Pedido (checkbox)
-        [UBICACION_APLICACION_FIELD]: ubicacionAplicacion || '', // Ubicación Aplicación del Producto
-        [OBSERVACIONES_FIELD]: observaciones || '', // Solo las observaciones del usuario
-        [REALIZA_REGISTRO_FIELD]: usuarioNombre === 'Usuario Desconocido' && datosUsuarioRaiz?.[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!] 
+        [FECHA_RECOGIDA_FIELD!]: fechaEntrega, // Fecha Recogida
+        [NECESITA_ENVIO_FIELD!]: recogesPedido === 'no', // Necesita Envio (checkbox) - true si NO recoge el pedido (necesita envío)
+        [UBICACION_APLICACION_FIELD!]: ubicacionAplicacion || '', // Ubicación Aplicación del Producto
+        [OBSERVACIONES_FIELD!]: observaciones || '', // Solo las observaciones del usuario
+        [REALIZA_REGISTRO_FIELD!]: usuarioNombre === 'Usuario Desconocido' && datosUsuarioRaiz?.[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!]
           ? datosUsuarioRaiz[process.env.USUARIOS_RAIZ_NOMBRE_RAZON_SOCIAL_FIELD_ID!] 
           : usuarioNombre, // Nombre de quien realiza el pedido, fallback al usuario raíz si es necesario
-        [CLIENTE_FIELD]: usuarioRaizId ? [usuarioRaizId] : [], // ID del usuario raíz (relación)
-        
-        // Solo agregar campos de entrega si no recoge el pedido
-        ...(recogesPedido === 'no' && {
-          [NOMBRE_RECIBE_FIELD]: nombreRecibe, // Nombre Recibe
-          [CEDULA_RECIBE_FIELD]: cedulaRecibe, // Cedula Recibe
-          [DEPARTAMENTO_ENTREGA_FIELD]: departamento, // Departamento Entrega
-          [CIUDAD_ENTREGA_FIELD]: ciudad, // Ciudad Entrega
-          [DIRECCION_ENTREGA_FIELD]: direccionEntrega, // Direccion Entrega
-        })
+        [USUARIOS_FIELD!]: usuarioId ? [usuarioId] : [], // ID del usuario en la tabla Usuarios (relación correcta)
       }
     };
 
@@ -342,12 +334,12 @@ export async function POST(request: NextRequest) {
         
         productosACrear.push({
           fields: {
-            [NOMBRE_PRODUCTO_FIELD]: micro.microorganismoNombre, // Nombre Producto
-            [CANTIDAD_FIELD]: micro.cantidad, // Cantidad
-            [UNIDAD_MEDIDA_FIELD]: 'L', // Unidad de Medida (Litros)
-            [PRECIO_UNITARIO_FIELD]: precioUnitario, // Precio Unitario
-            [SUBTOTAL_FIELD]: subtotal, // Subtotal
-            [ORDEN_COMPRA_FIELD]: [ordenCompraId] // Orden Compra (link)
+            [NOMBRE_PRODUCTO_FIELD!]: micro.microorganismoNombre, // Nombre Producto
+            [CANTIDAD_FIELD!]: micro.cantidad, // Cantidad
+            [UNIDAD_MEDIDA_FIELD!]: 'L', // Unidad de Medida (Litros)
+            [PRECIO_UNITARIO_FIELD!]: precioUnitario, // Precio Unitario
+            [SUBTOTAL_FIELD!]: subtotal, // Subtotal
+            [ORDEN_COMPRA_FIELD!]: [ordenCompraId] // Orden Compra (link)
           }
         });
       }
@@ -355,12 +347,12 @@ export async function POST(request: NextRequest) {
       // Crear un registro para el producto biochar
       productosACrear.push({
         fields: {
-          [NOMBRE_PRODUCTO_FIELD]: biocharTipo, // Nombre Producto
-          [CANTIDAD_FIELD]: parseFloat(biocharCantidad), // Cantidad
-          [UNIDAD_MEDIDA_FIELD]: biocharUnidad, // Unidad de Medida
-          [PRECIO_UNITARIO_FIELD]: 0, // Precio Unitario (por definir)
-          [SUBTOTAL_FIELD]: 0, // Subtotal (por definir)
-          [ORDEN_COMPRA_FIELD]: [ordenCompraId] // Orden Compra (link)
+          [NOMBRE_PRODUCTO_FIELD!]: biocharTipo, // Nombre Producto
+          [CANTIDAD_FIELD!]: parseFloat(biocharCantidad), // Cantidad
+          [UNIDAD_MEDIDA_FIELD!]: biocharUnidad, // Unidad de Medida
+          [PRECIO_UNITARIO_FIELD!]: 0, // Precio Unitario (por definir)
+          [SUBTOTAL_FIELD!]: 0, // Subtotal (por definir)
+          [ORDEN_COMPRA_FIELD!]: [ordenCompraId] // Orden Compra (link)
         }
       });
     }
@@ -407,7 +399,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           fields: {
-            [PRODUCTOS_ORDENADOS_FIELD]: productosIds // Productos Ordenados (link)
+            [PRODUCTOS_ORDENADOS_FIELD!]: productosIds // Productos Ordenados (link)
           }
         })
       });
@@ -500,11 +492,6 @@ export async function POST(request: NextRequest) {
         await createDataLabOrder({
           fechaRecogida: fechaEntrega,
           clienteRecogeProducto: recogesPedido === 'si',
-          nombreRecibe: recogesPedido === 'no' ? nombreRecibe : undefined,
-          cedulaRecibe: recogesPedido === 'no' ? cedulaRecibe : undefined,
-          departamentoEntrega: recogesPedido === 'no' ? departamento : undefined,
-          ciudadEntrega: recogesPedido === 'no' ? ciudad : undefined,
-          direccionEntrega: recogesPedido === 'no' ? direccionEntrega : undefined,
           observaciones: observaciones || '',
           realizaRegistro: usuarioNombre,
           // Datos del cliente del usuario raíz
@@ -530,11 +517,6 @@ export async function POST(request: NextRequest) {
         await createDataLabOrder({
           fechaRecogida: fechaEntrega,
           clienteRecogeProducto: recogesPedido === 'si',
-          nombreRecibe: recogesPedido === 'no' ? nombreRecibe : undefined,
-          cedulaRecibe: recogesPedido === 'no' ? cedulaRecibe : undefined,
-          departamentoEntrega: recogesPedido === 'no' ? departamento : undefined,
-          ciudadEntrega: recogesPedido === 'no' ? ciudad : undefined,
-          direccionEntrega: recogesPedido === 'no' ? direccionEntrega : undefined,
           observaciones: observaciones || '',
           realizaRegistro: usuarioNombre,
           // Datos del cliente del usuario raíz
@@ -550,55 +532,9 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // 5. Enviar notificación por Telegram
-      const tipoProducto = tipo === 'biologicos' ? 'Productos Biológicos' : 'Biochar';
-      const entregaInfo = recogesPedido === 'si' ? 'Cliente recoge' : `Entrega en ${ciudad}, ${departamento}`;
-      
-      let productosInfo = '';
-      if (tipo === 'biologicos' && microorganismosSeleccionados) {
-        productosInfo = microorganismosSeleccionados.map((m: any) => 
-          `• ${m.microorganismoNombre}: ${m.cantidad}L`
-        ).join('\n');
-        productosInfo += `\n💰 Total: ${totalLitros}L - ${new Intl.NumberFormat('es-CO', {
-          style: 'currency',
-          currency: 'COP',
-          minimumFractionDigits: 0
-        }).format(precioTotal || 0)}`;
-      } else if (tipo === 'biochar') {
-        productosInfo = `• ${biocharTipo}: ${biocharCantidad} ${biocharUnidad}`;
-      }
-
-      const mensaje = `🧪 *NUEVO PEDIDO - ${tipoProducto.toUpperCase()}*
-
-👤 *Cliente:* ${usuarioNombre}
-📧 *Email:* ${usuarioEmail}
-🆔 *ID Usuario:* ${usuarioId}
-
-📦 *Productos:*
-${productosInfo}
-
-📅 *Fecha de ${recogesPedido === 'si' ? 'recogida' : 'entrega'}:* ${fechaEntrega}
-🚚 *Modalidad:* ${entregaInfo}
-
-${observaciones ? `📝 *Observaciones:* ${observaciones}` : ''}
-
-🔗 *ID Orden:* ${ordenCompraId}`;
-
-      // Para compatibilidad con la función de Telegram existente, creamos un objeto temporal
-      const pedidoDataForTelegram = {
-        cedula: usuarioId || 'N/A',
-        nombreCliente: usuarioNombre || 'N/A',
-        razonSocialCliente: usuarioNombre || 'N/A',
-        cantidad: totalLitros || biocharCantidad || 0,
-        unidadMedida: tipo === 'biologicos' ? 'Litros' : biocharUnidad || 'kg',
-        precioTotal: precioTotal || 0,
-        destino: recogesPedido === 'si' ? 'Cliente recoge' : `${ciudad}, ${departamento}`
-      };
-      
-      await sendTelegramNotification(pedidoDataForTelegram);
-    } catch (telegramError) {
-      console.error('Error enviando notificación Telegram:', telegramError);
-      // No devolver error por fallo de Telegram
+    } catch (error: any) {
+      console.error('Error creando pedido en DataLab:', error);
+      // Continuar con el flujo aunque falle DataLab
     }
 
     return NextResponse.json({
@@ -607,12 +543,12 @@ ${observaciones ? `📝 *Observaciones:* ${observaciones}` : ''}
       ordenId: ordenCompraId,
       productosIds: productosIds
     });
-
-  } catch (error) {
+  
+  } catch (error: any) {
     console.error('Error en create-pedido:', error);
     return NextResponse.json({ 
       error: 'Error interno del servidor',
-      details: error instanceof Error ? error.message : 'Error desconocido'
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
 }

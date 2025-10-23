@@ -66,19 +66,28 @@ export async function POST(request: NextRequest) {
           userData = rootUserData;
           userType = 'raiz';
           
-          // Para usuario raíz: él ES la entidad
-          entidadIdValue = userRootId;
+          // Para usuario raíz: usar la entidad asociada, no su propio ID
+          const entidadField = userData.fields['Entidad'];
+          if (entidadField && Array.isArray(entidadField) && entidadField.length > 0) {
+            entidadIdValue = entidadField[0]; // ID de la empresa/entidad
+          } else {
+            console.error('❌ Usuario raíz no tiene entidad asignada:', userData.fields);
+            return NextResponse.json({ 
+              error: 'El usuario raíz no tiene entidad asignada' 
+            }, { status: 400 });
+          }
           
           // Obtener nombre del usuario raíz
           creadorNombre = userData.fields['Nombre o Razón Social'] || 
                          userData.fields['Nombre Razon Social'] || 
+                         userData.fields['Nombre Completo'] ||
                          userData.fields['Usuario'] ||
                          'Usuario Raíz';
                          
           console.log('✅ Usuario raíz encontrado:', {
             id: userData.id,
             nombre: creadorNombre,
-            esEntidad: entidadIdValue
+            entidadAsociada: entidadIdValue
           });
         }
       }
@@ -227,64 +236,63 @@ export async function POST(request: NextRequest) {
           if (adminUserData && adminUserData.id === userRootId && adminUserData.fields && Object.keys(adminUserData.fields).length > 0) {
             userData = adminUserData;
             
-            // Verificar que el usuario tenga rol Admin
+            // Verificar el rol del usuario
             const userRole = userData.fields[USUARIOS_ROL_USUARIO_FIELD_ID!] || userData.fields['Rol Usuario'];
             
-            console.log('👤 Usuario regular encontrado y verificado:', {
+            console.log('👤 Usuario encontrado y verificado:', {
               id: userData.id,
               rol: userRole,
               fields: Object.keys(userData.fields)
             });
             
-            // AQUÍ ESTÁ EL PROBLEMA: Este usuario parece ser admin pero está en la tabla que creemos es usuarios
-            // Sin embargo, Airtable dice que está en tblZmDsMCRDUWBaAQ (usuarios) y el campo enlaza con tblYlKMm5yTQgLdjx (raíz)
-            // Esto significa que NUESTRO .env.local tiene los IDs intercambiados
-            
-            console.log('🔍 ANÁLISIS DEL PROBLEMA:');
-            console.log('   - Este usuario está en tabla que llamamos USUARIOS_TABLE_ID');
-            console.log('   - Pero el campo Entidad enlaza con tabla USUARIOS_RAIZ_TABLE_ID');
-            console.log('   - Los IDs de tabla están intercambiados en nuestro .env.local');
-            
-            if (userRole !== 'Admin') {
+            // CORRECCIÓN: Determinar si es usuario raíz o admin basado en el rol real
+            if (userRole === 'Usuario Raiz') {
+              console.log('🔍 Usuario detectado como raíz por su rol');
+              userType = 'raiz';
+              
+              // Para usuario raíz: usar la entidad asociada
+              const entidadField = userData.fields[USUARIOS_ENTIDAD_FIELD_ID!] || userData.fields['Entidad'];
+              if (entidadField && Array.isArray(entidadField) && entidadField.length > 0) {
+                entidadIdValue = entidadField[0]; // ID de la empresa/entidad
+                console.log('✅ Usuario raíz - usando entidad asociada:', entidadIdValue);
+              } else {
+                console.error('❌ Usuario raíz no tiene entidad asignada:', userData.fields);
+                return NextResponse.json({ 
+                  error: 'El usuario raíz no tiene entidad asignada' 
+                }, { status: 400 });
+              }
+            } else if (userRole === 'Admin') {
+              console.log('🔍 Usuario detectado como admin por su rol');
+              userType = 'admin';
+              
+              // Para usuario admin: usar entidad asignada
+              const adminEntidad = userData.fields[USUARIOS_ENTIDAD_FIELD_ID!] || userData.fields['Entidad'];
+              
+              if (!adminEntidad || !Array.isArray(adminEntidad) || adminEntidad.length === 0) {
+                console.error('❌ Usuario admin no tiene entidad asignada:', userData.fields);
+                return NextResponse.json({ 
+                  error: 'El usuario administrador no tiene entidad asignada' 
+                }, { status: 400 });
+              }
+
+              entidadIdValue = adminEntidad[0];
+            } else {
               return NextResponse.json({ 
                 error: 'Solo usuarios raíz y usuarios con rol Admin pueden crear otros usuarios' 
               }, { status: 403 });
             }
             
-            userType = 'admin';
-            
-            // SOLUCIÓN TEMPORAL: Como el campo Entidad enlaza con tblYlKMm5yTQgLdjx,
-            // y sabemos que en nuestro .env.local eso es USUARIOS_RAIZ_TABLE_ID,
-            // necesitamos buscar un usuario raíz REAL en esa tabla para usar como entidad
-            
-            // Para usuario admin: debe tener entidad asignada PERO como los IDs están intercambiados,
-            // necesitamos buscar la entidad en la tabla correcta
-            const adminEntidad = userData.fields[USUARIOS_ENTIDAD_FIELD_ID!] || userData.fields['Entidad'];
-            
-            if (!adminEntidad || !Array.isArray(adminEntidad) || adminEntidad.length === 0) {
-              console.error('❌ Usuario admin no tiene entidad asignada:', userData.fields);
-              return NextResponse.json({ 
-                error: 'El usuario administrador no tiene entidad asignada' 
-              }, { status: 400 });
-            }
-
-            entidadIdValue = adminEntidad[0];
-            
-            console.log('🔍 PROBLEMA: Entidad encontrada es:', entidadIdValue);
-            console.log('🔍 Pero necesitamos una entidad que esté en la tabla correcta');
-            console.log('🔍 Según el error, necesitamos un ID de tblYlKMm5yTQgLdjx');
-            console.log('🔍 En nuestro .env.local eso es:', process.env.USUARIOS_RAIZ_TABLE_ID);
-            
-            // Obtener nombre del usuario admin
+            // Obtener nombre del usuario
             creadorNombre = userData.fields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID!] || 
                            userData.fields['Nombre Completo'] || 
                            userData.fields['Usuario'] ||
-                           'Usuario Admin';
+                           `Usuario ${userType}`;
                            
-            console.log('✅ Usuario admin encontrado:', {
+            console.log('✅ Usuario autenticado:', {
               id: userData.id,
+              tipo: userType,
               nombre: creadorNombre,
-              entidad: entidadIdValue
+              entidadAsociada: entidadIdValue
             });
           } else {
             console.log('⚠️ Datos de tabla usuarios no válidos o ID no coincide exactamente');
