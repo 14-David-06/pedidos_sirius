@@ -74,14 +74,11 @@ export async function GET(request: NextRequest) {
       console.log('🏢 [API] Entidad del Admin encontrada:', entidadId);
     }
     
-    // Filtrar usuarios por entidad (tanto para raíz como para admin)
-    filterFormula = `{${USUARIOS_ENTIDAD_FIELD_ID}} = "${entidadId}"`;
-    const encodedFilter = encodeURIComponent(filterFormula);
+    // Obtener TODOS los usuarios (sin filtro de entidad)
+    console.log('📋 [API] Obteniendo TODOS los usuarios de la tabla');
     
-    console.log('📋 [API] Filtro aplicado:', filterFormula);
-    
-    // Consultar usuarios regulares filtrados por el usuario raíz actual
-    const usuariosResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}?filterByFormula=${encodedFilter}`, {
+    // Consultar TODOS los usuarios de la tabla (sin filtro)
+    const usuariosResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USUARIOS_TABLE_ID}`, {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
@@ -97,10 +94,10 @@ export async function GET(request: NextRequest) {
     }
 
     const usuariosData = await usuariosResponse.json();
-    console.log('📋 [API] Usuarios regulares encontrados para esta empresa:', usuariosData.records.length);
+    console.log('📋 [API] TODOS los usuarios encontrados en la tabla:', usuariosData.records.length);
 
-    // Procesar SOLO usuarios regulares de esta empresa
-    const usuariosRegulares = usuariosData.records.map((record: any) => {
+    // Procesar TODOS los usuarios de la tabla
+    const todosLosUsuarios = usuariosData.records.map((record: any) => {
       const fields = record.fields;
       return {
         id: record.id,
@@ -115,17 +112,17 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    console.log('✅ [API] Usuarios procesados para entidad:', usuariosRegulares.length);
-    console.log('🔒 [API] Filtro de seguridad aplicado correctamente');
+    console.log('✅ [API] Usuarios procesados:', todosLosUsuarios.length);
+    console.log('🔒 [API] Mostrando TODOS los usuarios de la tabla');
 
     return NextResponse.json({ 
       success: true, 
-      usuarios: usuariosRegulares,
-      total: usuariosRegulares.length,
+      usuarios: todosLosUsuarios,
+      total: todosLosUsuarios.length,
       entidadId: entidadId,
       userId: userRootId,
       userType: userType,
-      message: userType === 'admin' ? 'Usuarios de su entidad (Admin)' : 'Usuarios de su empresa (Raíz)'
+      message: 'Todos los usuarios de la tabla'
     });
 
   } catch (error) {

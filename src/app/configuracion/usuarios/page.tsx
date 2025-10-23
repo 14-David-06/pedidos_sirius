@@ -469,6 +469,24 @@ export default function VerUsuariosPage() {
               </CardContent>
             </Card>
 
+            {/* Nota informativa sobre permisos de edición */}
+            <Card className="bg-blue-500 bg-opacity-20 backdrop-blur-md shadow-lg mb-6 border border-blue-400 border-opacity-50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2 text-blue-200">
+                  <Info size={20} />
+                  <div>
+                    <p className="text-sm">
+                      <strong>Gestión de Usuarios:</strong> Se muestran todos los usuarios del sistema. 
+                      {user?.tipoUsuario === 'raiz' 
+                        ? ' Como usuario raíz, puedes editar cualquier usuario.' 
+                        : ' Solo los usuarios con rol "Visualización" pueden ser editados por cuestiones de seguridad.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Nota informativa sobre permisos */}
             {user?.rol === 'Admin' && (
               <Card className="bg-blue-500 bg-opacity-20 backdrop-blur-md shadow-lg mb-6 border border-blue-400 border-opacity-50">
@@ -558,15 +576,29 @@ export default function VerUsuariosPage() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-white bg-opacity-20 backdrop-blur-sm border-white border-opacity-30 text-white hover:bg-opacity-30"
-                            onClick={() => handleEditUser(usuario)}
-                          >
-                            <Edit size={16} className="mr-1" />
-                            Editar
-                          </Button>
+                          {/* Usuario raíz puede editar cualquier usuario, otros solo usuarios de Visualización */}
+                          {(user?.tipoUsuario === 'raiz' || usuario.rolUsuario === 'Visualizacion') ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-white bg-opacity-20 backdrop-blur-sm border-white border-opacity-30 text-white hover:bg-opacity-30"
+                              onClick={() => handleEditUser(usuario)}
+                            >
+                              <Edit size={16} className="mr-1" />
+                              Editar
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              className="bg-gray-500 bg-opacity-20 backdrop-blur-sm border-gray-400 border-opacity-30 text-gray-400 cursor-not-allowed"
+                              title="Solo usuarios de Visualización son editables (excepto para usuario raíz)"
+                            >
+                              <Lock size={16} className="mr-1" />
+                              Bloqueado
+                            </Button>
+                          )}
                           {/* Solo usuarios raíz pueden eliminar */}
                           {user?.tipoUsuario === 'raiz' && (
                             <Button

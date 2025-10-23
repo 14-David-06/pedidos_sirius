@@ -262,10 +262,6 @@ function PedidoContent() {
     setFormData(prev => ({ ...prev, biocharCantidad: valor }));
   };
 
-  const setBiocharUnidad = (valor: string) => {
-    setFormData(prev => ({ ...prev, biocharUnidad: valor }));
-  };
-
   // Función para calcular días hábiles (lunes a viernes)
   const calcularFechaMinima = () => {
     const hoy = new Date();
@@ -474,7 +470,7 @@ function PedidoContent() {
           : { 
               biocharTipo: formData.biocharTipo,
               biocharCantidad: formData.biocharCantidad,
-              biocharUnidad: formData.biocharUnidad
+              biocharUnidad: 'kg'
             }
         )
       };
@@ -761,38 +757,29 @@ function PedidoContent() {
                           </p>
                         )}
                         
-                        <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="mt-4">
                           <div>
                             <label className="block text-sm font-medium text-white mb-2">
-                              Cantidad *
+                              Cantidad (kg) *
                             </label>
-                            <Input
-                              type="number"
-                              value={formData.biocharCantidad || ''}
-                              onChange={(e) => setBiocharCantidad(e.target.value)}
-                              required
-                              min="1"
-                              step="0.1"
-                              className="bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60"
-                              placeholder="Ej: 50"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-white mb-2">
-                              Unidad *
-                            </label>
-                            <select
-                              value={formData.biocharUnidad || 'kg'}
-                              onChange={(e) => setBiocharUnidad(e.target.value)}
-                              required
-                              className="w-full px-4 py-3 bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            >
-                              {unidades.map(unidad => (
-                                <option key={unidad} value={unidad} className="text-gray-800">
-                                  {unidad}
-                                </option>
-                              ))}
-                            </select>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                value={formData.biocharCantidad || ''}
+                                onChange={(e) => setBiocharCantidad(e.target.value)}
+                                required
+                                min="1"
+                                step="0.1"
+                                className="bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 pr-12"
+                                placeholder="Ej: 50"
+                              />
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-opacity-70 font-medium">
+                                kg
+                              </div>
+                            </div>
+                            <p className="text-xs text-white text-opacity-60 mt-1">
+                              Todos los productos de biochar se presentan en kilogramos
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1010,7 +997,7 @@ function PedidoContent() {
                         {tipo === 'biochar' && formData.biocharTipo && (
                           <div>
                             <span className="font-medium text-white">Producto:</span>
-                            <p className="text-white text-opacity-90">{formData.biocharTipo} - {formData.biocharCantidad} {formData.biocharUnidad}</p>
+                            <p className="text-white text-opacity-90">{formData.biocharTipo} - {formData.biocharCantidad} kg</p>
                           </div>
                         )}
                         <div>
