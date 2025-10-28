@@ -15,6 +15,7 @@ const USUARIOS_SALT_FIELD_ID = process.env.USUARIOS_SALT_FIELD_ID;
 const USUARIOS_NUMERO_DOCUMENTO_FIELD_ID = process.env.USUARIOS_NUMERO_DOCUMENTO_FIELD_ID;
 const USUARIOS_AREA_EMPRESA_FIELD_ID = process.env.USUARIOS_AREA_EMPRESA_FIELD_ID;
 const USUARIOS_ROL_USUARIO_FIELD_ID = process.env.USUARIOS_ROL_USUARIO_FIELD_ID;
+const USUARIOS_ENTIDAD_FIELD_ID = process.env.USUARIOS_ENTIDAD_FIELD_ID;
 
 // Validar que todas las variables de entorno necesarias estén configuradas
 const requiredEnvVars = [
@@ -24,7 +25,8 @@ const requiredEnvVars = [
   'USUARIOS_SALT_FIELD_ID',
   'USUARIOS_NUMERO_DOCUMENTO_FIELD_ID',
   'USUARIOS_AREA_EMPRESA_FIELD_ID',
-  'USUARIOS_ROL_USUARIO_FIELD_ID'
+  'USUARIOS_ROL_USUARIO_FIELD_ID',
+  'USUARIOS_ENTIDAD_FIELD_ID'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
@@ -137,6 +139,10 @@ export async function POST(request: NextRequest) {
         // Obtener el nombre de la empresa desde el lookup field
         const empresaNombre = nombreRazonSocial && nombreRazonSocial.length > 0 ? nombreRazonSocial[0] : 'Empresa no especificada';
 
+        // Obtener el ID de la entidad del usuario
+        const entidadField = userFields[USUARIOS_ENTIDAD_FIELD_ID!] || userFields['Entidad'];
+        const entidadId = entidadField && Array.isArray(entidadField) && entidadField.length > 0 ? entidadField[0] : null;
+
         // Preparar respuesta de login exitoso
         const userData = {
           id: userRecord.id,
@@ -146,7 +152,8 @@ export async function POST(request: NextRequest) {
           documento: userDocumento,
           tipoUsuario: userRol === 'Usuario Raiz' ? 'raiz' : 'regular',
           rol: userRol,
-          areaEmpresa: userAreaEmpresa
+          areaEmpresa: userAreaEmpresa,
+          entidadId: entidadId
         };
 
         console.log(`✅ [${requestId}] Login exitoso para usuario: ${nombreCompleto} (${userDocumento})`);

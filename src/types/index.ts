@@ -57,3 +57,30 @@ export interface Microorganismo {
   bolsasLote: number;
   diasIncubacion: number;
 }
+
+// Interface para Productos Ordenes (tblWEEp5zjDIYpKfh)
+export interface ProductoOrden {
+  id: string;
+  nombreProducto: string;
+  cantidad: number;
+  unidadMedida: string;
+  precioUnitario: number;
+  subtotal: number;
+  ordenCompraId?: string[];
+}
+
+// Interface para Ordenes Compras
+export interface OrdenCompra {
+  id: string;
+  fechaRecogida: string;
+  areaSirius: string;
+  estadoOrden: 'Pendiente' | 'Confirmado' | 'En Proceso' | 'Enviado' | 'Entregado' | 'Cancelado';
+  necesitaEnvio: boolean;
+  ubicacionAplicacion?: string;
+  observaciones?: string;
+  realizaRegistro: string;
+  productos?: ProductoOrden[];
+  total?: number;
+  usuarioId?: string[];
+  entidadId?: string[];
+}

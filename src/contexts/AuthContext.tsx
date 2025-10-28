@@ -11,6 +11,7 @@ interface User {
   tipoUsuario?: 'raiz' | 'regular';
   rol?: 'Admin' | 'Compras' | 'Visualizacion';
   areaEmpresa?: string;
+  entidadId?: string; // ID de la entidad a la que pertenece el usuario
 }
 
 interface AuthContextType {
