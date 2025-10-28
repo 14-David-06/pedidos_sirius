@@ -36,98 +36,17 @@ export default function MisPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Función para mapear estados de Airtable a estados del componente
-  const mapearEstado = (estadoAirtable: string): 'pendiente' | 'confirmado' | 'en_proceso' | 'enviado' | 'entregado' => {
-    const mapeo: { [key: string]: 'pendiente' | 'confirmado' | 'en_proceso' | 'enviado' | 'entregado' } = {
-      'Pendiente': 'pendiente',
-      'En proceso': 'en_proceso',
-      'Cancelada': 'pendiente', // Tratamos canceladas como pendientes para el UI
-      'En camino': 'enviado',
-      'Entregada': 'entregado'
-    };
-    return mapeo[estadoAirtable] || 'pendiente';
-  };
-
-  // Datos de ejemplo para usuarios regulares o fallback
-  const pedidosEjemplo: Pedido[] = [
-    {
-      id: '001',
-      tipo: 'biologicos',
-      producto: 'Microorganismos Beneficiosos',
-      cantidad: '50',
-      unidad: 'kg',
-      fechaSolicitud: '2025-01-15',
-      fechaEntrega: '2025-01-25',
-      direccionEntrega: 'Finca El Progreso, Vereda San José, Villavicencio',
-      estado: 'entregado',
-      observaciones: 'Entrega realizada sin novedad'
-    },
-    {
-      id: '002',
-      tipo: 'biochar',
-      producto: 'Biochar Premium',
-      cantidad: '2',
-      unidad: 'ton',
-      fechaSolicitud: '2025-01-20',
-      fechaEntrega: '2025-02-01',
-      direccionEntrega: 'Hacienda Los Pinos, Km 15 Vía Acacías',
-      estado: 'en_proceso',
-      observaciones: 'En preparación para envío'
-    },
-    {
-      id: '003',
-      tipo: 'biologicos',
-      producto: 'Hongos Micorrízicos',
-      cantidad: '25',
-      unidad: 'kg',
-      fechaSolicitud: '2025-01-28',
-      fechaEntrega: '2025-02-10',
-      direccionEntrega: 'Cultivos San Rafael, Puerto López',
-      estado: 'confirmado'
-    }
-  ];
-
   // Cargar datos de pedidos
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        if (user?.tipoUsuario === 'raiz') {
-          // Para usuarios raíz, obtener órdenes reales de Airtable
-          console.log('🔵 Cargando órdenes para usuario raíz...');
-          const response = await fetch(`/api/obtener-ordenes?usuarioId=${user.id}&tipoUsuario=${user.tipoUsuario}`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('📋 Órdenes obtenidas:', data);
-            
-            // Mapear las órdenes al formato esperado por el componente
-            const ordenesFormateadas = data.ordenes?.map((orden: any) => ({
-              id: orden.numeroOrden?.toString() || orden.id,
-              tipo: orden.area === 'Pirolisis' ? 'biochar' : 'biologicos',
-              producto: orden.descripcion || 'Producto',
-              cantidad: '1', // Se puede obtener de productos ordenados si está disponible
-              unidad: 'unidad',
-              fechaSolicitud: orden.fechaCreacion ? new Date(orden.fechaCreacion).toISOString().split('T')[0] : '2025-01-01',
-              fechaEntrega: orden.fechaEntregaRequerida || '2025-02-01',
-              direccionEntrega: 'Dirección de entrega', // Se puede obtener de otra tabla si está disponible
-              estado: mapearEstado(orden.estado),
-              observaciones: orden.tipoBiologico || ''
-            })) || [];
-            
-            setPedidos(ordenesFormateadas);
-          } else {
-            console.error('Error al obtener órdenes:', response.statusText);
-            // En caso de error, usar datos de ejemplo
-            setPedidos(pedidosEjemplo);
-          }
-        } else {
-          // Para usuarios regulares, usar datos de ejemplo
-          setPedidos(pedidosEjemplo);
-        }
+        // Por ahora, todos los usuarios verán lista vacía
+        // TODO: Implementar carga de pedidos desde la tabla correcta de Airtable
+        console.log('🔵 Cargando pedidos del usuario...');
+        setPedidos([]);
       } catch (error) {
         console.error('Error al cargar datos:', error);
-        // En caso de error, usar datos de ejemplo
-        setPedidos(pedidosEjemplo);
+        setPedidos([]);
       } finally {
         setIsLoading(false);
       }
