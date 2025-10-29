@@ -9,7 +9,8 @@ import {
   FlaskConical, 
   Leaf, 
   ClipboardList,
-  Calendar
+  Calendar,
+  History
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -169,6 +170,34 @@ export default function DashboardPage() {
                 <Link href="/mis-pedidos">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3">
                     {user?.rol === 'Visualizacion' ? 'Ver Seguimiento' : 'Ver Mis Pedidos'}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Mi Histórico - Visible para todos */}
+            <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-2xl border-0 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-3xl hover:bg-opacity-40">
+              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white bg-opacity-20 p-3 rounded-full">
+                    <History className="text-white" size={24} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-xl">Mi Histórico</CardTitle>
+                    <CardDescription className="text-indigo-100">
+                      Accede a tu historial completo de actividades
+                    </CardDescription>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <p className="text-white text-opacity-90 mb-6 text-sm leading-relaxed">
+                  Consulta el historial completo de tus pedidos, cotizaciones, aplicaciones y toda tu actividad 
+                  en la plataforma con fechas, detalles y seguimiento temporal.
+                </p>
+                <Link href="/mi-historico">
+                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3">
+                    Ver Mi Histórico
                   </Button>
                 </Link>
               </CardContent>
