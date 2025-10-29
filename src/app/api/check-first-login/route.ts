@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       userData: {
         id: user.id,
         documento: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID] || user.fields['Numero Documento'],
-        nombre: user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID!] || user.fields['Nombre Completo'], // Nombre Completo
+        nombre: (process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || user.fields['Nombre Completo'] || 'Usuario', // Nombre Completo
         area: user.fields[USUARIOS_AREA_EMPRESA_FIELD_ID] || user.fields['Area Empresa'], // Area Empresa
         rol: user.fields[process.env.USUARIOS_ROL_USUARIO_FIELD_ID!] || user.fields['Rol Usuario'] // Rol Usuario
       }

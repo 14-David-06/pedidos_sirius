@@ -39,7 +39,7 @@ export default function DashboardPage() {
                   Panel de Control
                 </h1>
                 <p className="text-xl text-white mb-2 drop-shadow-md">
-                  Bienvenido, <span className="font-semibold text-green-300">{user?.usuario}</span>
+                  Bienvenido, <span className="font-semibold text-green-300">{user?.nombre}</span>
                 </p>
                 <p className="text-white text-opacity-90 drop-shadow-md font-medium">
                   Sistema de gestión de pedidos - Sirius Regenerative Solutions

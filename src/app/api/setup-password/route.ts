@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     console.log('👤 [API] Datos del usuario encontrado:', {
       id: user.id,
-      nombre: user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID!] || user.fields['Nombre Completo'], // Nombre Completo
+      nombre: (process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || user.fields['Nombre Completo'] || 'Usuario', // Nombre Completo
       documento: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID] || user.fields['Numero Documento'],
       hasPassword: !!existingPassword
     });
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🔑 [API] Generando credenciales para usuario:', {
       documento: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID] || user.fields['Numero Documento'],
-      nombre: user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID!] || user.fields['Nombre Completo'],
+      nombre: (process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || user.fields['Nombre Completo'] || 'Usuario',
       hashLength: hash.length,
       saltLength: salt.length
     });
@@ -122,14 +122,14 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ [API] Contraseña configurada exitosamente para:', {
       documento: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID],
-      nombre: user.fields.fldA9FMWEGYKNyBT1
+      nombre: (process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || user.fields['Nombre Completo'] || 'Usuario'
     });
 
     // Retornar datos del usuario para login automático
     const userData = {
       id: user.id,
       documento: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID],
-      nombre: user.fields.fldA9FMWEGYKNyBT1, // Nombre
+      nombre: (process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || user.fields['Nombre Completo'] || 'Usuario', // Nombre
       email: user.fields.fldeShMh7S9C8kI7Z, // Email
       telefono: user.fields.fldY7qgP1PKAGFm5G, // Telefono
       empresa: user.fields.fldFx3EgzSLJvZMcx, // Empresa

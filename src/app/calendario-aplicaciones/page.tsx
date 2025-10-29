@@ -200,7 +200,7 @@ export default function CalendarioAplicacionesPage() {
                   Planifica y organiza tus aplicaciones de productos
                 </p>
                 <p className="text-white text-opacity-90 drop-shadow-md">
-                  Usuario: <span className="font-semibold text-purple-300">{user?.usuario}</span>
+                  Usuario: <span className="font-semibold text-purple-300">{user?.nombre}</span>
                 </p>
               </div>
             </div>

@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
         // Intentar acceder por field ID y por nombre
         const storedHash = userFields[USUARIOS_HASH_FIELD_ID!] || userFields['Hash'];
         const storedSalt = userFields[USUARIOS_SALT_FIELD_ID!] || userFields['Salt'];
-        const nombreCompleto = userFields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID!] || userFields['Nombre Completo'];
+        const nombreCompleto = (USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? userFields[USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || userFields['Nombre Completo'] || 'Usuario';
         const userDocumento = userFields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID!] || userFields['Numero Documento'];
         const userAreaEmpresa = userFields[USUARIOS_AREA_EMPRESA_FIELD_ID!] || userFields['Area Empresa'];
         const userRol = userFields[USUARIOS_ROL_USUARIO_FIELD_ID!] || userFields['Rol Usuario'];
@@ -157,6 +157,12 @@ export async function POST(request: NextRequest) {
         };
 
         console.log(`✅ [${requestId}] Login exitoso para usuario: ${nombreCompleto} (${userDocumento})`);
+        console.log(`🔍 [${requestId}] DEBUG - Datos completos del usuario:`, {
+          ...userData,
+          tieneNombre: !!nombreCompleto,
+          nombreLength: nombreCompleto?.length || 0,
+          nombreTipo: typeof nombreCompleto
+        });
 
         return NextResponse.json({
           success: true,
