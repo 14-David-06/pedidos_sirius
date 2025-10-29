@@ -69,7 +69,7 @@ export interface ProductoOrden {
   ordenCompraId?: string[];
 }
 
-// Interface para Ordenes Compras
+// Interface para Pedidos (Sirius Clientes)
 export interface OrdenCompra {
   id: string;
   fechaRecogida: string;
