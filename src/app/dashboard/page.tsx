@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { 
   FlaskConical, 
   Leaf, 
-  ClipboardList
+  ClipboardList,
+  Calendar
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -50,7 +51,7 @@ export default function DashboardPage() {
 
 
           {/* Opciones principales del dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {/* Pedido de Biológicos - Solo visible para usuarios que no son de Visualización */}
             {(!user?.rol || user?.rol !== 'Visualizacion') && (
               <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-2xl border-0 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-3xl hover:bg-opacity-40">
@@ -105,6 +106,36 @@ export default function DashboardPage() {
                   <Link href="/pedido?tipo=biochar">
                     <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-3">
                       Hacer Pedido de Biochar
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Calendario de Aplicaciones - Solo visible para usuarios que no son de Visualización */}
+            {(!user?.rol || user?.rol !== 'Visualizacion') && (
+              <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-2xl border-0 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-3xl hover:bg-opacity-40">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-white bg-opacity-20 p-3 rounded-full">
+                      <Calendar className="text-white" size={24} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-white text-xl">Calendario de Aplicaciones</CardTitle>
+                      <CardDescription className="text-purple-100">
+                        Planifica y organiza tus aplicaciones
+                      </CardDescription>
+                    </div>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <p className="text-white text-opacity-90 mb-6 text-sm leading-relaxed">
+                    Gestiona tu calendario de aplicaciones de productos, programa tratamientos y 
+                    realiza seguimiento de las fechas de aplicación.
+                  </p>
+                  <Link href="/calendario-aplicaciones">
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3">
+                      Ver Calendario
                     </Button>
                   </Link>
                 </CardContent>
