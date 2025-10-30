@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         const userDocumento = userFields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID!] || userFields['Numero Documento'];
         const userAreaEmpresa = userFields[USUARIOS_AREA_EMPRESA_FIELD_ID!] || userFields['Area Empresa'];
         const userRol = userFields[USUARIOS_ROL_USUARIO_FIELD_ID!] || userFields['Rol Usuario'];
-        const nombreRazonSocial = userFields['fldOpHYIPSyFdl6A7'] || userFields['Nombre o Razón Social (from Entidad)']; // Lookup de Nombre o Razón Social
+        const nombreRazonSocial = process.env.USUARIOS_NOMBRE_RAZON_SOCIAL_FIELD_ID ? userFields[process.env.USUARIOS_NOMBRE_RAZON_SOCIAL_FIELD_ID] : userFields['Nombre o Razón Social (from Entidad)']; // Lookup de Nombre o Razón Social
 
         console.log(`🔍 [${requestId}] Usuario encontrado: ${nombreCompleto}, Documento: ${userDocumento}`);
         console.log(`🔍 [${requestId}] Debug valores:`, {

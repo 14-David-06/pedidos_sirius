@@ -130,11 +130,11 @@ export async function POST(request: NextRequest) {
       id: user.id,
       documento: user.fields[USUARIOS_NUMERO_DOCUMENTO_FIELD_ID],
       nombre: (process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID ? user.fields[process.env.USUARIOS_NOMBRE_COMPLETO_FIELD_ID] : null) || user.fields['Nombre Completo'] || 'Usuario', // Nombre
-      email: user.fields.fldeShMh7S9C8kI7Z, // Email
-      telefono: user.fields.fldY7qgP1PKAGFm5G, // Telefono
-      empresa: user.fields.fldFx3EgzSLJvZMcx, // Empresa
+      email: process.env.USUARIOS_EMAIL_FIELD_ID ? user.fields[process.env.USUARIOS_EMAIL_FIELD_ID] : user.fields['Email'], // Email
+      telefono: process.env.USUARIOS_TELEFONO_FIELD_ID ? user.fields[process.env.USUARIOS_TELEFONO_FIELD_ID] : user.fields['Telefono'], // Telefono
+      empresa: process.env.USUARIOS_EMPRESA_FIELD_ID ? user.fields[process.env.USUARIOS_EMPRESA_FIELD_ID] : user.fields['Empresa'], // Empresa
       area: user.fields[USUARIOS_AREA_EMPRESA_FIELD_ID], // Area
-      rol: user.fields.fldQ9tBGEhUuRMG9h, // Rol
+      rol: process.env.USUARIOS_ROL_FIELD_ID ? user.fields[process.env.USUARIOS_ROL_FIELD_ID] : user.fields['Rol'], // Rol
       tipoUsuario: 'regular'
     };
 
