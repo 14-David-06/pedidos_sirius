@@ -24,6 +24,14 @@ interface MicroorganismoSeleccionado {
   microorganismoId: string;
   microorganismoNombre: string;
   dosis: string;
+  fechaProgramada?: string;
+}
+
+interface AplicacionProgramada {
+  id: string;
+  microorganismo: string[];
+  dosis: number;
+  fechaProgramada?: string;
 }
 
 interface Cronograma {
@@ -31,11 +39,10 @@ interface Cronograma {
   aplicacion: string;
   cantidadAplicaciones: number;
   cicloDias: number;
-  hectareas: number;
   fechaInicioAplicaciones: string;
   microorganismo: string;
   fechaCreacion: string;
-  aplicacionesProgramadas?: string[];
+  aplicacionesProgramadas?: AplicacionProgramada[];
 }
 
 export default function CalendarioAplicacionesPage() {
@@ -53,7 +60,6 @@ export default function CalendarioAplicacionesPage() {
     aplicacion: '',
     cantidadAplicaciones: '',
     cicloDias: '',
-    hectareas: '',
     fechaInicioAplicaciones: ''
   });
 
@@ -165,7 +171,7 @@ export default function CalendarioAplicacionesPage() {
     e.preventDefault();
     
     // Validaciones
-    if (!formData.aplicacion || !formData.cantidadAplicaciones || !formData.cicloDias || !formData.hectareas) {
+    if (!formData.aplicacion || !formData.cantidadAplicaciones || !formData.cicloDias) {
       setError('Todos los campos del cronograma son requeridos');
       return;
     }
@@ -184,7 +190,6 @@ export default function CalendarioAplicacionesPage() {
         aplicacion: formData.aplicacion,
         cantidadAplicaciones: formData.cantidadAplicaciones,
         cicloDias: formData.cicloDias,
-        hectareas: formData.hectareas,
         fechaInicioAplicaciones: formData.fechaInicioAplicaciones,
         microorganismosSeleccionados: microorganismosSeleccionados,
         clienteId: user?.entidadId || 'default_client',
@@ -209,7 +214,6 @@ export default function CalendarioAplicacionesPage() {
           aplicacion: '',
           cantidadAplicaciones: '',
           cicloDias: '',
-          hectareas: '',
           fechaInicioAplicaciones: ''
         });
         setMicroorganismosSeleccionados([]);
@@ -234,6 +238,51 @@ export default function CalendarioAplicacionesPage() {
     setExpandedCronograma(
       expandedCronograma === cronogramaId ? null : cronogramaId
     );
+  };
+
+  // Función para actualizar fecha de aplicación
+  const actualizarFechaAplicacion = async (aplicacionId: string, fechaProgramada: string, fechaInicioAplicaciones: string) => {
+    try {
+      setError('');
+      
+      const response = await fetch('/api/cronograma-aplicaciones/actualizar-fecha', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          aplicacionId,
+          fechaProgramada,
+          fechaInicioAplicaciones
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSuccess('Fecha de aplicación actualizada correctamente');
+        
+        // Actualizar el estado local
+        setCronogramas(prevCronogramas => 
+          prevCronogramas.map(cronograma => ({
+            ...cronograma,
+            aplicacionesProgramadas: cronograma.aplicacionesProgramadas?.map(aplicacion => 
+              aplicacion.id === aplicacionId 
+                ? { ...aplicacion, fechaProgramada }
+                : aplicacion
+            )
+          }))
+        );
+        
+        // Limpiar mensaje después de 3 segundos
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(result.error || 'Error al actualizar fecha de aplicación');
+      }
+    } catch (err) {
+      console.error('Error actualizando fecha:', err);
+      setError('Error de conexión al actualizar fecha de aplicación');
+    }
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -389,22 +438,6 @@ export default function CalendarioAplicacionesPage() {
 
                     <div>
                       <label className="block text-white font-medium mb-2">
-                        Hectáreas *
-                      </label>
-                      <Input
-                        name="hectareas"
-                        type="number"
-                        min="1"
-                        value={formData.hectareas}
-                        onChange={handleInputChange}
-                        placeholder="Ej: 10"
-                        className="bg-white bg-opacity-10 border-white border-opacity-30 text-white placeholder-gray-300"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-white font-medium mb-2">
                         Fecha de Inicio de Aplicaciones *
                       </label>
                       <Input
@@ -492,37 +525,63 @@ export default function CalendarioAplicacionesPage() {
                       <div className="space-y-2">
                         <h4 className="text-white font-medium">Microorganismos seleccionados:</h4>
                         {microorganismosSeleccionados.map((micro, index) => {
-                          const hectareasNum = parseFloat(formData.hectareas) || 0;
+                          // Usamos un valor fijo de 1 hectárea por defecto
+                          const hectareasNum = 1;
                           const dosisNum = parseFloat(micro.dosis) || 0;
                           const litrosTotales = hectareasNum * dosisNum;
                           
                           console.log('🧪 Cálculo microorganismo:', {
                             nombre: micro.microorganismoNombre,
                             dosis: micro.dosis,
-                            hectareas: formData.hectareas,
                             hectareasNum,
                             dosisNum,
                             litrosTotales
                           });
                           
                           return (
-                            <div key={index} className="flex items-center justify-between bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-30 rounded-lg p-3">
-                              <div className="flex flex-col">
-                                <span className="text-white font-medium">
-                                  {micro.microorganismoNombre}
-                                </span>
-                                <span className="text-white text-opacity-80 text-sm">
-                                  {micro.dosis} L/ha × {hectareasNum} ha = {litrosTotales.toFixed(1)} L totales
-                                </span>
+                            <div key={index} className="bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-30 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex flex-col">
+                                  <span className="text-white font-medium">
+                                    {micro.microorganismoNombre}
+                                  </span>
+                                  <span className="text-white text-opacity-80 text-sm">
+                                    {micro.dosis} L/ha × {hectareasNum} ha = {litrosTotales.toFixed(1)} L totales
+                                  </span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  onClick={() => eliminarMicroorganismo(index)}
+                                  className="bg-red-600 hover:bg-red-700 text-white p-2"
+                                  size="sm"
+                                >
+                                  <Trash2 size={14} />
+                                </Button>
                               </div>
-                              <Button
-                                type="button"
-                                onClick={() => eliminarMicroorganismo(index)}
-                                className="bg-red-600 hover:bg-red-700 text-white p-2"
-                                size="sm"
-                              >
-                                <Trash2 size={14} />
-                              </Button>
+                              
+                              {/* Campo de fecha programada opcional */}
+                              <div className="mt-2">
+                                <label className="block text-white text-sm font-medium mb-1">
+                                  Fecha Programada (opcional)
+                                </label>
+                                <Input
+                                  type="date"
+                                  value={micro.fechaProgramada || ''}
+                                  min={formData.fechaInicioAplicaciones || undefined}
+                                  onChange={(e) => {
+                                    const nuevosSeleccionados = [...microorganismosSeleccionados];
+                                    nuevosSeleccionados[index].fechaProgramada = e.target.value;
+                                    setMicroorganismosSeleccionados(nuevosSeleccionados);
+                                  }}
+                                  className="bg-white bg-opacity-20 border-white border-opacity-30 text-white"
+                                  placeholder="Selecciona una fecha"
+                                />
+                                {formData.fechaInicioAplicaciones && (
+                                  <p className="text-white text-opacity-70 text-xs mt-1">
+                                    Debe ser posterior a {new Date(formData.fechaInicioAplicaciones).toLocaleDateString('es-CO')}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
@@ -533,7 +592,7 @@ export default function CalendarioAplicacionesPage() {
                             <span className="text-white font-medium">Total de litros por aplicación:</span>
                             <span className="text-white font-bold text-lg">
                               {microorganismosSeleccionados.reduce((total, micro) => {
-                                const hectareasNum = parseFloat(formData.hectareas) || 0;
+                                const hectareasNum = 1; // Valor fijo por defecto
                                 const dosisNum = parseFloat(micro.dosis) || 0;
                                 return total + (hectareasNum * dosisNum);
                               }, 0).toFixed(1)} L
@@ -546,7 +605,7 @@ export default function CalendarioAplicacionesPage() {
                               </span>
                               <span className="text-white font-bold">
                                 {(microorganismosSeleccionados.reduce((total, micro) => {
-                                  const hectareasNum = parseFloat(formData.hectareas) || 0;
+                                  const hectareasNum = 1; // Valor fijo por defecto
                                   const dosisNum = parseFloat(micro.dosis) || 0;
                                   return total + (hectareasNum * dosisNum);
                                 }, 0) * (parseFloat(formData.cantidadAplicaciones) || 0)).toFixed(1)} L
@@ -622,9 +681,6 @@ export default function CalendarioAplicacionesPage() {
                           <p className="text-white text-opacity-90 text-sm">
                             {cronograma.cantidadAplicaciones} aplicaciones cada {cronograma.cicloDias} días
                           </p>
-                          <p className="text-white text-opacity-80 text-xs">
-                            {cronograma.hectareas} hectáreas
-                          </p>
                           {cronograma.fechaInicioAplicaciones && (
                             <p className="text-white text-opacity-80 text-xs">
                               Inicio: {new Date(cronograma.fechaInicioAplicaciones).toLocaleDateString('es-ES')}
@@ -663,11 +719,54 @@ export default function CalendarioAplicacionesPage() {
                             <Beaker className="mr-2" size={16} />
                             Aplicaciones Programadas
                           </h4>
-                          <div className="text-white text-opacity-90">
-                            <p>IDs de aplicaciones: {cronograma.aplicacionesProgramadas?.join(', ') || 'No hay aplicaciones'}</p>
-                            <p className="text-sm text-gray-300 mt-2">
-                              Los detalles específicos de cada aplicación se almacenan en la base de datos.
-                            </p>
+                          <div className="space-y-3">
+                            {cronograma.aplicacionesProgramadas && cronograma.aplicacionesProgramadas.length > 0 ? (
+                              cronograma.aplicacionesProgramadas.map((aplicacion, index) => (
+                                <div key={aplicacion.id} className="bg-white bg-opacity-10 rounded-lg p-3">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                                    <div>
+                                      <p className="text-white font-medium">
+                                        Microorganismo {index + 1}
+                                      </p>
+                                      <p className="text-gray-300 text-sm">
+                                        Dosis: {aplicacion.dosis} L/ha
+                                      </p>
+                                    </div>
+                                    
+                                    <div>
+                                      <label className="block text-white text-sm font-medium mb-1">
+                                        Fecha Programada
+                                      </label>
+                                      <Input
+                                        type="date"
+                                        value={aplicacion.fechaProgramada || ''}
+                                        min={cronograma.fechaInicioAplicaciones}
+                                        onChange={(e) => actualizarFechaAplicacion(aplicacion.id, e.target.value, cronograma.fechaInicioAplicaciones)}
+                                        className="bg-white bg-opacity-20 border-white border-opacity-30 text-white"
+                                      />
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                      {aplicacion.fechaProgramada ? (
+                                        <div className="flex items-center text-green-400">
+                                          <CheckCircle size={16} className="mr-1" />
+                                          <span className="text-sm">Programada</span>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center text-yellow-400">
+                                          <AlertTriangle size={16} className="mr-1" />
+                                          <span className="text-sm">Sin programar</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-white text-opacity-90">
+                                No hay aplicaciones programadas para este cronograma.
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>

@@ -14,9 +14,7 @@ const CRONOGRAMA_CREADA_FIELD = process.env.CRONOGRAMA_CREADA_FIELD;
 const CRONOGRAMA_APLICACION_FIELD = process.env.CRONOGRAMA_APLICACION_FIELD;
 const CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD = process.env.CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD;
 const CRONOGRAMA_CICLO_DIAS_FIELD = process.env.CRONOGRAMA_CICLO_DIAS_FIELD;
-const CRONOGRAMA_HECTAREAS_FIELD = process.env.CRONOGRAMA_HECTAREAS_FIELD;
 const CRONOGRAMA_FECHA_INICIO_FIELD = process.env.CRONOGRAMA_FECHA_INICIO_FIELD;
-const CRONOGRAMA_MICROORGANISMO_FIELD = process.env.CRONOGRAMA_MICROORGANISMO_FIELD;
 const CRONOGRAMA_REALIZA_REGISTRO_FIELD = process.env.CRONOGRAMA_REALIZA_REGISTRO_FIELD;
 const CRONOGRAMA_CLIENTE_FIELD = process.env.CRONOGRAMA_CLIENTE_FIELD;
 const CRONOGRAMA_USUARIOS_FIELD = process.env.CRONOGRAMA_USUARIOS_FIELD;
@@ -26,8 +24,9 @@ const CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD = process.env.CRONOGRAMA_APLICAC
 const APLICACION_ID_FIELD = process.env.APLICACION_ID_FIELD;
 const APLICACION_MICROORGANISMO_FIELD = process.env.APLICACION_MICROORGANISMO_FIELD;
 const APLICACION_DOSIS_FIELD = process.env.APLICACION_DOSIS_FIELD;
-const APLICACION_HECTAREAS_FIELD = process.env.APLICACION_HECTAREAS_FIELD;
+// const APLICACION_HECTAREAS_FIELD = process.env.APLICACION_HECTAREAS_FIELD;
 const APLICACION_CRONOGRAMA_FIELD = process.env.APLICACION_CRONOGRAMA_FIELD;
+const APLICACION_FECHA_PROGRAMADA_FIELD = process.env.APLICACION_FECHA_PROGRAMADA_FIELD;
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,7 +37,6 @@ export async function POST(request: NextRequest) {
       aplicacion,
       cantidadAplicaciones,
       cicloDias,
-      hectareas,
       fechaInicioAplicaciones,
       microorganismosSeleccionados,
       clienteId,
@@ -46,7 +44,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validaciones de datos de entrada
-    if (!aplicacion || !cantidadAplicaciones || !cicloDias || !hectareas || !fechaInicioAplicaciones || !clienteId || !usuarioId) {
+    if (!aplicacion || !cantidadAplicaciones || !cicloDias || !fechaInicioAplicaciones || !clienteId || !usuarioId) {
       return NextResponse.json({ 
         error: 'Todos los campos del cronograma son requeridos' 
       }, { status: 400 });
@@ -67,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Validar variables de entorno para Cronograma Aplicaciones
     if (!CRONOGRAMA_APLICACIONES_TABLE_ID || !CRONOGRAMA_APLICACION_FIELD || !CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD || 
-        !CRONOGRAMA_CICLO_DIAS_FIELD || !CRONOGRAMA_HECTAREAS_FIELD || !CRONOGRAMA_FECHA_INICIO_FIELD || 
+        !CRONOGRAMA_CICLO_DIAS_FIELD || !CRONOGRAMA_FECHA_INICIO_FIELD || 
         !CRONOGRAMA_CLIENTE_FIELD || !CRONOGRAMA_USUARIOS_FIELD || !CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD) {
       console.error('❌ [API] Variables de entorno de Cronograma no configuradas');
       return NextResponse.json({ 
@@ -77,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     // Validar variables de entorno para Aplicaciones Programadas
     if (!APLICACIONES_PROGRAMADAS_TABLE_ID || !APLICACION_MICROORGANISMO_FIELD || !APLICACION_DOSIS_FIELD || 
-        !APLICACION_HECTAREAS_FIELD || !APLICACION_CRONOGRAMA_FIELD) {
+        !APLICACION_CRONOGRAMA_FIELD) {
       console.error('❌ [API] Variables de entorno de Aplicaciones Programadas no configuradas');
       return NextResponse.json({ 
         error: 'Error de configuración del servidor - Variables de aplicaciones programadas no configuradas' 
@@ -90,12 +88,28 @@ export async function POST(request: NextRequest) {
     const aplicacionesCreadasIds = [];
     
     for (const microSeleccionado of microorganismosSeleccionados) {
+      // TODO: Reactivar validación de fechas cuando se implemente el campo en Airtable
+      // // Validar que la fecha programada sea posterior a la fecha de inicio
+      // if (microSeleccionado.fechaProgramada) {
+      //   const fechaInicio = new Date(fechaInicioAplicaciones);
+      //   const fechaProgramada = new Date(microSeleccionado.fechaProgramada);
+      //   
+      //   if (fechaProgramada <= fechaInicio) {
+      //     return NextResponse.json({ 
+      //       error: `La fecha programada para el microorganismo ${microSeleccionado.nombre || 'seleccionado'} debe ser posterior a la fecha de inicio de aplicaciones (${fechaInicioAplicaciones})` 
+      //     }, { status: 400 });
+      //   }
+      // }
+
       const aplicacionData = {
         records: [{
           fields: {
-            [APLICACION_MICROORGANISMO_FIELD]: [microSeleccionado.microorganismoId],
-            [APLICACION_DOSIS_FIELD]: parseFloat(microSeleccionado.dosis),
-            [APLICACION_HECTAREAS_FIELD]: parseInt(hectareas)
+            [APLICACION_MICROORGANISMO_FIELD]: microSeleccionado.microorganismoNombre,
+            [APLICACION_DOSIS_FIELD]: parseFloat(microSeleccionado.dosis)
+            // TODO: Agregar fecha programada cuando se cree el campo en Airtable
+            // ...(microSeleccionado.fechaProgramada && APLICACION_FECHA_PROGRAMADA_FIELD && {
+            //   [APLICACION_FECHA_PROGRAMADA_FIELD]: microSeleccionado.fechaProgramada
+            // })
           }
         }]
       };
@@ -131,7 +145,6 @@ export async function POST(request: NextRequest) {
           [CRONOGRAMA_APLICACION_FIELD]: aplicacion,
           [CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD]: parseInt(cantidadAplicaciones),
           [CRONOGRAMA_CICLO_DIAS_FIELD]: parseInt(cicloDias),
-          [CRONOGRAMA_HECTAREAS_FIELD]: parseInt(hectareas),
           [CRONOGRAMA_FECHA_INICIO_FIELD]: fechaInicioAplicaciones,
           [CRONOGRAMA_CLIENTE_FIELD]: [clienteId],
           [CRONOGRAMA_USUARIOS_FIELD]: [usuarioId],
@@ -198,7 +211,6 @@ export async function POST(request: NextRequest) {
         aplicacion,
         cantidadAplicaciones,
         cicloDias,
-        hectareas,
         microorganismosSeleccionados,
         aplicacionesProgramadas: aplicacionesCreadasIds
       }

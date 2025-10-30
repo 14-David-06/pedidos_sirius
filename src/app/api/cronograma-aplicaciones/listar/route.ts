@@ -13,13 +13,57 @@ const CRONOGRAMA_CREADA_FIELD = process.env.CRONOGRAMA_CREADA_FIELD;
 const CRONOGRAMA_APLICACION_FIELD = process.env.CRONOGRAMA_APLICACION_FIELD;
 const CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD = process.env.CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD;
 const CRONOGRAMA_CICLO_DIAS_FIELD = process.env.CRONOGRAMA_CICLO_DIAS_FIELD;
-const CRONOGRAMA_HECTAREAS_FIELD = process.env.CRONOGRAMA_HECTAREAS_FIELD;
+// const CRONOGRAMA_HECTAREAS_FIELD = process.env.CRONOGRAMA_HECTAREAS_FIELD;
 const CRONOGRAMA_FECHA_INICIO_FIELD = process.env.CRONOGRAMA_FECHA_INICIO_FIELD;
 const CRONOGRAMA_MICROORGANISMO_FIELD = process.env.CRONOGRAMA_MICROORGANISMO_FIELD;
 const CRONOGRAMA_REALIZA_REGISTRO_FIELD = process.env.CRONOGRAMA_REALIZA_REGISTRO_FIELD;
 const CRONOGRAMA_CLIENTE_FIELD = process.env.CRONOGRAMA_CLIENTE_FIELD;
 const CRONOGRAMA_USUARIOS_FIELD = process.env.CRONOGRAMA_USUARIOS_FIELD;
 const CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD = process.env.CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD;
+
+// Field IDs para Aplicaciones Programadas
+const APLICACIONES_PROGRAMADAS_TABLE_ID = process.env.APLICACIONES_PROGRAMADAS_TABLE_ID;
+const APLICACION_ID_FIELD = process.env.APLICACION_ID_FIELD;
+const APLICACION_MICROORGANISMO_FIELD = process.env.APLICACION_MICROORGANISMO_FIELD;
+const APLICACION_DOSIS_FIELD = process.env.APLICACION_DOSIS_FIELD;
+// const APLICACION_HECTAREAS_FIELD = process.env.APLICACION_HECTAREAS_FIELD;
+const APLICACION_FECHA_PROGRAMADA_FIELD = process.env.APLICACION_FECHA_PROGRAMADA_FIELD;
+
+// Función para obtener detalles de aplicaciones programadas
+async function getAplicacionesDetalle(aplicacionesIds: string[]) {
+  if (!aplicacionesIds || aplicacionesIds.length === 0 || !APLICACIONES_PROGRAMADAS_TABLE_ID) {
+    return [];
+  }
+
+  try {
+    const filterFormula = `OR(${aplicacionesIds.map(id => `RECORD_ID()="${id}"`).join(',')})`;
+    const detailUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${APLICACIONES_PROGRAMADAS_TABLE_ID}`;
+    const detailParams = new URLSearchParams({
+      filterByFormula: filterFormula
+    });
+
+    const detailResponse = await fetch(`${detailUrl}?${detailParams}`, {
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (detailResponse.ok) {
+      const detailData = await detailResponse.json();
+      return detailData.records.map((record: any) => ({
+        id: record.id,
+        microorganismo: APLICACION_MICROORGANISMO_FIELD ? record.fields[APLICACION_MICROORGANISMO_FIELD] : null,
+        dosis: APLICACION_DOSIS_FIELD ? record.fields[APLICACION_DOSIS_FIELD] : null,
+        // hectareas: APLICACION_HECTAREAS_FIELD ? record.fields[APLICACION_HECTAREAS_FIELD] : null,
+        fechaProgramada: APLICACION_FECHA_PROGRAMADA_FIELD ? record.fields[APLICACION_FECHA_PROGRAMADA_FIELD] : null
+      }));
+    }
+  } catch (error) {
+    console.error('❌ [API] Error obteniendo detalles de aplicaciones:', error);
+  }
+  return [];
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,25 +119,32 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     console.log('📊 [API] Respuesta de Airtable:', JSON.stringify(data, null, 2));
 
-    // Usar los field IDs correctos con validación
-    const cronogramas = data.records.map((record: any) => ({
-      id: record.id,
-      aplicacion: CRONOGRAMA_APLICACION_FIELD ? record.fields[CRONOGRAMA_APLICACION_FIELD] || '' : '',
-      cantidadAplicaciones: CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD ? record.fields[CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD] || 0 : 0,
-      cicloDias: CRONOGRAMA_CICLO_DIAS_FIELD ? record.fields[CRONOGRAMA_CICLO_DIAS_FIELD] || 0 : 0,
-      hectareas: CRONOGRAMA_HECTAREAS_FIELD ? record.fields[CRONOGRAMA_HECTAREAS_FIELD] || 0 : 0,
-      fechaInicioAplicaciones: CRONOGRAMA_FECHA_INICIO_FIELD ? record.fields[CRONOGRAMA_FECHA_INICIO_FIELD] || '' : '',
-      microorganismo: CRONOGRAMA_MICROORGANISMO_FIELD ? record.fields[CRONOGRAMA_MICROORGANISMO_FIELD] || '' : '',
-      realizaRegistro: CRONOGRAMA_REALIZA_REGISTRO_FIELD ? record.fields[CRONOGRAMA_REALIZA_REGISTRO_FIELD] || '' : '',
-      fechaCreacion: CRONOGRAMA_CREADA_FIELD ? record.fields[CRONOGRAMA_CREADA_FIELD] || '' : '',
-      aplicacionesProgramadas: CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD ? record.fields[CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD] || [] : []
-    }));
+    // Usar los field IDs correctos con validación y obtener detalles de aplicaciones
+    const cronogramasConDetalles = await Promise.all(
+      data.records.map(async (record: any) => {
+        const aplicacionesIds = CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD ? record.fields[CRONOGRAMA_APLICACIONES_PROGRAMADAS_FIELD] || [] : [];
+        const aplicacionesDetalle = await getAplicacionesDetalle(aplicacionesIds);
 
-    console.log('✅ [API] Cronogramas obtenidos:', cronogramas.length);
+        return {
+          id: record.id,
+          aplicacion: CRONOGRAMA_APLICACION_FIELD ? record.fields[CRONOGRAMA_APLICACION_FIELD] || '' : '',
+          cantidadAplicaciones: CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD ? record.fields[CRONOGRAMA_CANTIDAD_APLICACIONES_FIELD] || 0 : 0,
+          cicloDias: CRONOGRAMA_CICLO_DIAS_FIELD ? record.fields[CRONOGRAMA_CICLO_DIAS_FIELD] || 0 : 0,
+          // hectareas: CRONOGRAMA_HECTAREAS_FIELD ? record.fields[CRONOGRAMA_HECTAREAS_FIELD] || 0 : 0,
+          fechaInicioAplicaciones: CRONOGRAMA_FECHA_INICIO_FIELD ? record.fields[CRONOGRAMA_FECHA_INICIO_FIELD] || '' : '',
+          microorganismo: CRONOGRAMA_MICROORGANISMO_FIELD ? record.fields[CRONOGRAMA_MICROORGANISMO_FIELD] || '' : '',
+          realizaRegistro: CRONOGRAMA_REALIZA_REGISTRO_FIELD ? record.fields[CRONOGRAMA_REALIZA_REGISTRO_FIELD] || '' : '',
+          fechaCreacion: CRONOGRAMA_CREADA_FIELD ? record.fields[CRONOGRAMA_CREADA_FIELD] || '' : '',
+          aplicacionesProgramadas: aplicacionesDetalle
+        };
+      })
+    );
+
+    console.log('✅ [API] Cronogramas obtenidos:', cronogramasConDetalles.length);
 
     return NextResponse.json({
       success: true,
-      cronogramas
+      cronogramas: cronogramasConDetalles
     });
 
   } catch (error) {
