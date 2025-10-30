@@ -14,10 +14,10 @@ export const metadata: Metadata = {
   keywords: ['regeneración de suelos', 'agricultura sostenible', 'análisis de suelos', 'Sirius', 'ZOMAC', 'Colombia'],
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-      { url: '/Logo-Sirius.png', sizes: '192x192', type: 'image/png' },
+      { url: '/Logo-Sirius.png', type: 'image/png' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/Logo-Sirius.png',
     apple: '/Logo-Sirius.png',
   },
 };
@@ -30,8 +30,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="icon" href="/Logo-Sirius.png" sizes="192x192" type="image/png" />
+        <link rel="icon" href="/Logo-Sirius.png" type="image/png" />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="apple-touch-icon" href="/Logo-Sirius.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#16a34a" />

@@ -1,0 +1,21 @@
+{
+  "name": "Sirius Clientes",
+  "short_name": "Sirius",
+  "description": "Sirius Lab - Portal de Clientes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/Logo-Sirius.png",
+      "sizes": "any",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/png"
+    }
+  ]
+}
