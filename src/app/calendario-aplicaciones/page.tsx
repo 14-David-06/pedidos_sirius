@@ -31,6 +31,7 @@ interface AplicacionProgramada {
   id: string;
   microorganismo: string[];
   dosis: number;
+  hectareas: number;
   fechaProgramada?: string;
 }
 
@@ -39,6 +40,7 @@ interface Cronograma {
   aplicacion: string;
   cantidadAplicaciones: number;
   cicloDias: number;
+  hectareas: number;
   fechaInicioAplicaciones: string;
   microorganismo: string;
   fechaCreacion: string;
@@ -60,6 +62,7 @@ export default function CalendarioAplicacionesPage() {
     aplicacion: '',
     cantidadAplicaciones: '',
     cicloDias: '',
+    hectareas: '',
     fechaInicioAplicaciones: ''
   });
 
@@ -171,7 +174,7 @@ export default function CalendarioAplicacionesPage() {
     e.preventDefault();
     
     // Validaciones
-    if (!formData.aplicacion || !formData.cantidadAplicaciones || !formData.cicloDias) {
+    if (!formData.aplicacion || !formData.cantidadAplicaciones || !formData.cicloDias || !formData.hectareas) {
       setError('Todos los campos del cronograma son requeridos');
       return;
     }
@@ -190,6 +193,7 @@ export default function CalendarioAplicacionesPage() {
         aplicacion: formData.aplicacion,
         cantidadAplicaciones: formData.cantidadAplicaciones,
         cicloDias: formData.cicloDias,
+        hectareas: formData.hectareas,
         fechaInicioAplicaciones: formData.fechaInicioAplicaciones,
         microorganismosSeleccionados: microorganismosSeleccionados,
         clienteId: user?.entidadId || 'default_client',
@@ -214,6 +218,7 @@ export default function CalendarioAplicacionesPage() {
           aplicacion: '',
           cantidadAplicaciones: '',
           cicloDias: '',
+          hectareas: '',
           fechaInicioAplicaciones: ''
         });
         setMicroorganismosSeleccionados([]);
@@ -438,6 +443,22 @@ export default function CalendarioAplicacionesPage() {
 
                     <div>
                       <label className="block text-white font-medium mb-2">
+                        Hectáreas *
+                      </label>
+                      <Input
+                        name="hectareas"
+                        type="number"
+                        min="1"
+                        value={formData.hectareas}
+                        onChange={handleInputChange}
+                        placeholder="Ej: 10"
+                        className="bg-white bg-opacity-10 border-white border-opacity-30 text-white placeholder-gray-300"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white font-medium mb-2">
                         Fecha de Inicio de Aplicaciones *
                       </label>
                       <Input
@@ -525,14 +546,14 @@ export default function CalendarioAplicacionesPage() {
                       <div className="space-y-2">
                         <h4 className="text-white font-medium">Microorganismos seleccionados:</h4>
                         {microorganismosSeleccionados.map((micro, index) => {
-                          // Usamos un valor fijo de 1 hectárea por defecto
-                          const hectareasNum = 1;
+                          const hectareasNum = parseFloat(formData.hectareas) || 0;
                           const dosisNum = parseFloat(micro.dosis) || 0;
                           const litrosTotales = hectareasNum * dosisNum;
                           
                           console.log('🧪 Cálculo microorganismo:', {
                             nombre: micro.microorganismoNombre,
                             dosis: micro.dosis,
+                            hectareas: formData.hectareas,
                             hectareasNum,
                             dosisNum,
                             litrosTotales
@@ -592,7 +613,7 @@ export default function CalendarioAplicacionesPage() {
                             <span className="text-white font-medium">Total de litros por aplicación:</span>
                             <span className="text-white font-bold text-lg">
                               {microorganismosSeleccionados.reduce((total, micro) => {
-                                const hectareasNum = 1; // Valor fijo por defecto
+                                const hectareasNum = parseFloat(formData.hectareas) || 0;
                                 const dosisNum = parseFloat(micro.dosis) || 0;
                                 return total + (hectareasNum * dosisNum);
                               }, 0).toFixed(1)} L
@@ -605,7 +626,7 @@ export default function CalendarioAplicacionesPage() {
                               </span>
                               <span className="text-white font-bold">
                                 {(microorganismosSeleccionados.reduce((total, micro) => {
-                                  const hectareasNum = 1; // Valor fijo por defecto
+                                  const hectareasNum = parseFloat(formData.hectareas) || 0;
                                   const dosisNum = parseFloat(micro.dosis) || 0;
                                   return total + (hectareasNum * dosisNum);
                                 }, 0) * (parseFloat(formData.cantidadAplicaciones) || 0)).toFixed(1)} L
@@ -681,6 +702,9 @@ export default function CalendarioAplicacionesPage() {
                           <p className="text-white text-opacity-90 text-sm">
                             {cronograma.cantidadAplicaciones} aplicaciones cada {cronograma.cicloDias} días
                           </p>
+                          <p className="text-white text-opacity-80 text-xs">
+                            {cronograma.hectareas} hectáreas
+                          </p>
                           {cronograma.fechaInicioAplicaciones && (
                             <p className="text-white text-opacity-80 text-xs">
                               Inicio: {new Date(cronograma.fechaInicioAplicaciones).toLocaleDateString('es-ES')}
@@ -730,6 +754,9 @@ export default function CalendarioAplicacionesPage() {
                                       </p>
                                       <p className="text-gray-300 text-sm">
                                         Dosis: {aplicacion.dosis} L/ha
+                                      </p>
+                                      <p className="text-gray-300 text-sm">
+                                        Hectáreas: {aplicacion.hectareas}
                                       </p>
                                     </div>
                                     
