@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/Loading';
 import { Microorganismo } from '@/types';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import logger from '@/lib/logger';
 import { 
   Calendar,
   Plus,
@@ -17,7 +19,10 @@ import {
   Beaker,
   RefreshCw,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Mic,
+  MicOff,
+  Volume2
 } from 'lucide-react';
 
 interface MicroorganismoSeleccionado {
@@ -66,6 +71,9 @@ export default function CalendarioAplicacionesPage() {
     fechaInicioAplicaciones: ''
   });
 
+  // Estado para aplicación personalizada
+  const [aplicacionPersonalizada, setAplicacionPersonalizada] = useState('');
+
   // Estado para microorganismos
   const [microorganismos, setMicroorganismos] = useState<Microorganismo[]>([]);
   const [loadingMicroorganismos, setLoadingMicroorganismos] = useState(false);
@@ -75,14 +83,170 @@ export default function CalendarioAplicacionesPage() {
   const [selectedMicro, setSelectedMicro] = useState('');
   const [dosisTemporal, setDosisTemporal] = useState('');
 
-  // Cargar cronogramas al montar el componente
-  useEffect(() => {
-    if (user) {
-      cargarCronogramas();
-    }
-  }, [user]);
+  // Estados para reconocimiento de voz
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
+  const [voiceTranscript, setVoiceTranscript] = useState('');
 
-  const cargarCronogramas = async () => {
+  // Función para procesar el resultado del reconocimiento de voz
+  const handleVoiceResult = useCallback(async (transcript: string) => {
+    logger.logSafe('Voice recognition result:', { transcript });
+    setVoiceTranscript(transcript);
+    setIsProcessingVoice(true);
+    setVoiceError('');
+
+    try {
+      const response = await fetch('/api/process-voice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcript }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Actualizar el formulario con los datos procesados
+        if (result.data.aplicacion) {
+          setFormData(prev => ({
+            ...prev,
+            aplicacion: result.data.aplicacion,
+            cantidadAplicaciones: result.data.cantidadAplicaciones || prev.cantidadAplicaciones,
+            cicloDias: result.data.cicloDias || prev.cicloDias,
+            hectareas: result.data.hectareas || prev.hectareas,
+            fechaInicioAplicaciones: result.data.fechaInicioAplicaciones || prev.fechaInicioAplicaciones
+          }));
+
+          if (result.data.aplicacion === 'Otra') {
+            setAplicacionPersonalizada(result.data.aplicacionPersonalizada || '');
+          }
+        }
+
+        // Procesar microorganismos si están incluidos
+        if (result.data.microorganismos && result.data.microorganismos.length > 0) {
+          const nuevosMicroorganismos = result.data.microorganismos.map((micro: any) => {
+            // Usar la función de similitud mejorada
+            const microEncontrado = encontrarMicroorganismoPorSimilitud(micro.nombre);
+
+            return {
+              microorganismoId: microEncontrado?.id || '',
+              microorganismoNombre: microEncontrado?.nombre || micro.nombre,
+              dosis: micro.dosis?.toString() || '1.0',
+              fechaProgramada: ''
+            };
+          });
+
+          setMicroorganismosSeleccionados(prev => [...prev, ...nuevosMicroorganismos]);
+          
+          // Log para debug
+          logger.logSafe('Microorganismos procesados por voz:', { 
+            original: result.data.microorganismos,
+            procesados: nuevosMicroorganismos
+          });
+        }
+
+        setSuccess('Comando de voz procesado correctamente');
+      } else {
+        setVoiceError('Error al procesar el comando de voz');
+      }
+    } catch (error) {
+      logger.errorSafe('Error processing voice command:', error);
+      setVoiceError('Error al procesar el comando de voz');
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  }, []);
+
+  // Función para manejar errores de reconocimiento de voz
+  const handleVoiceError = useCallback((error: string) => {
+    logger.errorSafe('Speech recognition error:', { error });
+    setVoiceError(`Error de reconocimiento: ${error}`);
+  }, []);
+
+  // Hook de reconocimiento de voz
+  const {
+    isListening,
+    isSupported,
+    transcript,
+    interimTranscript,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useSpeechRecognition({
+    onResult: handleVoiceResult,
+    onError: handleVoiceError
+  });
+
+  // Función para validar si un cronograma es válido
+  const esCronogramaValido = useCallback((cronograma: Cronograma) => {
+    return (
+      cronograma.aplicacion && 
+      cronograma.aplicacion.trim() !== '' &&
+      cronograma.cantidadAplicaciones && 
+      Number(cronograma.cantidadAplicaciones) > 0 &&
+      cronograma.cicloDias && 
+      Number(cronograma.cicloDias) > 0 &&
+      cronograma.hectareas && 
+      Number(cronograma.hectareas) > 0 &&
+      cronograma.fechaCreacion &&
+      cronograma.fechaCreacion !== 'Invalid Date' &&
+      !isNaN(new Date(cronograma.fechaCreacion).getTime())
+    );
+  }, []);
+
+  // Función para encontrar microorganismo por similitud de nombre
+  const encontrarMicroorganismoPorSimilitud = useCallback((nombreVoz: string) => {
+    if (!nombreVoz || microorganismos.length === 0) return null;
+
+    const nombreLimpio = nombreVoz.toLowerCase().trim();
+    
+    // Busqueda exacta primero
+    let encontrado = microorganismos.find(m => 
+      m.nombre.toLowerCase() === nombreLimpio
+    );
+    
+    if (encontrado) return encontrado;
+
+    // Busqueda por inclusión
+    encontrado = microorganismos.find(m => 
+      m.nombre.toLowerCase().includes(nombreLimpio) ||
+      nombreLimpio.includes(m.nombre.toLowerCase())
+    );
+    
+    if (encontrado) return encontrado;
+
+    // Búsqueda por palabras clave comunes
+    const palabrasClave = {
+      'tricho': 'Trichoderma',
+      'bacilus': 'Bacillus',
+      'pseudo': 'Pseudomonas', 
+      'beauver': 'Beauveria',
+      'metar': 'Metarhizium',
+      'paeci': 'Paecilomyces',
+      'rhizo': 'Rhizobium',
+      'azoto': 'Azotobacter',
+      'mico': 'Mycorrhizae',
+      'strepto': 'Streptomyces'
+    };
+
+    for (const [clave, valor] of Object.entries(palabrasClave)) {
+      if (nombreLimpio.includes(clave)) {
+        encontrado = microorganismos.find(m => 
+          m.nombre.toLowerCase().includes(valor.toLowerCase())
+        );
+        if (encontrado) return encontrado;
+      }
+    }
+
+    return null;
+  }, [microorganismos]);
+
+  // Filtrar cronogramas válidos
+  const cronogramasValidos = cronogramas.filter(esCronogramaValido);
+
+  // Cargar cronogramas al montar el componente
+  const cargarCronogramas = useCallback(async () => {
     try {
       setIsLoading(true);
       setError('');
@@ -98,16 +262,31 @@ export default function CalendarioAplicacionesPage() {
 
       if (response.ok && result.success) {
         setCronogramas(result.cronogramas);
+        
+        // Debug: Filtrar cronogramas inválidos
+        const cronogramasInvalidos = (result.cronogramas || []).filter((cronograma: Cronograma) => !esCronogramaValido(cronograma));
+        if (cronogramasInvalidos.length > 0) {
+          logger.logSafe('Cronogramas inválidos encontrados:', { 
+            cantidad: cronogramasInvalidos.length,
+            ids: cronogramasInvalidos.map((c: Cronograma) => c.id)
+          });
+        }
       } else {
         setError(result.error || 'Error al cargar cronogramas');
       }
     } catch (err) {
-      console.error('Error cargando cronogramas:', err);
+      logger.errorSafe('Error cargando cronogramas:', err);
       setError('Error de conexión al cargar cronogramas');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      cargarCronogramas();
+    }
+  }, [user, cargarCronogramas]);
 
   // Función para cargar microorganismos
   const loadMicroorganismos = useCallback(async () => {
@@ -118,10 +297,10 @@ export default function CalendarioAplicacionesPage() {
         const data = await response.json();
         setMicroorganismos(data.microorganismos || []);
       } else {
-        console.error('Error al cargar microorganismos:', response.statusText);
+        logger.errorSafe('Error al cargar microorganismos:', response.statusText);
       }
     } catch (error) {
-      console.error('Error al cargar microorganismos:', error);
+      logger.errorSafe('Error al cargar microorganismos:', error);
     } finally {
       setLoadingMicroorganismos(false);
     }
@@ -136,6 +315,14 @@ export default function CalendarioAplicacionesPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'aplicacion') {
+      // Si selecciona "Otro", limpiar el campo personalizado
+      if (value !== 'Otro') {
+        setAplicacionPersonalizada('');
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -179,6 +366,12 @@ export default function CalendarioAplicacionesPage() {
       return;
     }
 
+    // Validar aplicación personalizada si se seleccionó "Otro"
+    if (formData.aplicacion === 'Otro' && !aplicacionPersonalizada.trim()) {
+      setError('Debe especificar el nombre de la aplicación personalizada');
+      return;
+    }
+
     if (microorganismosSeleccionados.length === 0) {
       setError('Debe seleccionar al menos un microorganismo con su dosis');
       return;
@@ -189,8 +382,11 @@ export default function CalendarioAplicacionesPage() {
     setSuccess('');
 
     try {
+      // Determinar el nombre final de la aplicación
+      const nombreAplicacion = formData.aplicacion === 'Otro' ? aplicacionPersonalizada : formData.aplicacion;
+      
       const requestData = {
-        aplicacion: formData.aplicacion,
+        aplicacion: nombreAplicacion,
         cantidadAplicaciones: formData.cantidadAplicaciones,
         cicloDias: formData.cicloDias,
         hectareas: formData.hectareas,
@@ -221,6 +417,7 @@ export default function CalendarioAplicacionesPage() {
           hectareas: '',
           fechaInicioAplicaciones: ''
         });
+        setAplicacionPersonalizada('');
         setMicroorganismosSeleccionados([]);
         setSelectedMicro('');
         setDosisTemporal('');
@@ -232,7 +429,7 @@ export default function CalendarioAplicacionesPage() {
         setError(result.error || 'Error al crear cronograma');
       }
     } catch (err) {
-      console.error('Error creando cronograma:', err);
+      logger.errorSafe('Error creando cronograma:', err);
       setError('Error de conexión al crear cronograma');
     } finally {
       setIsCreating(false);
@@ -285,19 +482,27 @@ export default function CalendarioAplicacionesPage() {
         setError(result.error || 'Error al actualizar fecha de aplicación');
       }
     } catch (err) {
-      console.error('Error actualizando fecha:', err);
+      logger.errorSafe('Error actualizando fecha:', err);
       setError('Error de conexión al actualizar fecha de aplicación');
     }
   };
 
   const formatearFecha = (fechaISO: string) => {
-    return new Date(fechaISO).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const fecha = new Date(fechaISO);
+      if (isNaN(fecha.getTime())) {
+        return 'Fecha no válida';
+      }
+      return fecha.toLocaleDateString('es-CO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Fecha no válida';
+    }
   };
 
   if (isLoading) {
@@ -386,10 +591,126 @@ export default function CalendarioAplicacionesPage() {
           {mostrarFormulario && (
             <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-2xl border-0 mb-8">
               <CardHeader>
-                <CardTitle className="text-white text-2xl">Nuevo Cronograma de Aplicaciones</CardTitle>
-                <CardDescription className="text-gray-300">
-                  Completa la información del cronograma
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-white text-2xl">Nuevo Cronograma de Aplicaciones</CardTitle>
+                    <CardDescription className="text-gray-300">
+                      Completa la información del cronograma o usa el comando de voz
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {/* Estado del reconocimiento de voz en tiempo real */}
+                    {(transcript || interimTranscript) && (
+                      <div className="max-w-xs">
+                        <div className="text-xs text-green-300 font-medium mb-1">
+                          Transcripción:
+                        </div>
+                        <div className="text-xs bg-gray-800 bg-opacity-50 p-2 rounded border border-gray-600">
+                          <span className="text-white">{transcript}</span>
+                          <span className="text-gray-400 italic">{interimTranscript}</span>
+                          {isListening && <span className="animate-pulse">|</span>}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Botón de micrófono */}
+                    {isSupported && (
+                      <div className="flex flex-col items-center space-y-1">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (isListening) {
+                              stopListening();
+                            } else {
+                              setVoiceError('');
+                              setVoiceTranscript('');
+                              resetTranscript();
+                              startListening();
+                            }
+                          }}
+                          disabled={isProcessingVoice}
+                          className={`
+                            relative p-3 rounded-full transition-all duration-300
+                            ${isListening 
+                              ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+                              : 'bg-green-600 hover:bg-green-700'
+                            }
+                            ${isProcessingVoice ? 'opacity-50 cursor-not-allowed' : ''}
+                          `}
+                          title={isListening ? 'Detener grabación (Click para finalizar)' : 'Iniciar comando de voz'}
+                        >
+                        {isProcessingVoice ? (
+                          <Volume2 size={20} className="text-white animate-spin" />
+                        ) : isListening ? (
+                          <MicOff size={20} className="text-white" />
+                        ) : (
+                          <Mic size={20} className="text-white" />
+                        )}
+                        
+                        {/* Efecto visual durante la grabación */}
+                        {isListening && (
+                          <div className="absolute inset-0 rounded-full bg-red-400 opacity-30 animate-ping"></div>
+                        )}
+                      </Button>
+                      
+                      {/* Etiqueta de estado */}
+                      <span className={`text-xs font-medium ${isListening ? 'text-red-300' : 'text-green-300'}`}>
+                        {isListening ? 'Grabando...' : 'Listo'}
+                      </span>
+                    </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Mensajes de estado de voz */}
+                {voiceError && (
+                  <div className="mt-3 p-3 bg-red-900 bg-opacity-50 border border-red-500 rounded-lg">
+                    <p className="text-red-300 text-sm flex items-center">
+                      <AlertTriangle size={16} className="mr-2" />
+                      {voiceError}
+                    </p>
+                  </div>
+                )}
+                
+                {isProcessingVoice && (
+                  <div className="mt-3 p-3 bg-blue-900 bg-opacity-50 border border-blue-500 rounded-lg">
+                    <p className="text-blue-300 text-sm flex items-center">
+                      <RefreshCw size={16} className="mr-2 animate-spin" />
+                      Procesando comando de voz...
+                    </p>
+                  </div>
+                )}
+
+                {/* Ayuda para comandos de voz */}
+                {isSupported && (
+                  <div className="mt-3 p-3 bg-gray-900 bg-opacity-50 border border-gray-600 rounded-lg">
+                    <details className="group">
+                      <summary className="text-gray-300 text-sm cursor-pointer flex items-center">
+                        <ChevronDown size={16} className="mr-2 group-open:rotate-180 transition-transform" />
+                        💡 Ayuda para comandos de voz
+                      </summary>
+                      <div className="mt-3 text-gray-400 text-xs space-y-2">
+                        <p><strong>Cómo usar:</strong></p>
+                        <ol className="list-decimal list-inside space-y-1 ml-4">
+                          <li>Presiona el botón verde del micrófono para iniciar</li>
+                          <li>Habla tu comando (puedes tomarte el tiempo que necesites)</li>
+                          <li>Presiona el botón rojo para finalizar cuando termines</li>
+                          <li>El sistema procesará automáticamente tu comando</li>
+                        </ol>
+                        <p><strong>Ejemplos de comandos:</strong></p>
+                        <ul className="list-disc list-inside space-y-1 ml-4">
+                          <li>"Crear aplicación preventiva foliar para 20 hectáreas con 3 aplicaciones cada 15 días usando trichoderma"</li>
+                          <li>"Aplicación curativa de suelo en 50 hectáreas, 2 aplicaciones cada 10 días con bacillus subtilis dosis 1.5"</li>
+                          <li>"Preventiva foliar para 30 hectáreas comenzando el 15 de enero con beauveria bassiana"</li>
+                          <li>"Control de plagas con metarhizium, 40 hectáreas, 4 aplicaciones cada 7 días"</li>
+                        </ul>
+                        <p className="text-yellow-400">
+                          <strong>Tip:</strong> Menciona el microorganismo que quieres usar. El sistema corregirá automáticamente nombres mal pronunciados.
+                        </p>
+                      </div>
+                    </details>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -397,16 +718,39 @@ export default function CalendarioAplicacionesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-3">
                       <label className="block text-white font-medium mb-2">
-                        Nombre de la Aplicación *
+                        Tipo de Aplicación *
                       </label>
-                      <Input
+                      <select
                         name="aplicacion"
                         value={formData.aplicacion}
                         onChange={handleInputChange}
-                        placeholder="Ej: Aplicación de bioestimulantes"
-                        className="bg-white bg-opacity-10 border-white border-opacity-30 text-white placeholder-gray-300"
+                        className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         required
-                      />
+                      >
+                        <option value="" className="text-gray-800">Selecciona el tipo de aplicación</option>
+                        <option value="Preventivo Foliar" className="text-gray-800">Preventivo Foliar</option>
+                        <option value="Preventivo Edáfico" className="text-gray-800">Preventivo Edáfico</option>
+                        <option value="Control Plagas" className="text-gray-800">Control Plagas</option>
+                        <option value="Control Enfermedades" className="text-gray-800">Control Enfermedades</option>
+                        <option value="Otro" className="text-gray-800">Otro</option>
+                      </select>
+                      
+                      {/* Campo de texto condicional para aplicación personalizada */}
+                      {formData.aplicacion === 'Otro' && (
+                        <div className="mt-3">
+                          <label className="block text-white font-medium mb-2">
+                            Especificar Aplicación *
+                          </label>
+                          <Input
+                            type="text"
+                            value={aplicacionPersonalizada}
+                            onChange={(e) => setAplicacionPersonalizada(e.target.value)}
+                            placeholder="Ej: Aplicación de bioestimulantes"
+                            className="bg-white bg-opacity-10 border-white border-opacity-30 text-white placeholder-gray-300"
+                            required
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -550,7 +894,7 @@ export default function CalendarioAplicacionesPage() {
                           const dosisNum = parseFloat(micro.dosis) || 0;
                           const litrosTotales = hectareasNum * dosisNum;
                           
-                          console.log('🧪 Cálculo microorganismo:', {
+                          logger.logSafe('🧪 Cálculo microorganismo:', {
                             nombre: micro.microorganismoNombre,
                             dosis: micro.dosis,
                             hectareas: formData.hectareas,
@@ -675,18 +1019,31 @@ export default function CalendarioAplicacionesPage() {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-white mb-6">Cronogramas Existentes</h2>
             
-            {cronogramas.length === 0 ? (
+            {cronogramasValidos.length === 0 ? (
               <Card className="bg-black bg-opacity-30 backdrop-blur-md shadow-2xl border-0">
                 <CardContent className="p-8 text-center">
                   <Calendar className="mx-auto text-gray-400 mb-4" size={48} />
-                  <h3 className="text-xl text-white mb-2">No hay cronogramas creados</h3>
+                  <h3 className="text-xl text-white mb-2">
+                    {cronogramas.length === 0 ? 'No hay cronogramas creados' : 'No hay cronogramas válidos'}
+                  </h3>
                   <p className="text-gray-300">
-                    Crea tu primer cronograma de aplicaciones para comenzar a organizar tus tratamientos.
+                    {cronogramas.length === 0 
+                      ? 'Crea tu primer cronograma de aplicaciones para comenzar a organizar tus tratamientos.'
+                      : 'Los cronogramas existentes contienen datos incompletos o inválidos y han sido ocultados.'
+                    }
                   </p>
+                  
+                  {cronogramas.length > 0 && cronogramasValidos.length === 0 && (
+                    <div className="mt-4 p-3 bg-yellow-900 bg-opacity-50 border border-yellow-500 rounded-lg">
+                      <p className="text-yellow-300 text-sm">
+                        Se encontraron {cronogramas.length} cronograma(s) con datos inválidos que han sido ocultados para mejorar la experiencia.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ) : (
-              cronogramas.map((cronograma) => (
+              cronogramasValidos.map((cronograma) => (
                 <Card 
                   key={cronograma.id} 
                   className="bg-black bg-opacity-30 backdrop-blur-md shadow-2xl border-0 overflow-hidden hover:bg-opacity-40 transition-all duration-300"
