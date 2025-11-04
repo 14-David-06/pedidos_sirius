@@ -3,6 +3,10 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  // Configuración de compilación para remover logs en producción
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? true : false,
+  },
   async headers() {
     return [
       {

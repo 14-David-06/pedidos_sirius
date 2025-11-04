@@ -1,4 +1,5 @@
 'use client';
+import logger from '@/lib/logger';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -147,7 +148,7 @@ export default function CrearUsuarioPage() {
       }, 2000);
 
     } catch (error) {
-      console.error('Error creating user:', error);
+      logger.errorSafe('Error creating user:', error);
       setError(error instanceof Error ? error.message : 'Error al crear el usuario');
     } finally {
       setIsLoading(false);
@@ -416,3 +417,4 @@ export default function CrearUsuarioPage() {
     </ProtectedRoute>
   );
 }
+

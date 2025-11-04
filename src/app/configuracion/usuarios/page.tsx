@@ -1,4 +1,5 @@
 'use client';
+import logger from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -102,10 +103,10 @@ export default function VerUsuariosPage() {
       const data = await response.json();
       setUsuarios(data.usuarios || []);
       
-      console.log('✅ Usuarios de su empresa cargados:', data.usuarios?.length || 0);
-      console.log('🔒 Empresa ID:', data.empresaId);
+      logger.log('✅ Usuarios de su empresa cargados:', data.usuarios?.length || 0);
+      logger.log('🔒 Empresa ID:', data.empresaId);
     } catch (error) {
-      console.error('Error fetching usuarios:', error);
+      logger.errorSafe('Error fetching usuarios:', error);
       setError('Error al cargar los usuarios de su empresa. Por favor, intenta de nuevo.');
       setUsuarios([]); // Dejar vacío por seguridad
     } finally {
@@ -165,7 +166,7 @@ export default function VerUsuariosPage() {
         return;
       }
 
-      console.log('✅ Contraseña de usuario raíz validada correctamente');
+      logger.log('✅ Contraseña de usuario raíz validada correctamente');
 
       // Si la contraseña es correcta, proceder con la eliminación
       const deleteResponse = await fetch(`/api/usuarios/eliminar`, {
@@ -193,7 +194,7 @@ export default function VerUsuariosPage() {
       fetchUsuarios();
 
     } catch (error) {
-      console.error('Error eliminando usuario:', error);
+      logger.errorSafe('Error eliminando usuario:', error);
       setDeleteError('Error interno del servidor');
     } finally {
       setIsDeleting(false);
@@ -353,7 +354,7 @@ export default function VerUsuariosPage() {
       cancelEdit();
 
     } catch (error) {
-      console.error('Error editando usuario:', error);
+      logger.errorSafe('Error editando usuario:', error);
       setEditError('Error interno del servidor');
     } finally {
       setIsEditing(false);
@@ -888,3 +889,4 @@ export default function VerUsuariosPage() {
     </ProtectedRoute>
   );
 }
+

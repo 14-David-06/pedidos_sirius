@@ -1,17 +1,9 @@
 "use client";
 import { useState } from "react";
+import logger from '@/lib/logger';
 
 // Configuración simplificada - Ahora todo se hace server-side
-console.log('🔧 CONFIGURACIÓN INICIAL CARGADA');
-console.log('🌐 Variables de entorno del servidor (sin NEXT_PUBLIC_):', {
-  AWS_REGION: process.env.AWS_REGION,
-  AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
-  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? `${process.env.AWS_ACCESS_KEY_ID.substring(0, 8)}...` : 'FALTANTE',
-  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? `${process.env.AWS_SECRET_ACCESS_KEY.substring(0, 8)}...` : 'FALTANTE',
-  AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY ? `${process.env.AIRTABLE_API_KEY.substring(0, 8)}...` : 'FALTANTE',
-  AIRTABLE_BASE_ID: process.env.AIRTABLE_BASE_ID,
-  COTIZACIONES_PAGINA_TABLE_ID: process.env.COTIZACIONES_PAGINA_TABLE_ID
-});
+logger.log('🔧 CONFIGURACIÓN INICIAL CARGADA');
 
 export default function CotizacionPage() {
   type ProductoSeleccionado = {
@@ -46,7 +38,7 @@ export default function CotizacionPage() {
       const proxyUrl = `/api/download-pdf?url=${encodeURIComponent(pdfUrl)}`;
       window.open(proxyUrl, '_blank');
     } catch (error) {
-      console.error('Error al descargar el PDF:', error);
+      logger.errorSafe('Error al descargar el PDF', error);
       alert('Error al descargar el archivo. Inténtalo de nuevo.');
     }
   };
@@ -305,22 +297,26 @@ export default function CotizacionPage() {
   };
 
   const handleEnviarCotizacion = async () => {
-    console.log('🚀 INICIANDO PROCESO DE COTIZACIÓN');
-    console.log('📋 Datos de contacto actuales:', datosContacto);
+    logger.log('🚀 INICIANDO PROCESO DE COTIZACIÓN');
+    logger.logSafe('📋 Datos de contacto', { 
+      hasNombre: !!datosContacto.nombre,
+      hasEmail: !!datosContacto.correo,
+      hasEmpresa: !!datosContacto.empresa
+    });
 
     if (!datosContacto.nombre || !datosContacto.telefono || !datosContacto.empresa ||
         !datosContacto.correo || !datosContacto.aceptaPolitica) {
-      console.log('❌ VALIDACIÓN FALLIDA: Faltan campos obligatorios');
+      logger.log('❌ VALIDACIÓN FALLIDA: Faltan campos obligatorios');
       alert('Por favor completa todos los campos y acepta la política de privacidad');
       return;
     }
 
-    console.log('✅ VALIDACIÓN PASADA: Todos los campos completos');
+    logger.log('✅ VALIDACIÓN PASADA: Todos los campos completos');
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log('� ENVIANDO DATOS AL SERVIDOR...');
+      logger.log('📤 ENVIANDO DATOS AL SERVIDOR...');
 
       const response = await fetch(`${process.env.BASE_URL || ''}/api/cotizacion`, {
         method: 'POST',
@@ -339,8 +335,8 @@ export default function CotizacionPage() {
         throw new Error(result.error || 'Error en el servidor');
       }
 
-      console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE');
-      console.log('📄 PDF URL:', result.pdfUrl);
+      logger.log('🎉 PROCESO COMPLETADO EXITOSAMENTE');
+      logger.log('📄 PDF generado exitosamente');
 
       // Guardar la URL del PDF para el botón de descarga
       setPdfUrl(result.pdfUrl);
@@ -348,10 +344,10 @@ export default function CotizacionPage() {
       setMostrarFormulario(false);
       setMostrarResumenPrecios(true);
     } catch (err) {
-      console.error('💥 ERROR EN PROCESO DE COTIZACIÓN:', err);
+      logger.errorSafe('💥 ERROR EN PROCESO DE COTIZACIÓN', err);
       setError(err instanceof Error ? err.message : 'Error desconocido al procesar la cotización');
     } finally {
-      console.log('🔄 FINALIZANDO PROCESO - Set loading to false');
+      logger.log('🔄 FINALIZANDO PROCESO - Set loading to false');
       setIsLoading(false);
     }
   };

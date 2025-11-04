@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import logger from '@/lib/logger';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Si hay parámetros en la URL, limpiarlos por seguridad
     if (typeof window !== 'undefined' && window.location.search) {
-      console.log('🔒 [SECURITY] Limpiando parámetros sensibles de la URL');
+      logger.log('🔒 [SECURITY] Limpiando parámetros sensibles de la URL');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
@@ -62,11 +63,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    console.log('🔍 [FRONTEND] Verificando si es primer login para documento:', formData.usuario.trim());
-    console.log('📝 [FRONTEND] Enviando datos:', {
-      documento: formData.usuario.trim(),
-      endpoint: '/api/check-first-login'
-    });
+    logger.logSafe('🔍 [FRONTEND] Verificando primer login', { endpoint: '/api/check-first-login' });
 
     try {
       const response = await fetch('/api/check-first-login', {
@@ -79,22 +76,18 @@ export default function LoginPage() {
         })
       });
 
-      console.log('📡 [FRONTEND] Respuesta HTTP check-first-login:', {
+      logger.logSafe('📡 [FRONTEND] Respuesta HTTP check-first-login', {
         status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        url: response.url
+        ok: response.ok
       });
 
       const result = await response.json();
-      console.log('📋 [FRONTEND] Respuesta completa del servidor:', result);
+      logger.logSafe('📋 [FRONTEND] Respuesta del servidor', { success: result.success });
 
       if (response.ok) {
-        console.log('✅ [FRONTEND] Resultado verificación exitoso:', {
+        logger.logSafe('✅ [FRONTEND] Verificación exitosa', {
           isFirstLogin: result.isFirstLogin,
-          userFound: !!result.userData,
-          userName: result.userData?.nombre,
-          userData: result.userData
+          userFound: !!result.userData
         });
 
         // Guardar el nombre del usuario encontrado
@@ -107,31 +100,24 @@ export default function LoginPage() {
           setIsFirstLogin(true);
           setShowPasswordSetup(true);
           setHasCheckedFirstLogin(true);
-          console.log('🆕 [FRONTEND] Primer login detectado - solicitando creación de contraseña');
+          logger.log('🆕 [FRONTEND] Primer login detectado - solicitando creación de contraseña');
         } else {
           // Usuario ya tiene contraseña - mostrar campo de contraseña normal
           setIsFirstLogin(false);
           setShowPasswordSetup(false);
           setHasCheckedFirstLogin(true);
-          console.log('🔐 [FRONTEND] Usuario existente - solicitando contraseña actual');
+          logger.log('🔐 [FRONTEND] Usuario existente - solicitando contraseña actual');
         }
       } else {
-        console.log('❌ [FRONTEND] Error en verificación:', {
-          responseOk: response.ok,
+        logger.logSafe('❌ [FRONTEND] Error en verificación', {
           status: response.status,
-          errorMessage: result.error,
-          fullResult: result
+          errorMessage: result.error
         });
         setError(result.error || 'Usuario no encontrado');
       }
     } catch (err) {
-      console.error('💥 [FRONTEND] Error de conexión en check-first-login:', err);
-      console.error('💥 [FRONTEND] Detalles del error:', {
-        name: err instanceof Error ? err.name : 'Unknown',
-        message: err instanceof Error ? err.message : 'Unknown error',
-        stack: err instanceof Error ? err.stack : 'No stack trace'
-      });
-      setError('Error de conexión. Por favor intenta nuevamente.');
+      logger.errorSafe('💥 [FRONTEND] Error de conexión en check-first-login', err);
+      setError('Error de conexión. Por favor, intente nuevamente.');
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +127,7 @@ export default function LoginPage() {
   const handlePasswordSetup = async (e: React.FormEvent) => {
     e.preventDefault(); // Evitar el envío tradicional del formulario
     
-    console.log('🔒 [SECURITY] Configuración de contraseña via JavaScript, no GET tradicional');
+    logger.log('🔒 [SECURITY] Configuración de contraseña via JavaScript, no GET tradicional');
     
     // Validaciones
     if (!formData.newPassword || !formData.confirmPassword) {
@@ -184,7 +170,7 @@ export default function LoginPage() {
         setError(result.error || 'Error configurando la contraseña');
       }
     } catch (err) {
-      console.error('Error configurando contraseña:', err);
+      logger.errorSafe('Error configurando contraseña', err);
       setError('Error de conexión. Por favor intenta nuevamente.');
     } finally {
       setIsLoading(false);
@@ -194,12 +180,11 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Evitar el envío tradicional del formulario
     
-    console.log('🔒 [SECURITY] Formulario enviado via JavaScript, no GET tradicional');
-    console.log('📋 [LOGIN] Estado actual:', {
+    logger.log('🔒 [SECURITY] Formulario enviado via JavaScript, no GET tradicional');
+    logger.logSafe('📋 [LOGIN] Estado actual', {
       showPasswordSetup,
       isFirstLogin,
-      hasUsuario: !!formData.usuario,
-      hasPassword: !!formData.password
+      hasUsuario: !!formData.usuario
     });
 
     // Validar que tenga documento
@@ -210,14 +195,14 @@ export default function LoginPage() {
 
     // Si aún no hemos verificado si es primer login, hacerlo
     if (!hasCheckedFirstLogin) {
-      console.log('🔍 [LOGIN] Verificando primer login...');
+      logger.log('🔍 [LOGIN] Verificando primer login...');
       await checkFirstLogin();
       return;
     }
 
     // Si es configuración de contraseña por primera vez
     if (showPasswordSetup && isFirstLogin) {
-      console.log('🆕 [LOGIN] Configurando contraseña por primera vez...');
+      logger.log('🆕 [LOGIN] Configurando contraseña por primera vez...');
       await handlePasswordSetup(e);
       return;
     }
@@ -228,20 +213,18 @@ export default function LoginPage() {
         setError('Por favor ingresa tu contraseña');
         return;
       }
-      console.log('🔐 [LOGIN] Login normal para usuario con contraseña...');
+      logger.log('🔐 [LOGIN] Login normal para usuario con contraseña...');
     }
 
     // LOGIN NORMAL
     setIsLoading(true);
     setError('');
 
-    console.log('🔐 [FRONTEND] Iniciando proceso de login...');
-    console.log('📝 [FRONTEND] Datos del formulario:', {
-      usuario: formData.usuario,
-      passwordLength: formData.password.length,
-      tipoUsuarioSeleccionado: formData.tipoUsuario,
+    logger.log('🔐 [FRONTEND] Iniciando proceso de login...');
+    logger.logSafe('📝 [FRONTEND] Datos del formulario', {
       hasUsuario: !!formData.usuario,
-      hasPassword: !!formData.password
+      hasPassword: !!formData.password,
+      tipoUsuario: formData.tipoUsuario
     });
 
     try {
@@ -257,7 +240,7 @@ export default function LoginPage() {
         password: formData.password
       };
 
-      console.log('📤 [FRONTEND] Enviando request...');
+      logger.log('📤 [FRONTEND] Enviando request...');
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -266,62 +249,41 @@ export default function LoginPage() {
         body: JSON.stringify(requestBody)
       });
 
-      console.log('📥 [FRONTEND] Respuesta recibida:', {
+      logger.logSafe('📥 [FRONTEND] Respuesta recibida', {
         status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        url: response.url
+        ok: response.ok
       });
 
       const result = await response.json();
 
-      console.log('📋 [FRONTEND] Datos de respuesta:', {
+      logger.logSafe('📋 [FRONTEND] Datos de respuesta', {
         success: result.success,
-        hasUser: !!result.user,
-        error: result.error,
-        development: result.development,
-        userId: result.user?.id,
-        tipoUsuario: result.user?.tipoUsuario,
-        fullResult: result
+        hasUser: !!result.user
       });
 
       if (response.ok && result.user) {
         // Login exitoso - usar el contexto de autenticación
-        console.log('✅ [FRONTEND] Login exitoso, datos del usuario:', result.user);
-        console.log('🚀 [FRONTEND] Llamando a login() del contexto...');
+        logger.log('✅ [FRONTEND] Login exitoso');
+        logger.log('🚀 [FRONTEND] Llamando a login() del contexto...');
         
         login(result.user);
         
-        console.log('🔄 [FRONTEND] Redirigiendo a dashboard...');
+        logger.log('🔄 [FRONTEND] Redirigiendo a dashboard...');
         router.push('/dashboard');
       } else {
         // Mostrar error específico del servidor
-        console.log('❌ [FRONTEND] Error en login:', {
+        logger.logSafe('❌ [FRONTEND] Error en login', {
           responseStatus: response.status,
-          errorMessage: result.error,
-          fullResult: result
+          errorMessage: result.error
         });
-
-        // Si hay detalles de configuración, mostrarlos
-        if (result.details) {
-          console.error('⚙️ [FRONTEND] Detalles de configuración:', result.details);
-        }
-        if (result.missingVars) {
-          console.error('❌ [FRONTEND] Variables faltantes:', result.missingVars);
-        }
 
         setError(result.error || 'Error al iniciar sesión');
       }
     } catch (err) {
-      console.error('💥 [FRONTEND] Error de conexión:', err);
-      console.error('💥 [FRONTEND] Detalles del error:', {
-        name: err instanceof Error ? err.name : 'Unknown',
-        message: err instanceof Error ? err.message : 'Unknown error',
-        stack: err instanceof Error ? err.stack : 'No stack trace'
-      });
+      logger.errorSafe('💥 [FRONTEND] Error de conexión', err);
       setError('Error de conexión. Por favor intenta nuevamente.');
     } finally {
-      console.log('🏁 [FRONTEND] Finalizando proceso de login...');
+      logger.log('🏁 [FRONTEND] Finalizando proceso de login...');
       setIsLoading(false);
     }
   };

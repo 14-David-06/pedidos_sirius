@@ -1,4 +1,5 @@
 'use client';
+import logger from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,7 +123,7 @@ export default function MiHistoricoPage() {
 
       setHistoricoData(historicoSimulado);
     } catch (err) {
-      console.error('Error cargando histórico:', err);
+      logger.errorSafe('Error cargando histórico:', err);
       setError('Error al cargar el histórico. Por favor intenta nuevamente.');
     } finally {
       setIsLoading(false);

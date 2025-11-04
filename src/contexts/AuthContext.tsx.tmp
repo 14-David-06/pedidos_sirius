@@ -2,21 +2,20 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import logger from '@/lib/logger';
 
 interface User {
   id: string;
   usuario: string;
   nombre: string;
   documento: string;
-  tipoUsuario?: 'raiz' | 'regular';
-  rol?: 'Admin' | 'Compras' | 'Visualizacion';
+        logger.errorSafe('Error al cargar sesión guardada', error);
+        logger.errorSafe('Error al cargar sesión guardada', error);
   areaEmpresa?: string;
   entidadId?: string; // ID de la entidad a la que pertenece el usuario
 }
 
 interface AuthContextType {
-  user: User | null;
+        logger.errorSafe('Error al cargar sesión guardada', error);
   login: (userData: User) => void;
   logout: () => void;
   isLoading: boolean;
@@ -29,18 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Cargar sesión del localStorage al inicializar
-  useEffect(() => {
     const savedUser = localStorage.getItem('sirius_user');
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
-        logger.errorSafe('Error al cargar sesión guardada', error);
+        console.error('Error al cargar sesión guardada:', error);
         localStorage.removeItem('sirius_user');
       }
     }
     setIsLoading(false);
-  }, []);
 
   const login = (userData: User) => {
     setUser(userData);
@@ -52,11 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('sirius_user');
   };
 
-  return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
-  );
 }
 
 export function useAuth() {

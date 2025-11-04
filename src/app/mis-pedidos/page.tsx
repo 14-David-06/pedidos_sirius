@@ -1,4 +1,5 @@
 'use client';
+import logger from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -35,7 +36,7 @@ export default function MisPedidosPage() {
       }
 
       try {
-        console.log('Cargando órdenes del usuario...');
+        logger.log('Cargando órdenes del usuario...');
         const response = await fetch('/api/mis-pedidos', {
           method: 'POST',
           headers: {
@@ -49,7 +50,7 @@ export default function MisPedidosPage() {
         }
 
         const data = await response.json();
-        console.log('Órdenes cargadas:', data);
+        logger.log('Órdenes cargadas:', data);
         
         if (data.success) {
           setOrdenes(data.ordenes || []);
@@ -57,7 +58,7 @@ export default function MisPedidosPage() {
           setError(data.message || 'Error al cargar órdenes');
         }
       } catch (error) {
-        console.error('Error al cargar órdenes:', error);
+        logger.errorSafe('Error al cargar órdenes:', error);
         setError('Error al cargar las órdenes');
         setOrdenes([]);
       } finally {
@@ -358,3 +359,4 @@ export default function MisPedidosPage() {
     </ProtectedRoute>
   );
 }
+
